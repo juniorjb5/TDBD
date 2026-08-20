@@ -1,0 +1,2628 @@
+---
+title: "Modelo de regresión lineal"
+subtitle: "<br/> Random Forest - SVM"
+author: "Orlando Joaqui-Barandica"
+institute: "Universidad del Valle"
+date: " "
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    css: 
+      - default
+      - rladies
+      - rladies-fonts
+      - fonts_mtheme.css
+      - sidney.css
+    seal: false  
+    nature: 
+      ratio: 16:9
+      beforeInit: "macros.js"
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+
+---
+
+
+```{r setup, include = FALSE}
+library(knitr)
+library(tidyverse)
+library(rsample)
+library(yardstick)
+library(rpart)
+library(rpart.plot)
+library(randomForest)
+library(e1071)
+library(ISLR)   # o library(ISLR2)
+
+library(knitr)                              # paquete que trae funciones utiles para R Markdown
+library(tidyverse)                          # paquete que trae varios paquetes comunes en el tidyverse
+library(datos)                              # paquete que viene con datos populares traducidos al español :)
+library(shiny)
+# opciones predeterminadas
+knitr::opts_chunk$set(echo = FALSE,         # FALSE: los bloques de código NO se muestran
+                      dpi = 300,            # asegura gráficos de alta resolución
+                      warning = FALSE,      # los mensajes de advertencia NO se muestran
+                      error = FALSE)        # los mensajes de error NO se muestran
+
+
+options(htmltools.dir.version = FALSE)
+```
+
+
+
+
+class: inverse, left, bottom
+background-image: url("img/fondo.jpg")
+background-size: cover
+
+
+# **`r rmarkdown::metadata$title`**
+----
+
+## **`r rmarkdown::metadata$subtitle`**
+
+### `r rmarkdown::metadata$author`
+### `r rmarkdown::metadata$date`
+
+
+
+
+```{r xaringanExtra-share-again, echo=FALSE}
+xaringanExtra::use_share_again()
+```
+
+```{r xaringanExtra-clipboard, echo=FALSE}
+xaringanExtra::use_clipboard()
+```
+
+
+```{r xaringanExtra, echo=FALSE}
+xaringanExtra::use_xaringan_extra("tile_view")
+```
+
+
+---
+
+
+
+class: center, middle
+
+
+
+
+
+```{r, echo=FALSE, fig.align="center", out.width="20%"}
+knitr::include_graphics("img/univalle.jpg")
+```
+
+
+
+---
+
+
+
+
+
+
+class: center, middle
+
+
+.center[
+
+<br>
+
+
+
+<a href="https://www.joaquibarandica.com" target="_blank">
+  <img src="img/avatar.png"
+       style="border-radius: 80%; width: 220px; max-width: 30%; height: auto;"
+       alt="Avatar"/>
+</a>
+
+
+## Orlando Joaqui-Barandica
+
+
+Doctor en Ingeniería, Enf. Ingeniería Industrial **|** Magíster en Economía Aplicada **|** Estadístico.
+
+
+
+`r anicon::faa("envelope", animate = "passing")` orlando.joaqui@correounivalle.edu.co 
+]
+
+
+
+.center[
+### [www.joaquibarandica.com](https://www.joaquibarandica.com)
+]
+
+
+
+
+
+
+---
+
+
+
+class: center, middle
+
+# `r icon("seedling")`
+# Hoy vamos a suavizar la idea de
+# modelos más flexibles
+
+---
+
+# La idea general
+
+Hasta ahora veníamos muy cerca de la regresión lineal.
+
+
+
+Hoy vamos a ver tres herramientas que también sirven para predecir una variable continua:
+
+- **Árboles de regresión**
+- **Random Forest para regresión**
+- **SVM para regresión**
+
+--
+
+.center[
+.orange[.font130[No vamos a entrar pesado en teoría.]]
+]
+
+.center[
+.orange[.font130[La meta es entender la intuición y saber correrlos en R.]]
+]
+
+---
+
+# ¿Qué cambia frente a una regresión lineal?
+
+### En regresión lineal
+- el modelo impone una forma bastante clara,
+- normalmente pensamos en una relación más estructurada,
+- y la interpretación de coeficientes es central.
+
+--
+
+### En estos métodos
+- dejamos que el modelo sea más flexible,
+- nos importa mucho la **predicción**,
+- y a veces sacrificamos interpretación por desempeño.
+
+---
+
+# Una frase...
+
+<br>
+
+.center[.font170[**Más flexibilidad puede ayudar a predecir mejor... pero también puede sobreajustar.**]]
+
+---
+
+# Ruta de la sesión
+
+
+.pull-left[
+
+### Sección 1
+**Árboles de regresión**
+- particiones,
+- sobreajuste,
+- profundidad,
+- poda.
+
+
+### Sección 2
+**Random Forest**
+- ensambles,
+- importancia de variables,
+- sesgo y varianza.
+
+]
+
+
+.pull-rigth[
+
+### Sección 3
+**SVM para regresión**
+- idea del margen $\epsilon$,
+- kernel lineal y radial,
+- hiperparámetros,
+- tuning con validación cruzada.
+
+
+]
+
+---
+
+# Vamos a usar un solo ejemplo
+
+Trabajaremos con la base **`Auto`** del paquete `ISLR`.
+
+### Objetivo:
+predecir `mpg`, es decir, el rendimiento de combustible del carro.
+
+--
+
+### ¿Por qué esta base?
+- es sencilla,
+- tiene variables numéricas fáciles de leer,
+- y sirve muy bien para ver cambios de complejidad entre modelos.
+
+---
+
+# Cargar y preparar datos
+
+```{r, echo=TRUE}
+data(Auto)
+
+Auto_ml <- Auto %>%
+  na.omit() %>%
+  select(-name)
+
+glimpse(Auto_ml)
+```
+
+---
+
+# Partición train y test
+
+```{r, echo=TRUE}
+set.seed(123)
+
+split_data <- initial_split(Auto_ml, prop = 0.80)
+
+train <- training(split_data)
+test  <- testing(split_data)
+
+tibble(
+  conjunto = c("train", "test"),
+  n = c(nrow(train), nrow(test))
+)
+```
+
+---
+
+# Recordatorio importante
+
+### `train`
+se usa para aprender y ajustar modelos.
+
+### `test`
+se usa solo al final para ver qué tan bien predice el modelo en datos no vistos.
+
+--
+
+<br>
+
+.center[
+.orange[.font130[La lógica será la misma: entrenar en train y evaluar en test.]]
+]
+
+---
+
+# Una pequeña función para medir error
+
+```{r, echo=TRUE}
+metricas_reg <- function(y_real, y_pred, nombre_modelo){
+  tibble(
+    modelo = nombre_modelo,
+    RMSE = rmse_vec(y_real, y_pred),
+    MAE  = mae_vec(y_real, y_pred)
+  )
+}
+```
+
+---
+
+# Recordatorio suave sobre RMSE y MAE
+
+### MAE
+mide el error promedio en valor absoluto.
+
+### RMSE
+también mide error, pero castiga más los errores grandes.
+
+--
+
+### En ambos casos:
+**más pequeño es mejor**.
+
+---
+
+class: inverse, center, middle
+
+# `r icon("sitemap")`
+# Sección 1
+# Árboles de regresión
+
+---
+
+# ¿Qué hace un árbol de regresión?
+
+Un árbol de regresión divide la base en grupos cada vez más pequeños.
+
+En cada paso hace una pregunta del tipo:
+
+- ¿`horsepower < 100`?
+- ¿`weight < 2500`?
+- ¿`year < 76`?
+
+--
+
+### Y al final
+en cada grupo terminal predice un **promedio** de `mpg`.
+
+---
+
+# Intuición muy dummy
+
+.center[.font150[**Un árbol no trata de ajustar una línea.  
+Un árbol trata de partir la base en pedazos cada vez más parecidos entre sí.**]]
+
+---
+
+# Una analogía simple
+
+Imaginen que quieren predecir `mpg`.
+
+En vez de decir:
+
+> “`mpg` cambia en promedio tanto por cada unidad de X”
+
+el árbol piensa algo más así:
+
+> “Primero separo carros pesados y livianos.  
+> Luego, dentro de cada grupo, separo por potencia.  
+> Y luego, dentro de cada subgrupo, saco un promedio.”
+
+---
+
+# La palabra clave: partición
+
+Cada corte del árbol genera una **partición** del espacio de datos.
+
+--
+
+Por eso a veces se dice que el árbol construye una serie de “reglas”:
+
+- si pasa esto, vaya por la izquierda,
+- si no pasa, vaya por la derecha,
+- y siga bajando hasta llegar a una hoja final.
+
+---
+
+# ¿Qué es una hoja?
+
+Una **hoja terminal** es el nodo final del árbol.
+
+Allí ya no se sigue partiendo la base.
+
+--
+
+### En regresión:
+la predicción final suele ser el promedio de `mpg` dentro de esa hoja.
+
+---
+
+# Primer árbol sencillo en R
+
+```{r, echo=TRUE}
+arbol_simple <- rpart(
+  mpg ~ horsepower + weight + displacement + year + cylinders + acceleration,
+  data = train,
+  method = "anova"
+)
+
+arbol_simple
+```
+
+---
+
+
+
+# ¿Cómo leer la salida del árbol simple?
+
+La salida de `rpart` nos está mostrando **cómo el árbol fue partiendo la base de entrenamiento**.
+
+```{r, echo=FALSE}
+cat("
+n= 313 
+
+node), split, n, deviance, yval
+      * denotes terminal node
+
+ 1) root 313 19683.7200 23.62843  
+   2) displacement>=153 147  2422.3270 17.12653  
+     4) horsepower>=127 77   331.1553 14.50779 *
+     5) horsepower< 127 70   982.2664 20.00714  
+      10) year< 78.5 55   231.2811 18.66727 *
+      11) year>=78.5 15   290.2040 24.92000 *
+   3) displacement< 153 166  5543.8980 29.38614  
+     6) horsepower>=70.5 107  2243.0610 26.97850  
+      12) year< 78.5 67   747.0400 24.90000  
+        24) weight>=2305 36   177.6075 22.99167 *
+        25) weight< 2305 31   286.0819 27.11613 *
+      13) year>=78.5 40   721.7360 30.46000  
+        26) weight>=2620 18   108.8000 27.33333 *
+        27) weight< 2620 22   292.9927 33.01818 *
+     7) horsepower< 70.5 59  1555.7270 33.75254  
+      14) year< 77.5 23   234.9130 29.78261 *
+      15) year>=77.5 36   726.7356 36.28889 *
+")
+```
+
+---
+
+### La idea general
+
+- `root` es toda la base de entrenamiento.
+- `n` es cuántos carros hay en ese nodo.
+- `yval` es el **mpg promedio** que el árbol usaría como predicción en ese grupo.
+- `deviance` mide qué tan dispersos están los `mpg` dentro del nodo.
+- El `*` indica que esa rama ya terminó: esa es una **hoja final**.
+
+--
+
+### Lo que está diciendo este árbol
+
+Primero separó por `displacement`.
+
+Luego, dentro de cada grupo, siguió cortando por:
+
+- `horsepower`
+- `year`
+- `weight`
+
+O sea, el árbol encontró que esas variables ayudan a formar grupos con `mpg` más parecidos entre sí.
+
+---
+
+# ¿Qué nos está diciendo este árbol en palabras?
+
+La **primera gran división** fue:
+
+- carros con `displacement >= 153`
+- carros con `displacement < 153`
+
+Eso ya nos dice algo importante:
+
+.center[.font140[**la cilindrada fue la primera variable que más ayudó a separar consumos distintos**]]
+
+--
+
+### Rama izquierda: `displacement >= 153`
+
+Ese grupo tiene un `mpg` promedio de **17.13**.
+
+Después el árbol vuelve a preguntar por `horsepower` y por `year`.
+
+Por ejemplo:
+
+- si `horsepower >= 127`, la predicción baja hasta **14.51 mpg**
+- si `horsepower < 127` y además `year >= 78.5`, la predicción sube a **24.92 mpg**
+
+---
+
+### Rama derecha: `displacement < 153`
+
+Ese grupo tiene un `mpg` promedio más alto: **29.39**.
+
+Luego el árbol refina con `horsepower`, `year` y `weight`.
+
+Por ejemplo:
+
+- si `horsepower < 70.5` y `year >= 77.5`, predice **36.29 mpg**
+- si `horsepower >= 70.5`, `year < 78.5` y `weight >= 2305`, predice **22.99 mpg**
+
+--
+
+### Lectura
+
+Este árbol está diciendo algo como esto:
+
+> los carros más grandes y más potentes tienden a tener menor `mpg`,  
+> mientras que los más livianos, menos potentes y más recientes tienden a tener mayor `mpg`.
+
+---
+
+# ¿Y por qué en el código usamos `method = "anova"`?
+
+Porque aquí estamos haciendo un **árbol de regresión**.
+
+Y en regresión la variable respuesta es **numérica continua**.
+
+En este caso, la respuesta es `mpg`.
+
+--
+
+### Entonces, ¿qué hace `anova` aquí?
+
+Le dice a `rpart` que busque cortes que ayuden a reducir la variación de una variable continua.
+
+Es decir, que forme grupos donde los valores de `mpg` queden lo más parecidos posible.
+
+---
+
+## Ojo con esto
+
+Aquí `anova` **no significa** que estamos haciendo la ANOVA clásica de comparar medias entre tratamientos.
+
+Aquí simplemente es la forma en que `rpart` nombra el criterio para árboles de regresión.
+
+--
+
+### En palabras simples
+
+- si la respuesta fuera una categoría, usaríamos otra lógica
+- como la respuesta es un número, usamos `method = "anova"`
+
+.center[
+.orange[En el fondo, el árbol está buscando cortes que reduzcan el error dentro de cada nodo.]
+]
+
+
+---
+
+
+# Dibujar el árbol
+
+```{r, echo=TRUE, fig.height=3}
+rpart.plot(arbol_simple, type = 3, fallen.leaves = TRUE)
+```
+
+---
+
+# ¿Cómo se lee este árbol?
+
+### De arriba hacia abajo
+
+Cada caja hace una pregunta.
+
+Por ejemplo:
+
+- si una condición se cumple, baja por una rama,
+- si no se cumple, baja por la otra.
+
+--
+
+### Al final
+se llega a una hoja con una predicción de `mpg`.
+
+
+---
+
+
+# ¿Cómo leer esta figura del árbol?
+
+Esta figura es la **versión visual** del árbol que antes vimos en texto.
+
+La función:
+
+```r
+rpart.plot(arbol_simple, type = 3, fallen.leaves = TRUE)
+```
+
+lo que hace es **dibujar el árbol de una forma más fácil de leer**.
+
+--
+
+### ¿Qué estamos viendo?
+
+- Arriba está la primera partición: `displacement >= 153`
+- Luego cada rama se sigue dividiendo con nuevas preguntas
+- Al final aparecen las **hojas terminales**
+- Cada hoja representa un grupo final de carros que quedaron parecidos entre sí
+
+---
+
+### ¿Qué significan los números de abajo?
+
+Por ejemplo, en una hoja aparece:
+
+```r
+15
+25%
+```
+
+Eso se puede leer así:
+
+- **15**: el `mpg` predicho para ese grupo
+- **25%**: el porcentaje de observaciones del entrenamiento que cayó en esa hoja
+
+O sea, esa hoja representa un grupo de carros para los que el árbol predice, aproximadamente, **15 millas por galón**, y allí cayó el **25%** de los datos.
+
+---
+
+### Lectura de la figura
+
+La figura deja ver mejor la lógica del árbol:
+
+- primero separa por `displacement`
+- después por `horsepower`
+- luego por `year`
+- y en algunas ramas también por `weight`
+
+Es decir, el árbol va armando reglas tipo:
+
+> si el carro tiene cierta cilindrada, cierta potencia, cierto año y cierto peso, entonces su `mpg` esperado es más o menos este.
+
+---
+
+# ¿Qué significa `type = 3`?
+
+`type = 3` controla la **forma en que se muestran las etiquetas de los cortes**.
+
+Aquí hace algo muy útil:
+
+.center[.font140[**pone etiquetas separadas para la rama izquierda y la rama derecha**]]
+
+---
+
+### ¿Eso qué significa en la práctica?
+
+En vez de mostrar solo la variable del corte de manera más compacta, el gráfico escribe cosas como:
+
+- `displacement >= 153` en una rama
+- `< 153` en la otra
+
+o también:
+
+- `horsepower >= 127`
+- `< 127`
+
+Entonces queda mucho más visual porque uno ve de inmediato **qué condición manda hacia cada lado**.
+
+---
+
+### En palabras simples
+
+`type = 3` hace que el árbol se vea más "explicado"
+
+porque cada bifurcación muestra claramente:
+
+- qué pasa si cumples la condición
+- y qué pasa si no la cumples
+
+Eso es muy útil, porque la lectura se vuelve más natural.
+
+---
+
+# ¿Y qué hace `fallen.leaves = TRUE`?
+
+Ese argumento hace que las **hojas terminales queden todas abajo**, alineadas al final del árbol.
+
+--
+
+### ¿Para qué sirve eso?
+
+Sirve para que la figura quede más limpia visualmente.
+
+Sin eso, algunas hojas pueden quedar a distintas alturas.
+
+Con `fallen.leaves = TRUE`, todas las predicciones finales bajan al mismo nivel y el árbol se ve más ordenado.
+
+--
+
+### Idea visual
+
+Es como decirle al gráfico:
+
+> bájame todas las respuestas finales al piso para que se vea más claro dónde termina cada camino.
+
+---
+
+# ¿Cómo se interpreta esta figura completa?
+
+Este árbol sugiere algo bastante intuitivo:
+
+- carros con mayor `displacement` y mayor `horsepower` terminan con `mpg` más bajo
+- carros con menor `displacement`, menor `horsepower` y años más recientes tienden a terminar con `mpg` más alto
+
+Por eso las hojas de la derecha muestran valores como **30, 33 y 36**,
+mientras que las hojas de la izquierda muestran valores como **15 y 19**.
+
+--
+
+### La idea de fondo
+
+El árbol no está estimando una recta.
+
+Lo que está haciendo es dividir el espacio en pedacitos y decir:
+
+> para este tipo de carros, predigo este `mpg`;
+> para este otro tipo de carros, predigo otro.
+
+Y esta figura justamente nos deja ver esa lógica de decisión de forma mucho más amigable.
+
+
+
+---
+
+# Importante
+
+- El árbol es fácil de explicar visualmente.
+- No pide una relación lineal estricta.
+- Puede capturar comportamientos distintos en diferentes zonas de los datos.
+
+--
+
+.center[
+.orange[Pero también puede crecer demasiado.]
+]
+
+---
+
+# Hagamos predicción con este árbol
+
+```{r, echo=TRUE}
+pred_arbol_simple <- predict(arbol_simple, newdata = test)
+
+metricas_reg(test$mpg, pred_arbol_simple, "Árbol simple")
+```
+
+---
+
+# ¿Qué ventaja tiene un árbol?
+
+### Su lectura es muy amigable
+
+A veces, para alguien no técnico, un árbol se entiende más fácil que una ecuación con muchos coeficientes.
+
+--
+
+### Pero ojo:
+que algo se vea simple no significa que siempre prediga mejor.
+
+---
+
+class: center, middle
+
+# Ahora viene el problema clásico
+
+
+.orange[.font170[**Si dejamos crecer mucho el árbol, puede memorizar demasiado el train.**]]
+
+---
+
+# ¿Qué es overfitting aquí?
+
+El árbol sigue partiendo y partiendo la base hasta acomodarse demasiado a detalles particulares.
+
+--
+
+### Eso puede hacer que:
+- en `train` se vea “muy bueno”,
+- pero en `test` falle más de lo esperado.
+
+--
+
+### Intuición rápida del sobreajuste
+
+Si hago demasiadas divisiones:
+
+- cada hoja termina con muy pocos datos,
+- el promedio de esa hoja se vuelve inestable,
+- y el modelo deja de capturar patrón general para capturar ruido.
+
+---
+
+# Construyamos un árbol más profundo
+
+```{r, echo=TRUE}
+arbol_profundo <- rpart(
+  mpg ~ horsepower + weight + displacement + year + cylinders + acceleration,
+  data = train,
+  method = "anova",
+  control = rpart.control(
+    cp = 0.0001,
+    maxdepth = 10,
+    minsplit = 5
+  )
+)
+
+arbol_profundo
+```
+
+---
+
+
+# Construyamos un árbol más profundo
+
+
+Que hacen los parámetros:
+
+- **Pone límites de crecimiento (maxdepth = 10):** Le dice al árbol: "No puedes tener más de 10 pisos de altura". Es como ponerle un techo para que no crezca infinitamente.
+
+
+- **Exige un mínimo de datos para actuar (minsplit = 5):** Le ordena al árbol que no intente hacer una nueva rama a menos que tenga al menos 5 datos (autos) en ese grupo. Si hay menos de 5, se queda como está.
+
+
+- **Define qué tan exigente es con el error (cp = 0.0001):** El Complexity Parameter es como un filtro de calidad. Un número tan pequeño le dice al árbol: "Crea una nueva rama aunque mejore el modelo solo un poquito".
+
+
+---
+
+# Ver el árbol profundo
+
+```{r, echo=TRUE, fig.height=4}
+rpart.plot(arbol_profundo, type = 3, fallen.leaves = TRUE, cex = 0.5)
+```
+
+---
+
+# ¿Qué pasó ahora?
+
+Probablemente el árbol se volvió:
+
+- más grande,
+- más enredado,
+- y menos fácil de explicar.
+
+--
+
+### Esa es una señal típica:
+más flexibilidad, pero también más riesgo de sobreajuste.
+
+---
+
+# La profundidad del árbol
+
+La **profundidad** dice qué tan lejos puede crecer el árbol.
+
+--
+
+### Si la profundidad es pequeña
+el modelo es más simple.
+
+### Si la profundidad es grande
+el modelo puede capturar más detalle, pero también puede sobreajustar.
+
+---
+
+# Otra palabra importante: poda
+
+**Podar** un árbol significa cortarlo.
+
+Es decir:
+
+- quitar ramas que ya no aportan mucho,
+- simplificar la estructura,
+- y tratar de mejorar generalización.
+
+---
+
+# Ver tabla de complejidad
+
+```{r, echo=TRUE}
+printcp(arbol_profundo)
+```
+
+---
+
+# ¿Qué mirar aquí?
+
+No quiero meterlos fuerte en la tabla.
+
+Solo quédense con esta idea:
+
+- el árbol prueba distintos tamaños,
+- calcula un error interno,
+- y eso ayuda a decidir hasta dónde conviene dejarlo crecer.
+
+---
+
+# Graficar complejidad
+
+```{r, echo=TRUE, fig.height=2.5}
+plotcp(arbol_profundo)
+```
+
+---
+
+# Elegir un punto de poda
+
+```{r, echo=TRUE}
+cp_optimo <- arbol_profundo$cptable[
+  which.min(arbol_profundo$cptable[, "xerror"]),
+  "CP"
+]
+
+cp_optimo
+```
+
+---
+
+# Podar el árbol
+
+```{r, echo=TRUE}
+arbol_podado <- prune(arbol_profundo, cp = cp_optimo)
+
+arbol_podado
+```
+
+---
+
+# Dibujar el árbol podado
+
+```{r, echo=TRUE, fig.height=3}
+rpart.plot(arbol_podado, type = 3, fallen.leaves = TRUE)
+```
+
+---
+
+# Predicción del árbol podado
+
+```{r, echo=TRUE}
+pred_arbol_podado <- predict(arbol_podado, newdata = test)
+
+bind_rows(
+  metricas_reg(test$mpg, pred_arbol_simple, "Árbol simple"),
+  metricas_reg(test$mpg, pred_arbol_podado, "Árbol podado")
+)
+```
+
+---
+
+# Lectura conceptual
+
+### Un árbol muy profundo
+puede perseguir demasiado el train.
+
+### Un árbol podado
+busca quedarse con una estructura más razonable.
+
+--
+
+.center[
+.orange[Podar es una forma de pelear contra el overfitting.]
+]
+
+---
+
+# Lo que quiero que te quede de árboles
+
+- Un árbol parte la base con reglas simples.
+- Cada hoja terminal da una predicción promedio.
+- Si lo dejas crecer demasiado, puede sobreajustar.
+- La profundidad importa.
+- La poda ayuda a simplificar y generalizar mejor.
+
+---
+
+class: inverse, center, middle
+
+# `r icon("tree")`
+# Sección 2
+# Random Forest para regresión
+
+---
+
+# Problema de un árbol solo
+
+Un árbol puede ser muy sensible.
+
+A veces, con pequeños cambios en la muestra:
+
+- cambia la primera partición,
+- cambian las ramas,
+- y cambian bastante las predicciones.
+
+--
+
+Eso quiere decir que un árbol solo puede tener **alta varianza**.
+
+---
+
+# La gran idea de Random Forest
+
+En lugar de confiar en **un solo árbol**:
+
+- construimos **muchos árboles**,
+- cada uno ve una versión un poco distinta de los datos,
+- y luego promediamos sus predicciones.
+
+--
+
+.center[
+.orange[.font150[Muchos árboles débiles juntos pueden formar un modelo más estable.]]
+]
+
+---
+
+# Intuición muy simple
+
+### Un árbol solo
+puede ser caprichoso.
+
+### Un bosque
+promedia muchos puntos de vista.
+
+--
+
+Eso suele reducir la inestabilidad.
+
+---
+
+# ¿Cómo se construye el bosque?
+
+### Paso 1
+Se toman muchas muestras bootstrap del train.
+
+### Paso 2
+En cada árbol, no se dejan entrar todas las variables en cada corte, sino solo una muestra aleatoria de variables.
+
+### Paso 3
+Se promedian las predicciones de todos los árboles.
+
+---
+
+
+# Bootstrap:
+
+**Bootstrap** es volver a armar muchas versiones del mismo `train`,  
+pero **muestreando filas al azar con reemplazo**.
+
+¿Qué significa eso?
+
+- una fila puede salir **más de una vez**
+- algunas filas pueden **no salir**
+- cada árbol termina viendo un dataset **parecido**, pero **no idéntico**
+
+.footnote[
+En otras palabras: no hacemos un solo árbol mirando siempre exactamente los mismos datos, sino muchos árboles viendo versiones distintas del mismo problema.
+]
+
+
+
+---
+
+# ¿Por qué no usar los mismos datos siempre?
+
+Porque si todos los árboles fueran iguales:
+
+- el promedio no aportaría mucho,
+- y el bosque no ganaría diversidad.
+
+--
+
+### El truco está en generar árboles distintos
+pero razonablemente útiles.
+
+---
+
+
+
+class: center, middle, inverse
+
+# `r icon("sliders-h")`
+# ¿Por qué no entran todas las variables?
+## La lógica de Random Forest
+
+---
+
+# En cada corte, el árbol no ve todo
+
+En un árbol común, en cada punto de decisión, el algoritmo revisa **todas** las variables  
+y escoge la que mejor separa.
+
+En **Random Forest** no.
+
+Aquí, en cada corte, el algoritmo mira **solo unas poquitas variables elegidas al azar**.  
+Por ejemplo, en vez de revisar:
+
+- `horsepower`
+- `weight`
+- `year`
+- `displacement`
+
+puede que en ese corte solo le dejen mirar:
+
+- `weight`
+- `year`
+
+---
+
+# En cada corte, el árbol no ve todo
+
+Y con esas dos, decide por dónde partir.
+
+.center[¿Por qué hacer eso?]
+
+Porque si todos los árboles vieran siempre todas las variables,  
+muchos terminarían pareciéndose demasiado.
+
+Al obligarlos a mirar **subconjuntos distintos de variables**,  
+los árboles salen más variados, y eso hace al bosque más fuerte como conjunto.
+
+.footnote[
+Idea clave: no es que las otras variables desaparezcan para siempre.  
+Simplemente, en **ese corte puntual**, el árbol no las puede usar.
+]
+
+
+
+---
+
+
+# Random Forest y sesgo-varianza
+
+Solo esta intuición:
+
+### Un árbol profundo
+puede tener bajo sesgo, pero alta varianza.
+
+### Un bosque
+suele bajar la varianza al promediar muchos árboles.
+
+--
+
+.center[
+.orange[La magia del ensamble está en estabilizar.]
+]
+
+---
+
+# Ajustar un Random Forest en R
+
+```{r, echo=TRUE}
+set.seed(123)
+
+bosque <- randomForest(
+  mpg ~ horsepower + weight + displacement + year + cylinders + acceleration,
+  data = train,
+  ntree = 500,
+  mtry = 3,
+  importance = TRUE
+)
+
+bosque
+```
+
+---
+
+# ¿Qué significan esos argumentos?
+
+### `ntree = 500`
+cantidad de árboles del bosque.
+
+### `mtry = 3`
+cantidad de variables candidatas que se prueban en cada corte.
+
+### `importance = TRUE`
+permite calcular importancia de variables.
+
+---
+
+# Predicción con el bosque
+
+```{r, echo=TRUE}
+pred_bosque <- predict(bosque, newdata = test)
+
+metricas_reg(test$mpg, pred_bosque, "Random Forest")
+```
+
+---
+
+# Comparación rápida: árbol vs bosque
+
+```{r, echo=TRUE}
+bind_rows(
+  metricas_reg(test$mpg, pred_arbol_podado, "Árbol podado"),
+  metricas_reg(test$mpg, pred_bosque, "Random Forest")
+)
+```
+
+---
+
+# ¿Qué suele pasar en la práctica?
+
+Muchas veces Random Forest mejora a un árbol solo porque:
+
+- reduce inestabilidad,
+- combina muchas particiones,
+- y captura patrones más ricos sin depender de una sola estructura.
+
+---
+
+# Importancia de variables
+
+Una ventaja práctica del bosque es que puede darnos una idea de qué variables parecen más influyentes.
+
+```{r, echo=TRUE}
+importance(bosque)
+```
+
+
+---
+
+
+# ¿Qué nos está diciendo esta tabla?
+
+Esta salida intenta responder una pregunta muy práctica:
+
+**¿qué variables parecen ayudar más al bosque a predecir `mpg`?**
+
+
+- **%IncMSE**: mide cuánto empeora el modelo cuando una variable se “revuelve”.
+  Es decir, se le cambian de orden sus valores para romper la información que aportaba.
+  Si al hacer eso el error sube bastante, esa variable era importante.
+
+- **IncNodePurity**: mide cuánto ayudó una variable a hacer cortes útiles dentro de los árboles.
+  Si una variable aparece haciendo particiones que mejoran mucho el ajuste,
+  su valor de importancia será más alto.
+  
+
+**Idea práctica:**  
+en ambos casos, **valores más altos suelen indicar variables más influyentes** en la predicción.
+  
+
+--
+
+
+- En esta salida, **`year`** sobresale mucho en `%IncMSE`, así que parece ser una variable **muy clave** para predecir.
+
+- También **`displacement`** y **`weight`** muestran bastante aporte.  
+- En cambio, **`acceleration`** se ve menos influyente que las demás.
+
+.footnote[
+Lectura: una medida mira qué pasa si “daño” la variable; la otra mira cuánto ayudó esa variable a construir buenos árboles.
+]
+
+
+
+---
+
+# Graficar importancia de variables
+
+```{r, echo=TRUE, fig.height=3}
+varImpPlot(bosque)
+```
+
+---
+
+# ¿Cómo leer esto sin enredarnos?
+
+Si una variable aparece como muy importante, eso sugiere que:
+
+- ayudó bastante a reducir error,
+- o fue útil en las particiones del bosque.
+
+--
+
+### Pero cuidado
+esto **no es** lo mismo que interpretar un beta en regresión lineal.
+
+---
+
+# Diferencia clave con regresión lineal
+
+### En regresión lineal
+puedo decir algo como:
+> “si X sube una unidad, Y cambia en promedio…”
+
+### En Random Forest
+eso ya no sale tan limpio.
+
+--
+
+Aquí la lógica es más:
+
+> “esta variable fue útil para predecir”.
+
+---
+
+# Ventajas de Random Forest
+
+- suele predecir mejor que un árbol solo,
+- maneja no linealidades e interacciones de forma automática,
+- es bastante robusto,
+- y da una noción útil de importancia de variables.
+
+
+
+# Limitaciones de Random Forest
+
+- ya no es tan fácil de explicar como un árbol,
+- puede sentirse como una “caja más oscura”,
+- no entrega una ecuación sencilla,
+- y exige más cómputo que un árbol simple.
+
+---
+
+# Mensaje corto de esta sección
+
+.center[.font150[**Un árbol divide.  
+Un bosque promedia muchos árboles.  
+Y al promediar, normalmente gana estabilidad.**]]
+
+---
+
+class: inverse, center, middle
+
+# `r icon("vector-square")`
+# Sección 3
+# SVM para regresión
+
+---
+
+
+class: center, middle
+
+
+# ¿Qué es SVM?
+## una idea muy simple antes de meternos al modelo
+
+---
+
+# Pensemoslo sin tecnicismos
+
+SVM es una técnica de aprendizaje supervisado.
+
+Eso quiere decir que:
+
+- tenemos una variable respuesta que queremos explicar o predecir,
+- tenemos varias variables explicativas,
+- y el modelo intenta **encontrar una regla útil** para relacionarlas.
+
+En palabras muy simples, SVM busca una forma "inteligente" de usar las variables $(X)$ para predecir $(Y)$.
+
+---
+
+# ¿Cuál es el propósito de SVM?
+
+La idea no es solo ajustarse a los datos porque sí.
+
+La técnica busca una regla que:
+
+- **prediga bien**,
+- **no se complique de más**,
+- y **generalice mejor** cuando lleguen datos nuevos.
+
+O sea, SVM no quiere aprenderse los datos de memoria.
+
+Quiere encontrar una frontera o una función que capture el patrón importante, sin quedarse pegado al ruido.
+
+---
+
+# ¿Qué hace realmente SVM?
+
+Depende del problema:
+
+- si la respuesta es una **categoría**, SVM ayuda a **separar grupos**;
+- si la respuesta es **numérica**, SVM ayuda a **predecir valores**.
+
+En esta clase nos interesa lo segundo.
+
+Entonces, en regresión, SVM intenta construir una función que pase por la tendencia general de los datos, sin obsesionarse con cada punto.
+
+La lógica es más o menos esta:
+
+> "voy a buscar una función razonable, estable y útil,  
+> que siga el patrón general,  
+> pero sin reaccionar exageradamente a pequeñas variaciones"
+
+---
+
+# ¿Por qué puede ser útil?
+
+Porque en la vida real muchas relaciones:
+
+- no son perfectamente lineales,
+- tienen ruido,
+- y a veces cambian de forma en distintas zonas de los datos.
+
+SVM es útil porque puede adaptarse a relaciones más complejas sin volverse tan inestable como otros métodos.
+
+Por eso suele verse como una técnica interesante cuando:
+
+- la relación entre variables no es tan obvia,
+- hay muchas variables,
+- o queremos un modelo con buena capacidad predictiva.
+
+---
+
+# Idea intuitiva para quedarnos con algo
+
+Si una regresión lineal tradicional dice:
+
+> "voy a dibujar una línea que minimice errores"
+
+SVM para regresión dice algo más parecido a:
+
+> "voy a dibujar una función que represente bien la tendencia general,  
+> permitiendo pequeños errores que no me preocupan tanto,  
+> y evitando una forma demasiado enredada"
+
+Esa es la intuición más importante.
+
+---
+
+class: center, middle
+
+# Entonces...
+## SVM es una técnica de predicción
+## que busca equilibrio entre
+## ajuste, estabilidad y generalización
+
+### No quiere perseguir cada punto.
+### Quiere capturar el patrón.
+
+
+
+---
+
+# Una duda clave:
+## ¿SVM al final me da una ecuación?
+
+Sí, pero depende del tipo de SVM que usemos.
+
+En general, SVM **sí estima una función de predicción**.
+
+O sea, al final el modelo sí queda con una regla matemática para calcular:
+
+$$
+\hat{Y} = f(X)
+$$
+
+La diferencia es que esa función a veces es:
+
+- **simple y explícita**, como una ecuación parecida a regresión,
+- o **más escondida**, cuando usamos kernels no lineales.
+
+---
+
+# Si SVM es lineal
+
+Cuando usamos un **kernel lineal**, SVM sí termina muy cerca de una ecuación clásica:
+
+$$
+\hat{Y} = \beta_0 + \beta_1 X_1 + \beta_2 X_2 + \cdots + \beta_p X_p
+$$
+
+Entonces ahí sí podríamos decir:
+
+- hay intercepto,
+- hay coeficientes,
+- y sí existe una ecuación bastante clara.
+
+La diferencia con una regresión tradicional no es tanto la forma final,
+sino **la forma en que esa ecuación fue estimada**.
+
+SVM no la calcula buscando minimizar el error cuadrático como OLS,
+sino usando su propia lógica de margen, tolerancia y penalización.
+
+---
+
+# Si SVM es no lineal
+
+Cuando usamos un kernel como **RBF** o **polinomial**,
+la cosa cambia.
+
+Ahí el modelo **sigue teniendo una función matemática**,
+pero ya no aparece como una ecuación sencilla del tipo:
+
+$$
+\hat{Y} = \beta_0 + \beta_1 X_1 + \beta_2 X_2
+$$
+
+Más bien, la predicción se construye a partir de:
+
+- los puntos más importantes del entrenamiento,
+- y una función que mide cercanía o similitud entre observaciones.
+
+Entonces:
+
+- **sí hay modelo**,
+- **sí hay una fórmula detrás**,
+- pero **no suele ser una fórmula simple de interpretar a ojo**.
+
+---
+
+# Entonces, ¿cómo "estima" esa función?
+
+La idea dummy sería esta:
+
+SVM mira los datos y trata de encontrar una función que:
+
+- siga la tendencia general,
+- ignore errores pequeños,
+- y no se vuelva demasiado ondulada o complicada.
+
+Es decir, no quiere una curva que pase exactico por todos los puntos.
+
+Quiere una función que logre un buen equilibrio entre:
+
+- ajuste,
+- tolerancia al ruido,
+- y capacidad de predecir datos nuevos.
+
+---
+
+# En términos prácticos
+
+Entonces la respuesta corta sería:
+
+- **sí**, SVM sí estima un modelo,
+- **sí**, al final queda una función de predicción,
+- **a veces sí** la podemos escribir como ecuación clara,
+- pero **a veces no** queda en una forma tan bonita de interpretar.
+
+Por eso SVM suele ser fuerte para **predicción**,
+pero no siempre tan cómodo para **explicar coeficiente por coeficiente**.
+
+
+
+
+
+---
+
+# ¿Por qué SVM en regresión?
+
+Cuando la gente oye SVM, muchas veces piensa solo en clasificación.
+
+Pero también existe **SVM para regresión**.
+
+--
+
+La idea no es predecir clases, sino una variable numérica como `mpg`.
+
+---
+
+# La intuición de SVM regresión
+
+SVM para regresión trata de encontrar una función que:
+
+- siga razonablemente bien la tendencia de los datos,
+- pero sin perseguir cada punto de manera obsesiva.
+
+--
+
+.center[
+.orange[.font140[No quiere pegarse a todos los puntos.  
+Quiere capturar una zona razonable.]]
+]
+
+---
+
+# La idea del margen $\epsilon$
+
+SVM regresión usa una especie de “tubo” alrededor de la función estimada.
+
+Mientras una observación quede **dentro** de ese tubo:
+
+- no se penaliza fuerte.
+
+Si queda **fuera**:
+
+- sí empieza a contar como error.
+
+---
+
+# En palabras muy suaves
+
+### Si el error es pequeño
+el modelo dice:
+> “está bien, no me voy a poner dramático por eso”.
+
+### Si el error ya sale del margen $\epsilon$
+el modelo dice:
+> “bueno, aquí sí necesito corregir”.
+
+---
+
+# ¿Por qué eso puede ser útil?
+
+Porque evita reaccionar demasiado a pequeñas variaciones.
+
+--
+
+En otras palabras:
+
+- tolera una pequeña franja de error,
+- y se enfoca más en la tendencia general.
+
+---
+
+# Otra idea importante: el kernel
+
+El **kernel** define la forma en que el modelo ve la relación entre variables.
+
+### Kernel lineal
+sirve cuando la relación parece más simple o más cercana a una recta en el espacio de predicción.
+
+### Kernel radial (RBF)
+sirve cuando queremos más flexibilidad para relaciones curvas.
+
+
+.orange[El Kernel es una función matemática que toma datos que son imposibles de separar en su estado actual y los proyecta a un "espacio" de más dimensiones donde sí se pueden organizar fácilmente.]
+
+---
+
+# Regla muy simple para arrancar
+
+### Si el patrón parece relativamente simple
+pruebe primero **lineal**.
+
+### Si sospecha curvatura o relaciones más complejas
+pruebe **RBF**.
+
+--
+
+.center[
+.orange[No es una ley absoluta, pero es una guía muy útil.]
+]
+
+---
+
+# SVM también necesita cuidado con la escala
+
+En estos métodos, la escala de las variables importa bastante.
+
+Si una variable está en una escala enorme y otra en una pequeña:
+
+- la grande puede dominar,
+- y eso sesga la noción de distancia o cercanía.
+
+--
+
+### Por eso
+en SVM normalmente se escala.
+
+---
+
+# En `e1071::svm()`
+
+El argumento `scale = TRUE` hace esa tarea automáticamente.
+
+Es una ventaja, porque simplifica bastante el flujo.
+
+---
+
+# Ajustar un SVM lineal
+
+```{r, echo=TRUE}
+svm_lineal <- svm(
+  mpg ~ horsepower + weight + displacement + year + cylinders + acceleration,
+  data = train,
+  type = "eps-regression",
+  kernel = "linear",
+  cost = 1,
+  epsilon = 0.3,
+  scale = TRUE
+)
+
+svm_lineal
+```
+
+---
+
+
+
+
+# Cómo leer esta salida de SVM
+
+```r
+svm(formula = mpg ~ horsepower + weight + displacement + year + cylinders + 
+    acceleration, data = train, type = "eps-regression", kernel = "linear", 
+    cost = 1, epsilon = 0.3, scale = TRUE)
+```
+
+Esta salida nos está diciendo **cómo quedó configurado el modelo** que ajustamos.
+
+
+---
+
+# Cómo leer esta salida de SVM
+
+Veámoslo muy simple:
+
+- `formula = mpg ~ ...`  
+  la variable que queremos predecir es **mpg**.
+
+- `type = "eps-regression"`  
+  estamos usando **SVM para regresión**, no para clasificación.
+
+- `kernel = "linear"`  
+  el modelo está buscando una relación **lineal** entre las variables $(X)$ y la respuesta.
+
+- `cost = 1`  
+  este parámetro controla qué tanto castiga el modelo los errores grandes.
+
+- `epsilon = 0.3`  
+  aquí se define una zona de tolerancia: errores pequeños, de hasta 0.3, no preocupan tanto al modelo.
+
+- `scale = TRUE`  
+  significa que las variables fueron reescaladas antes de ajustar el modelo, para que ninguna domine solo por tener números más grandes.
+
+---
+
+# ¿Qué significa esto de Number of Support Vectors: 143?
+
+Esta es una de las partes más importantes de SVM.
+
+Los .orange[**support vectors**] son las observaciones del entrenamiento que el modelo considera más importantes para construir la solución.
+
+No quiere decir que las otras observaciones no sirvan.
+
+Quiere decir que, al final, .orange[**estas 143 son las que más "sostienen" la forma del modelo**].
+
+Por eso se llaman *support vectors*:
+porque son los puntos que ayudan a definir la función estimada.
+
+---
+
+# Intuición
+
+Imagina que SVM está tratando de poner una línea o una función que represente bien el patrón general.
+
+Pero no todos los puntos empujan esa línea con la misma fuerza.
+
+Los que realmente quedan:
+
+- cerca del borde,
+- tocando la zona de tolerancia,
+- o por fuera de esa zona
+
+son los que más influyen.
+
+Esos son los **support vectors**.
+
+---
+
+# Entonces, ¿por qué no usa todos igual?
+
+Porque SVM no construye la solución pensando en "promediar todo" como lo haría uno intuitivamente.
+
+Más bien se concentra en los casos que son más críticos para definir la función.
+
+En regresión, esos casos suelen ser los puntos que:
+
+- están justo sobre el borde del tubo epsilon,
+- o se salen de ese tubo.
+
+Esos puntos son los que obligan al modelo a acomodarse.
+
+---
+
+# ¿Y 143 qué significa?
+
+Significa que, de todas las observaciones de entrenamiento, **143 quedaron como casos clave** para definir la función de predicción.
+
+No necesariamente es "bueno" o "malo" por sí solo.
+
+Solo nos dice cuántos puntos terminaron siendo importantes en la construcción del modelo.
+
+Muy en simple:
+
+- **pocos vectores soporte**: solución más apoyada en un grupo reducido de puntos,
+- **muchos vectores soporte**: solución influida por una mayor parte de los datos.
+
+---
+
+
+## ¿por qué se llaman *support vectors* y no *support points*?
+
+Se llaman **vectores** porque cada observación no es un solo número.
+
+Cada observación está formada por varias variables al mismo tiempo.
+
+En este ejemplo, cada fila del dataset tiene:
+
+- `horsepower`
+- `weight`
+- `displacement`
+- `year`
+- `cylinders`
+- `acceleration`
+
+Entonces, cada observación puede verse como un objeto así:
+
+$$
+x_i = (x_{i1}, x_{i2}, x_{i3}, x_{i4}, x_{i5}, x_{i6})
+$$
+
+O sea: una fila completa de predictores.
+
+Eso, en lenguaje matemático, es un **vector**.
+
+---
+
+# ¿Entonces también son puntos?
+
+Sí, también.
+
+De hecho, una misma observación se puede pensar de dos formas:
+
+- como un **vector** de características,
+- o como un **punto** en un espacio de muchas dimensiones.
+
+No hay contradicción.
+
+Por ejemplo:
+
+- con 2 variables, una observación es un punto en el plano;
+- con 3 variables, es un punto en el espacio;
+- con 6 variables, es un punto en un espacio de 6 dimensiones.
+
+Entonces podrían llamarse "points" en una explicación visual.
+
+Pero en SVM se usa más la palabra **vector** porque el método trabaja matemáticamente con vectores.
+
+---
+
+# ¿Por qué a SVM le gusta tanto la palabra vector?
+
+Porque SVM no piensa solo en dibujitos.
+
+Internamente, el método trabaja con operaciones entre observaciones como:
+
+- productos internos,
+- distancias,
+- similitudes,
+- transformaciones por kernel.
+
+Y todo eso se formula usando **vectores**.
+
+Entonces el nombre *support vectors* viene de la matemática del método.
+
+No es solo una forma bonita de hablar.
+
+---
+
+# ¿Y qué sería un support vector en este caso?
+
+Sería una observación del entrenamiento, por ejemplo una fila específica, algo como:
+
+$$
+(130,\ 3504,\ 307,\ 70,\ 8,\ 12.0)
+$$
+
+Eso representa una combinación de valores de las variables explicativas.
+
+Si esa observación queda entre las que más influyen en la solución,
+entonces se convierte en un **support vector**.
+
+O sea:
+
+- es una fila real de los datos,
+- compuesta por varias variables,
+- que ayuda a sostener la función estimada.
+
+---
+
+
+
+
+# Predicción del SVM lineal
+
+```{r, echo=TRUE}
+pred_svm_lineal <- predict(svm_lineal, newdata = test)
+
+metricas_reg(test$mpg, pred_svm_lineal, "SVM lineal")
+```
+
+---
+
+# Ajustar un SVM radial
+
+```{r, echo=TRUE}
+svm_rbf <- svm(
+  mpg ~ horsepower + weight + displacement + year + cylinders + acceleration,
+  data = train,
+  type = "eps-regression",
+  kernel = "radial",
+  cost = 10,
+  gamma = 0.05,
+  epsilon = 0.3,
+  scale = TRUE
+)
+
+svm_rbf
+```
+
+---
+
+# Predicción del SVM radial
+
+```{r, echo=TRUE}
+pred_svm_rbf <- predict(svm_rbf, newdata = test)
+
+bind_rows(
+  metricas_reg(test$mpg, pred_svm_lineal, "SVM lineal"),
+  metricas_reg(test$mpg, pred_svm_rbf, "SVM radial")
+)
+```
+
+---
+
+# Lectura rápida
+
+Si el SVM radial mejora frente al lineal, eso puede sugerir que:
+
+- había una relación más curva,
+- o que un patrón más flexible ayudó.
+
+--
+
+Si no mejora, no pasa nada.
+
+A veces lo simple ya era suficiente.
+
+---
+
+# Hiperparámetros: la idea general
+
+En SVM hay varios controles importantes.
+
+### `epsilon`
+ancho de la zona de tolerancia.
+
+### `cost`
+qué tan caro es equivocarse por fuera del margen.
+
+### `gamma`
+qué tan flexible es el kernel radial.
+
+---
+
+# Intuición de `cost`
+
+### `cost` pequeño
+el modelo es más relajado.
+
+### `cost` grande
+castiga más los errores y puede volverse más rígido para ajustarse.
+
+---
+
+# Intuición de `gamma` en RBF
+
+### `gamma` pequeño
+la forma del modelo cambia más suavemente.
+
+### `gamma` grande
+el modelo se vuelve más sensible a cambios locales.
+
+--
+
+.center[
+.orange[Gamma muy grande puede llevar a sobreajuste.]
+]
+
+---
+
+# ¿Y cómo elegimos esos valores?
+
+No adivinando.
+
+Lo correcto es usar **validación cruzada**.
+
+---
+
+# Idea de validación cruzada aquí
+
+Tomamos el conjunto de entrenamiento y lo dividimos varias veces.
+
+Probamos combinaciones de hiperparámetros.
+
+Y elegimos la que mejor funciona en promedio dentro de esas validaciones.
+
+--
+
+### Luego
+recién al final evaluamos en `test`.
+
+---
+
+# Parámetro, hiperparámetro y tuning
+
+Un **parámetro** es algo que el modelo **aprende de los datos** al entrenarse.
+
+Ejemplo: en un modelo lineal, los \(\beta\).
+
+Un **hiperparámetro** es algo que **definimos nosotros antes** de entrenar el modelo.
+
+En SVM, por ejemplo:
+
+- `cost`
+- `epsilon`
+- tipo de `kernel`
+
+Un **tuning** o **tunear el modelo** significa **probar distintos hiperparámetros**
+para encontrar la combinación que prediga mejor.
+
+## Idea clave
+
+**Parámetro** = lo aprende el modelo.  
+**Hiperparámetro** = lo escogemos nosotros.  
+**Tuning** = buscar cuáles hiperparámetros funcionan mejor.
+
+
+
+
+
+
+
+
+---
+
+# Tuning con validación cruzada
+
+Para no enredarnos demasiado, aquí vamos a:
+
+- dejar fijo `epsilon = 0.3`,
+- y buscar buenos valores de `cost` y `gamma`.
+
+```{r, echo=TRUE}
+set.seed(123)
+
+tuning_svm <- tune(
+  svm,
+  mpg ~ horsepower + weight + displacement + year + cylinders + acceleration,
+  data = train,
+  kernel = "radial",
+  type = "eps-regression",
+  epsilon = 0.3,
+  scale = TRUE,
+  ranges = list(
+    cost = c(0.1, 1, 10, 50),
+    gamma = c(0.001, 0.01, 0.05, 0.1)
+  ),
+  tunecontrol = tune.control(cross = 5)
+)
+
+summary(tuning_svm)
+```
+
+---
+
+# Mejores hiperparámetros encontrados
+
+```{r, echo=TRUE}
+tuning_svm$best.parameters
+```
+
+---
+
+# Extraer el mejor modelo
+
+```{r, echo=TRUE}
+svm_rbf_tuneado <- tuning_svm$best.model
+
+svm_rbf_tuneado
+```
+
+---
+
+# Evaluar el SVM tuneado en test
+
+```{r, echo=TRUE}
+pred_svm_tuneado <- predict(svm_rbf_tuneado, newdata = test)
+
+bind_rows(
+  metricas_reg(test$mpg, pred_svm_lineal, "SVM lineal"),
+  metricas_reg(test$mpg, pred_svm_rbf, "SVM radial"),
+  metricas_reg(test$mpg, pred_svm_tuneado, "SVM radial tuneado")
+)
+```
+
+---
+
+# Lectura conceptual del tuning
+
+### Antes
+yo había puesto hiperparámetros “a mano”.
+
+### Ahora
+dejo que una validación cruzada compare opciones y me sugiera una combinación mejor.
+
+--
+
+.center[
+.orange[.font130[Esto es mucho más serio que escoger valores al ojo.]]
+]
+
+---
+
+# Comparación final de modelos
+
+```{r, echo=TRUE}
+resultados_finales <- bind_rows(
+  metricas_reg(test$mpg, pred_arbol_podado, "Árbol podado"),
+  metricas_reg(test$mpg, pred_bosque, "Random Forest"),
+  metricas_reg(test$mpg, pred_svm_lineal, "SVM lineal"),
+  metricas_reg(test$mpg, pred_svm_tuneado, "SVM radial tuneado")
+)
+
+resultados_finales %>%
+  arrange(RMSE)
+```
+
+---
+
+# ¿Qué me interesa que lean aquí?
+
+No quiero que memoricen “qué modelo ganó hoy”.
+
+Quiero que vean esta lógica:
+
+- distintos modelos producen errores distintos,
+- la flexibilidad no siempre gana,
+- y el tuning importa bastante.
+
+---
+
+# Resumen de las tres herramientas
+
+### Árbol
+- muy intuitivo,
+- fácil de visualizar,
+- pero puede ser inestable.
+
+### Random Forest
+- más robusto,
+- suele predecir mejor,
+- menos interpretable.
+
+### SVM
+- potente,
+- flexible con kernels,
+- sensible a hiperparámetros y tuning.
+
+---
+
+# Una brújula rápida para decidir
+
+### Si quiero algo muy explicable visualmente
+árbol.
+
+### Si quiero una herramienta fuerte y estable de predicción
+Random Forest.
+
+### Si quiero una alternativa poderosa con control fino de complejidad
+SVM.
+
+---
+
+# Pero ojo con esta idea
+
+.center[.font150[**No existe “el mejor método para todo”.  
+Existe el método que funciona mejor para un problema, unos datos y una meta concreta.**]]
+
+---
+
+# ¿Qué preguntas debería hacerse uno?
+
+- ¿Me importa más interpretar o predecir?
+- ¿La relación parece simple o compleja?
+- ¿Tengo suficiente muestra?
+- ¿Estoy validando bien?
+- ¿Estoy tuneando con cuidado?
+
+---
+
+# Error clásico en esta parte del curso
+
+Probar muchos modelos y decidir con base en el `test`.
+
+--
+
+### Eso está mal
+porque el `test` se vuelve parte del proceso de decisión.
+
+### Lo correcto
+es decidir dentro de train con validación, y dejar el `test` para el cierre.
+
+---
+
+# Cierre conceptual
+
+Hoy no aprendimos a “adorar” modelos complejos.
+
+Aprendimos algo mejor:
+
+- que hay formas distintas de modelar,
+- que la flexibilidad tiene beneficios y riesgos,
+- y que la evaluación fuera de muestra manda.
+
+---
+
+class: center, middle, inverse
+
+# `r icon("laptop-code")`
+# Mini ejercicio sugerido
+
+---
+
+# Propuesta de ejercicio
+
+Con la base `Carseats` del paquete `ISLR`:
+
+1. ajuste un árbol de regresión para predecir `Sales`,
+2. pruebe un árbol más profundo y luego pódelo,
+3. ajuste un Random Forest,
+4. ajuste un SVM lineal,
+5. tunee un SVM radial con validación cruzada,
+6. compare todos los modelos con RMSE y MAE en test.
+
+--
+
+Para cargarla:
+
+library(ISLR)   # o library(ISLR2)
+data(Carseats)
+
+head(Carseats)
+str(Carseats)
+
+
+---
+
+
+class: center, middle, inverse
+
+# `r icon("balance-scale")`
+# Regresión clásica vs regresión en machine learning
+## una guía simple para cerrar el curso
+
+---
+
+# No compiten siempre: muchas veces responden preguntas distintas
+
+
+.pull-left[
+
+## Regresión clásica
+Suele usarse cuando queremos:
+
+- entender relaciones entre variables,
+- interpretar signos y magnitudes,
+- evaluar evidencia estadística,
+- explicar efectos promedio.
+
+]
+
+.pull-right[
+
+## Regresión tipo machine learning
+Suele usarse cuando queremos:
+
+- predecir lo mejor posible,
+- capturar relaciones complejas,
+- tolerar no linealidades e interacciones,
+- priorizar desempeño en datos nuevos.
+
+]
+
+### Idea clave
+
+A veces la pregunta no es **qué modelo es mejor**,
+sino **mejor para qué objetivo**.
+
+
+
+---
+
+# ¿Qué nos da un modelo lineal?
+
+Un modelo lineal nos da algo muy valioso:
+
+- una ecuación clara,
+- coeficientes interpretables,
+- facilidad para explicar efectos,
+- una estructura estadística muy conocida.
+
+Por eso, si la pregunta es:
+
+> “¿cómo cambia $Y$ cuando cambia $X$?”
+
+muchas veces un `lm()` sigue siendo una muy buena herramienta.
+
+## Pero también tiene límites
+
+- asume una forma funcional bastante rígida,
+- puede quedarse corto si la relación es muy no lineal,
+- puede sufrir con interacciones complejas,
+- no siempre es el campeón en predicción.
+
+---
+
+# ¿Qué aportan las técnicas de machine learning?
+
+Modelos como:
+
+- knn
+- árboles,
+- Random Forest,
+- boosting,
+- SVM,
+- redes neuronales,
+
+aparecen cuando la relación entre variables ya no es tan simple.
+
+---
+
+# ¿Qué aportan las técnicas de machine learning?
+
+## Su fortaleza suele estar en:
+
+- flexibilidad,
+- capacidad predictiva,
+- adaptación a patrones complejos,
+- mejor desempeño fuera de muestra.
+
+## Pero pagamos un costo
+
+- menor interpretabilidad,
+- más necesidad de tuning,
+- más hiperparámetros,
+- resultados menos "bonitos" para explicar en una reunión o en un paper causal.
+
+---
+
+# Interpretar no es lo mismo que predecir
+
+Un error común es mezclar estas dos metas.
+
+.pull-left[
+
+## Si quiero interpretar
+me importan mucho cosas como:
+
+- signo del efecto,
+- tamaño del efecto,
+- significancia estadística,
+- claridad del modelo.
+
+]
+
+.pull-right[
+
+## Si quiero predecir
+me importan más cosas como:
+
+- RMSE,
+- MAE,
+- error en test,
+- estabilidad fuera de muestra.
+
+]
+
+### Entonces
+
+Un modelo puede ser:
+
+- **muy interpretable pero regular prediciendo**, o
+- **muy bueno prediciendo pero difícil de explicar**.
+
+Y eso no significa que esté mal.
+
+---
+
+# ¿Qué pasa con muestras muy grandes?
+
+Si algún día tienes **50 mil observaciones**,
+sí, **claro que tiene sentido ajustar un `lm()`**.
+
+De hecho, puede correr perfectamente y dar resultados muy útiles.
+
+.pull-left[
+
+## El problema no es usar `lm()`
+
+El problema es **leerlo ingenuamente**.
+
+Con muestras muy grandes suele pasar que:
+
+- los errores estándar bajan,
+- los valores p se vuelven muy pequeños,
+- efectos muy chiquitos salen "significativos".
+
+]
+
+.pull-right[
+
+## Entonces
+
+Con mucho $n$, el $valor p$ puede decir:
+
+> “sí hay evidencia de efecto”
+
+pero eso **no implica** que el efecto sea grande, relevante o útil en la práctica.
+
+]
+
+---
+
+# En muestras grandes, mirar solo valores p puede engañar
+
+Cuando $n$ es enorme, casi todo puede terminar pareciendo importante.
+
+
+.pull.left[
+
+## Por eso conviene mirar también:
+
+- tamaño del coeficiente,
+- magnitud práctica del efecto,
+- intervalos de confianza,
+- capacidad predictiva fuera de muestra,
+- error de predicción.
+
+]
+
+.pull-right[
+
+### Reflexión importante
+
+En datos grandes, la pregunta deja de ser solo:
+
+> “¿es significativo?”
+
+y pasa a ser también:
+
+> “¿es importante de verdad?”  
+> “¿me ayuda a explicar?”  
+> “¿me ayuda a predecir?”
+
+]
+
+---
+
+# Parámetros e hiperparámetros: otra diferencia importante
+
+## En regresión clásica
+normalmente estimamos **parámetros**.
+
+Por ejemplo, en `lm()`:
+
+- intercepto,
+- pendientes \(\beta\).
+
+## En machine learning
+además de parámetros, aparecen **hiperparámetros**.
+
+Por ejemplo:
+
+- profundidad del árbol,
+- número de árboles,
+- `mtry`,
+- `cost`,
+- `epsilon`,
+- tipo de kernel.
+
+
+---
+
+
+# Parámetros e hiperparámetros: otra diferencia importante
+
+## Eso cambia la lógica del trabajo
+
+Ya no basta con “ajustar el modelo”.
+
+Ahora también toca:
+
+- tunear,
+- validar,
+- comparar configuraciones,
+- elegir la que generaliza mejor.
+
+---
+
+# Entonces, ¿cuándo usar qué?
+
+## Usa una regresión clásica cuando:
+
+- quieres interpretar efectos,
+- necesitas una ecuación clara,
+- buscas un modelo explicable,
+- la relación parece razonablemente simple.
+
+## Usa machine learning cuando:
+
+- la prioridad es predecir,
+- sospechas relaciones no lineales,
+- hay muchas variables o complejidad,
+- el objetivo principal es desempeño fuera de muestra.
+
+
+---
+
+
+# Entonces, ¿cuándo usar qué?
+
+## Y en la práctica...
+
+Muchas veces lo más sensato no es escoger un solo bando.
+
+Lo más sensato es:
+
+- empezar con un modelo simple,
+- entender el problema,
+- y luego comparar con modelos más flexibles.
+
+---
+
+class: center, middle
+
+# Idea final para quedarse
+
+## `lm()` no está "viejo".
+## Y machine learning no es "mejor" por default.
+
+## Todo depende de la pregunta:
+## explicar, interpretar o predecir.
+
+### Un buen analista no se casa con una técnica.
+### Escoge la herramienta según el problema.
+
+
+
+
+---
+
+
+
+
+class: inverse, center, middle
+background-color: #122140
+
+.pull-left[
+
+.center[
+<br><br>
+
+# Gracias!!!
+
+<br>
+
+
+
+### ¿Preguntas?
+
+<br>
+
+
+```{r qr, echo=FALSE, fig.align="center", out.width="49%"}
+knitr::include_graphics("img/qr-code.png")
+```
+
+
+]
+
+
+]
+
+
+.pull-right[
+
+<br> 
+<br> 
+<img style="border-radius: 50%;" src="img/avatar.png"
+width="150px"
+/>
+
+### [www.joaquibarandica.com](https://www.joaquibarandica.com)
+
+`r icon("envelope")` orlando.joaqui@correounivalle.edu.co
+
+<img src="img/Logo.jpg" width="120%">
+
+]
+
+
+<br><br><br>
+
+
+
+
+
+
+
+
+
