@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="" xml:lang="">
   <head>
-    <title>Modelo de regresión lineal</title>
+    <title>Regresión cuantílica</title>
     <meta charset="utf-8" />
     <meta name="author" content="Orlando Joaqui-Barandica" />
     <script src="libs/header-attrs/header-attrs.js"></script>
@@ -18,10 +18,6 @@
     <script>window.xaringanExtraClipboard(null, {"button":"Copy Code","success":"Copied!","error":"Press Ctrl+C to Copy"})</script>
     <link href="libs/tile-view/tile-view.css" rel="stylesheet" />
     <script src="libs/tile-view/tile-view.js"></script>
-    <link href="libs/font-awesome-animation/font-awesome-animation-emi.css" rel="stylesheet" />
-    <script src="libs/fontawesome/js/fontawesome-all.min.js"></script>
-    <link href="libs/font-awesome/css/all.min.css" rel="stylesheet" />
-    <link href="libs/font-awesome/css/v4-shims.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="fonts_mtheme.css" type="text/css" />
     <link rel="stylesheet" href="sidney.css" type="text/css" />
   </head>
@@ -31,19 +27,14 @@
 
 
 
-
-
-
-
 class: inverse, left, bottom
 background-image: url("img/fondo.jpg")
 background-size: cover
 
-
-# **Modelo de regresión lineal**
+# **Regresión cuantílica**
 ----
 
-## **&lt;br/&gt; Random Forest - SVM**
+## **&lt;br/&gt; De la media a los percentiles para tomar mejores decisiones**
 
 ### Orlando Joaqui-Barandica
 ###  
@@ -56,3090 +47,1390 @@ background-size: cover
 
 
 
-
-
-
 ---
 
+class: center, middle, inverse
 
+# Ruta de la sesión de hoy
 
-class: center, middle
-
-
-
-
-
-&lt;img src="img/univalle.jpg" width="20%" style="display: block; margin: auto;" /&gt;
-
-
-
----
-
-
-
-
-
-
-class: center, middle
-
-
-.center[
+## Media → cuantiles → modelo cuantílico → interpretación → decisión
 
 &lt;br&gt;
 
-
-
-&lt;a href="https://www.joaquibarandica.com" target="_blank"&gt;
-  &lt;img src="img/avatar.png"
-       style="border-radius: 80%; width: 220px; max-width: 30%; height: auto;"
-       alt="Avatar"/&gt;
-&lt;/a&gt;
-
-
-## Orlando Joaqui-Barandica
-
-
-Doctor en Ingeniería, Enf. Ingeniería Industrial **|** Magíster en Economía Aplicada **|** Estadístico.
-
-
-
-<span>&lt;i class="fas  fa-envelope faa-passing animated "&gt;&lt;/i&gt;</span> orlando.joaqui@correounivalle.edu.co 
-]
-
-
-
-.center[
-### [www.joaquibarandica.com](https://www.joaquibarandica.com)
-]
-
-
-
-
-
+.orange[La idea no es cambiar de modelo por moda, sino mirar la parte de la distribución que realmente importa.]
 
 ---
 
+# ¿Dónde quedamos?
 
+En la clase anterior trabajamos modelos predictivos y validación.
 
-class: center, middle
+--
 
-# <i class="fas fa-seedling" role="presentation" aria-label="seedling icon"></i>
-# Hoy vamos a suavizar la idea de
-# modelos más flexibles
+Hoy cambiamos la pregunta.
 
----
+### Antes:
+¿Cuál es la predicción promedio de `Y`?
 
-# La idea general
-
-Hasta ahora veníamos muy cerca de la regresión lineal.
-
-
-
-Hoy vamos a ver tres herramientas que también sirven para predecir una variable continua:
-
-- **Árboles de regresión**
-- **Random Forest para regresión**
-- **SVM para regresión**
+### Ahora:
+¿Cómo cambia `Y` en la parte baja, media y alta de la distribución?
 
 --
 
 .center[
-.orange[.font130[No vamos a entrar pesado en teoría.]]
-]
-
-.center[
-.orange[.font130[La meta es entender la intuición y saber correrlos en R.]]
+.orange[No siempre el negocio vive en el promedio.]
 ]
 
 ---
 
-# ¿Qué cambia frente a una regresión lineal?
+# Pregunta de arranque
 
-### En regresión lineal
-- el modelo impone una forma bastante clara,
-- normalmente pensamos en una relación más estructurada,
-- y la interpretación de coeficientes es central.
+Supongamos que una empresa quiere analizar salarios.
+
+### Modelo clásico
+¿Cuánto aumenta el salario promedio cuando aumenta la experiencia?
 
 --
 
-### En estos métodos
-- dejamos que el modelo sea más flexible,
-- nos importa mucho la **predicción**,
-- y a veces sacrificamos interpretación por desempeño.
+### Modelo cuantílico
+¿La experiencia pesa igual en salarios bajos, medios y altos?
+
+--
+
+.center[
+.orange[La segunda pregunta es más útil cuando hay desigualdad, colas o heterogeneidad.]
+]
 
 ---
 
-# Una frase...
+# La idea en una frase
+
+.center[
+.font150[Regresión lineal estima la **media condicional**.]
+]
 
 &lt;br&gt;
 
-.center[.font170[**Más flexibilidad puede ayudar a predecir mejor... pero también puede sobreajustar.**]]
+.center[
+.font150[Regresión cuantílica estima **cuantiles condicionales**.]
+]
+
+--
+
+### Traducción sencilla
+No pregunta solo “cuánto sube en promedio”, sino:
+
+- cuánto sube en el p10,
+- cuánto sube en la mediana,
+- cuánto sube en el p90.
 
 ---
 
-# Ruta de la sesión
+class: center, middle, inverse
 
+# ¿Por qué no basta la media?
+## Mini-ejemplos de decisión
 
-.pull-left[
+---
 
-### Sección 1
-**Árboles de regresión**
-- particiones,
-- sobreajuste,
-- profundidad,
-- poda.
+# Ejemplo 1: cafetería
 
+Tiempos de espera en minutos:
 
-### Sección 2
-**Random Forest**
-- ensambles,
-- importancia de variables,
-- sesgo y varianza.
-
+.center[
+.font130[`2, 3, 3, 4, 4, 4, 5, 5, 6, 12`]
 ]
 
+--
 
-.pull-rigth[
+### Resumen
 
-### Sección 3
-**SVM para regresión**
-- idea del margen `\(\epsilon\)`,
-- kernel lineal y radial,
-- hiperparámetros,
-- tuning con validación cruzada.
+- media = 4.8 minutos
+- mediana = 4 minutos
+- p90 = 6 minutos
 
+--
 
+### Decisión
+Si prometo “5 minutos”, la media parece tranquila.
+
+Pero el p90 muestra que para cumplirle al 90% de estudiantes necesito pensar en **6 minutos**.
+
+---
+
+# Ejemplo 2: entregas
+
+### Zona urbana
+`2, 2, 3, 3, 3, 3, 4, 4, 4, 5`
+
+- media = 3.3 días
+- p90 = 4 días
+
+--
+
+### Zona periférica
+`2, 3, 3, 3, 4, 4, 5, 6, 8, 9`
+
+- media = 4.7 días
+- p90 = 8 días
+
+--
+
+.center[
+.orange[La diferencia grave no está solo en la media. Está en la cola alta.]
 ]
+
+---
+
+# Ejemplo 3: promoción comercial
+
+Una promoción 2x1 no mueve igual a todas las tiendas.
+
+--
+
+### Tiendas top
+p90 del incremento de ventas = 60%
+
+### Tiendas bajas
+p90 del incremento de ventas = 8%
+
+--
+
+### Decisión
+
+En tiendas top puedo sostener inventario y promoción.
+
+En tiendas bajas quizás debo cambiar categoría, precio o segmento.
+
+---
+
+# Señales de que necesitas cuantiles
+
+Usa regresión cuantílica cuando:
+
+- la distribución es sesgada,
+- hay datos extremos,
+- los efectos no parecen iguales para todos,
+- te importan pérdidas, tiempos, ingresos, salarios o incumplimientos,
+- necesitas diseñar políticas por percentiles.
+
+--
+
+.center[
+.orange[Si el problema tiene cola, la media se queda corta.]
+]
+
+---
+
+class: center, middle, inverse
+
+# Cuantiles
+## Lo que medimos antes de modelar
+
+---
+
+# ¿Qué es un cuantil?
+
+Un cuantil divide una distribución.
+
+--
+
+### Ejemplos
+
+- p10: valor por debajo del cual está el 10% de los datos.
+- p50: mediana.
+- p90: valor por debajo del cual está el 90% de los datos.
+
+--
+
+### Lectura de negocio
+
+El p90 de tiempos de entrega no es “un promedio”.
+
+Es un umbral de servicio: 90% de los pedidos llegan antes de ese punto.
+
+---
+
+# Dos tipos de cuantiles
+
+### Cuantiles incondicionales
+Resumen global de una variable.
+
+Ejemplo: p90 de todos los salarios.
+
+--
+
+### Cuantiles condicionales
+Resumen de `Y` dado un nivel de `X`.
+
+Ejemplo: p90 del salario para personas con más experiencia.
+
+--
+
+.center[
+.orange[La regresión cuantílica trabaja con cuantiles condicionales.]
+]
+
+---
+
+# Fórmula comparativa
+
+### Regresión lineal
+
+`$$E(Y|X)=X\beta$$`
+
+estima cómo cambia el promedio condicional.
+
+--
+
+### Regresión cuantílica
+
+`$$Q_{\tau}(Y|X)=X\beta_{\tau}$$`
+
+estima cómo cambia el cuantil condicional `\(\tau\)`.
+
+--
+
+.center[
+.orange[El subíndice `\(\tau\)` es la clave: cada cuantil puede tener su propio coeficiente.]
+]
+
+---
+
+# ¿Qué significa `\(\tau\)`?
+
+`\(\tau\)` es el cuantil que quiero estimar.
+
+--
+
+### Valores comunes
+
+- `\(\tau = 0.10\)`: parte baja de la distribución.
+- `\(\tau = 0.50\)`: mediana.
+- `\(\tau = 0.90\)`: parte alta.
+
+--
+
+### En lenguaje simple
+
+No hay un solo modelo.
+
+Hay un modelo para cada parte de la distribución.
+
+---
+
+# ¿Qué cambia frente a OLS?
+
+OLS busca la recta que minimiza errores cuadrados.
+
+`$$\min \sum_i (y_i - x_i'\beta)^2$$`
+
+--
+
+Regresión cuantílica minimiza una pérdida asimétrica.
+
+`$$\min \sum_i \rho_{\tau}(y_i - x_i'\beta_{\tau})$$`
+
+--
+
+.center[
+.orange[Por eso puede apuntar al p10, p50 o p90, no solo al promedio.]
+]
+
+---
+
+# La pérdida cuantílica en palabras
+
+Para estimar el p90, el modelo castiga más quedarse por debajo del dato.
+
+Para estimar el p10, castiga más quedarse por encima.
+
+--
+
+### Intuición
+
+El modelo se acomoda para que aproximadamente:
+
+- 10% de datos queden por debajo de la línea p10,
+- 50% queden por debajo de la mediana,
+- 90% queden por debajo de la línea p90.
+
+---
+
+# Ojo con esta confusión
+
+Regresión cuantílica no es “correr OLS sobre el 10% más bajo”.
+
+--
+
+### No es eso
+
+No separo la muestra y modelo pedacitos.
+
+--
+
+### Sí es esto
+
+Uso todos los datos, pero cambio la función objetivo para estimar un cuantil condicional.
+
+--
+
+.center[
+.orange[Todos los datos aportan, pero el objetivo cambia.]
+]
+
+---
+
+class: center, middle, inverse
+
+# Base de trabajo
+## Salarios académicos
 
 ---
 
 # Vamos a usar un solo ejemplo
 
-Trabajaremos con la base **`Auto`** del paquete `ISLR`.
+Trabajaremos con la base **`Salaries`**.
 
-### Objetivo:
-predecir `mpg`, es decir, el rendimiento de combustible del carro.
-
---
-
-### ¿Por qué esta base?
-- es sencilla,
-- tiene variables numéricas fáciles de leer,
-- y sirve muy bien para ver cambios de complejidad entre modelos.
-
----
-
-# Cargar y preparar datos
-
-
-```r
-data(Auto)
-
-Auto_ml &lt;- Auto %&gt;%
-  na.omit() %&gt;%
-  select(-name)
-
-glimpse(Auto_ml)
-```
-
-```
-## Rows: 392
-## Columns: 8
-## $ mpg          &lt;dbl&gt; 18, 15, 18, 16, 17, 15, 14, 14, 14, 15, 15, 14, 15, 14, 2…
-## $ cylinders    &lt;dbl&gt; 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 4, 6, 6, 6, 4, …
-## $ displacement &lt;dbl&gt; 307, 350, 318, 304, 302, 429, 454, 440, 455, 390, 383, 34…
-## $ horsepower   &lt;dbl&gt; 130, 165, 150, 150, 140, 198, 220, 215, 225, 190, 170, 16…
-## $ weight       &lt;dbl&gt; 3504, 3693, 3436, 3433, 3449, 4341, 4354, 4312, 4425, 385…
-## $ acceleration &lt;dbl&gt; 12.0, 11.5, 11.0, 12.0, 10.5, 10.0, 9.0, 8.5, 10.0, 8.5, …
-## $ year         &lt;dbl&gt; 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 7…
-## $ origin       &lt;dbl&gt; 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 1, 1, 1, 3, …
-```
-
----
-
-# Partición train y test
-
-
-```r
-set.seed(123)
-
-split_data &lt;- initial_split(Auto_ml, prop = 0.80)
-
-train &lt;- training(split_data)
-test  &lt;- testing(split_data)
-
-tibble(
-  conjunto = c("train", "test"),
-  n = c(nrow(train), nrow(test))
-)
-```
-
-```
-## # A tibble: 2 × 2
-##   conjunto     n
-##   &lt;chr&gt;    &lt;int&gt;
-## 1 train      313
-## 2 test        79
-```
-
----
-
-# Recordatorio importante
-
-### `train`
-se usa para aprender y ajustar modelos.
-
-### `test`
-se usa solo al final para ver qué tan bien predice el modelo en datos no vistos.
+### Variable objetivo
+`salary`: salario académico anual.
 
 --
 
-&lt;br&gt;
+### Predictores
+
+- rango académico,
+- disciplina,
+- años desde el PhD,
+- años de servicio,
+- sexo.
+
+--
+
+### Pregunta central
+¿Los factores explican igual los salarios bajos, medianos y altos?
+
+---
+
+# Cargar datos
+
+
+```r
+library(tidyverse)
+library(readxl)
+
+salarios &lt;- read_excel("Datos/Salaries.xlsx")
+
+salarios &lt;- salarios %&gt;%
+  rename(
+    yrs_since_phd = `yrs.since.phd`,
+    yrs_service   = `yrs.service`
+  ) %&gt;%
+  mutate(
+    rank = factor(rank),
+    discipline = factor(discipline),
+    sex = factor(sex),
+    log_salary = log(salary)
+  )
+
+glimpse(salarios)
+```
+
+```
+## Rows: 397
+## Columns: 7
+## $ rank          &lt;fct&gt; Prof, Prof, AsstProf, Prof, Prof, AssocProf, Prof, Prof,…
+## $ discipline    &lt;fct&gt; B, B, B, B, B, B, B, B, B, B, B, B, B, B, B, B, B, A, A,…
+## $ yrs_since_phd &lt;dbl&gt; 19.5, 20.0, 4.0, 45.0, 40.0, 6.0, 30.0, 45.0, 21.0, 18.0…
+## $ yrs_service   &lt;dbl&gt; 18, 16, 3, 39, 41, 6, 23, 45, 20, 18, 8, 2, 1, 0, 18, 3,…
+## $ sex           &lt;fct&gt; Male, Male, Male, Male, Male, Male, Male, Male, Male, Fe…
+## $ salary        &lt;dbl&gt; 139750, 173200, 79750, 115000, 141500, 97000, 175000, 14…
+## $ log_salary    &lt;dbl&gt; 11.84761, 12.06220, 11.28665, 11.65269, 11.86005, 11.482…
+```
+
+---
+
+# ¿Por qué usar log salario?
+
+Porque el salario suele ser asimétrico.
+
+--
+
+### Ventaja práctica
+
+En un modelo con `log_salary`, los coeficientes se leen aproximadamente como cambios porcentuales.
+
+--
+
+### Ejemplo
+
+Un coeficiente de 0.03 se interpreta aproximadamente como 3% más salario.
+
+--
 
 .center[
-.orange[.font130[La lógica será la misma: entrenar en train y evaluar en test.]]
+.orange[Esto facilita la conversación con gerencia.]
 ]
 
 ---
 
-# Una pequeña función para medir error
+# Primer vistazo a la distribución
+
+
+.center[
+&lt;img src="Class_3_files/figures/salarios_media_mediana_p90.png" width="70%"&gt;
+]
+
+---
+
+# Lectura del gráfico
+
+En esta base:
+
+- n = 397 observaciones,
+- media ≈ 113,706,
+- mediana ≈ 107,300,
+- p10 ≈ 77,381,
+- p90 ≈ 152,946.
+
+--
+
+### Mensaje
+La media resume, pero no muestra bien la distancia entre la parte baja y alta.
+
+---
+
+# Salarios por rango
+
+
+
+.center[
+&lt;img src="Class_3_files/figures/boxplot_salario_rango.png" width="70%"&gt;
+]
+
+
+
+---
+
+# Lectura de negocio
+
+Un modelo promedio puede decir:
+
+“ser profesor titular aumenta el salario en X%”.
+
+--
+
+Pero la pregunta cuantílica es más fina:
+
+### ¿Ese diferencial es igual en salarios bajos, medianos y altos?
+
+--
+
+.center[
+.orange[Esa pregunta es la que OLS no responde bien.]
+]
+
+---
+
+class: center, middle, inverse
+
+# Primer modelo
+## `salary` explicado por años desde el PhD
+
+---
+
+# Modelo OLS simple
 
 
 ```r
-metricas_reg &lt;- function(y_real, y_pred, nombre_modelo){
-  tibble(
-    modelo = nombre_modelo,
-    RMSE = rmse_vec(y_real, y_pred),
-    MAE  = mae_vec(y_real, y_pred)
-  )
-}
-```
-
----
-
-# Recordatorio suave sobre RMSE y MAE
-
-### MAE
-mide el error promedio en valor absoluto.
-
-### RMSE
-también mide error, pero castiga más los errores grandes.
-
---
-
-### En ambos casos:
-**más pequeño es mejor**.
-
----
-
-class: inverse, center, middle
-
-# <i class="fas fa-sitemap" role="presentation" aria-label="sitemap icon"></i>
-# Sección 1
-# Árboles de regresión
-
----
-
-# ¿Qué hace un árbol de regresión?
-
-Un árbol de regresión divide la base en grupos cada vez más pequeños.
-
-En cada paso hace una pregunta del tipo:
-
-- ¿`horsepower &lt; 100`?
-- ¿`weight &lt; 2500`?
-- ¿`year &lt; 76`?
-
---
-
-### Y al final
-en cada grupo terminal predice un **promedio** de `mpg`.
-
----
-
-# Intuición muy dummy
-
-.center[.font150[**Un árbol no trata de ajustar una línea.  
-Un árbol trata de partir la base en pedazos cada vez más parecidos entre sí.**]]
-
----
-
-# Una analogía simple
-
-Imaginen que quieren predecir `mpg`.
-
-En vez de decir:
-
-&gt; “`mpg` cambia en promedio tanto por cada unidad de X”
-
-el árbol piensa algo más así:
-
-&gt; “Primero separo carros pesados y livianos.  
-&gt; Luego, dentro de cada grupo, separo por potencia.  
-&gt; Y luego, dentro de cada subgrupo, saco un promedio.”
-
----
-
-# La palabra clave: partición
-
-Cada corte del árbol genera una **partición** del espacio de datos.
-
---
-
-Por eso a veces se dice que el árbol construye una serie de “reglas”:
-
-- si pasa esto, vaya por la izquierda,
-- si no pasa, vaya por la derecha,
-- y siga bajando hasta llegar a una hoja final.
-
----
-
-# ¿Qué es una hoja?
-
-Una **hoja terminal** es el nodo final del árbol.
-
-Allí ya no se sigue partiendo la base.
-
---
-
-### En regresión:
-la predicción final suele ser el promedio de `mpg` dentro de esa hoja.
-
----
-
-# Primer árbol sencillo en R
-
-
-```r
-arbol_simple &lt;- rpart(
-  mpg ~ horsepower + weight + displacement + year + cylinders + acceleration,
-  data = train,
-  method = "anova"
+modelo_lm_simple &lt;- lm(
+  log_salary ~ yrs_since_phd,
+  data = salarios
 )
 
-arbol_simple
+summary(modelo_lm_simple)
 ```
 
 ```
-## n= 313 
 ## 
-## node), split, n, deviance, yval
-##       * denotes terminal node
+## Call:
+## lm(formula = log_salary ~ yrs_since_phd, data = salarios)
 ## 
-##  1) root 313 19683.7200 23.62843  
-##    2) displacement&gt;=153 147  2422.3270 17.12653  
-##      4) horsepower&gt;=127 77   331.1553 14.50779 *
-##      5) horsepower&lt; 127 70   982.2664 20.00714  
-##       10) year&lt; 78.5 55   231.2811 18.66727 *
-##       11) year&gt;=78.5 15   290.2040 24.92000 *
-##    3) displacement&lt; 153 166  5543.8980 29.38614  
-##      6) horsepower&gt;=70.5 107  2243.0610 26.97850  
-##       12) year&lt; 78.5 67   747.0400 24.90000  
-##         24) weight&gt;=2305 36   177.6075 22.99167 *
-##         25) weight&lt; 2305 31   286.0819 27.11613 *
-##       13) year&gt;=78.5 40   721.7360 30.46000  
-##         26) weight&gt;=2620 18   108.8000 27.33333 *
-##         27) weight&lt; 2620 22   292.9927 33.01818 *
-##      7) horsepower&lt; 70.5 59  1555.7270 33.75254  
-##       14) year&lt; 77.5 23   234.9130 29.78261 *
-##       15) year&gt;=77.5 36   726.7356 36.28889 *
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -0.88905 -0.16827  0.00346  0.16166  0.61044 
+## 
+## Coefficients:
+##                Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)   1.142e+01  2.368e-02 482.049   &lt;2e-16 ***
+## yrs_since_phd 8.593e-03  9.192e-04   9.348   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 0.2357 on 395 degrees of freedom
+## Multiple R-squared:  0.1811,	Adjusted R-squared:  0.1791 
+## F-statistic: 87.38 on 1 and 395 DF,  p-value: &lt; 2.2e-16
 ```
-
----
-
-
-
-# ¿Cómo leer la salida del árbol simple?
-
-La salida de `rpart` nos está mostrando **cómo el árbol fue partiendo la base de entrenamiento**.
-
-
-```
-## 
-## n= 313 
-## 
-## node), split, n, deviance, yval
-##       * denotes terminal node
-## 
-##  1) root 313 19683.7200 23.62843  
-##    2) displacement&gt;=153 147  2422.3270 17.12653  
-##      4) horsepower&gt;=127 77   331.1553 14.50779 *
-##      5) horsepower&lt; 127 70   982.2664 20.00714  
-##       10) year&lt; 78.5 55   231.2811 18.66727 *
-##       11) year&gt;=78.5 15   290.2040 24.92000 *
-##    3) displacement&lt; 153 166  5543.8980 29.38614  
-##      6) horsepower&gt;=70.5 107  2243.0610 26.97850  
-##       12) year&lt; 78.5 67   747.0400 24.90000  
-##         24) weight&gt;=2305 36   177.6075 22.99167 *
-##         25) weight&lt; 2305 31   286.0819 27.11613 *
-##       13) year&gt;=78.5 40   721.7360 30.46000  
-##         26) weight&gt;=2620 18   108.8000 27.33333 *
-##         27) weight&lt; 2620 22   292.9927 33.01818 *
-##      7) horsepower&lt; 70.5 59  1555.7270 33.75254  
-##       14) year&lt; 77.5 23   234.9130 29.78261 *
-##       15) year&gt;=77.5 36   726.7356 36.28889 *
-```
-
----
-
-### La idea general
-
-- `root` es toda la base de entrenamiento.
-- `n` es cuántos carros hay en ese nodo.
-- `yval` es el **mpg promedio** que el árbol usaría como predicción en ese grupo.
-- `deviance` mide qué tan dispersos están los `mpg` dentro del nodo.
-- El `*` indica que esa rama ya terminó: esa es una **hoja final**.
 
 --
 
-### Lo que está diciendo este árbol
-
-Primero separó por `displacement`.
-
-Luego, dentro de cada grupo, siguió cortando por:
-
-- `horsepower`
-- `year`
-- `weight`
-
-O sea, el árbol encontró que esas variables ayudan a formar grupos con `mpg` más parecidos entre sí.
+### Qué responde
+¿Cómo cambia el salario promedio cuando aumentan los años desde el PhD?
 
 ---
 
-# ¿Qué nos está diciendo este árbol en palabras?
+# Modelo cuantílico simple
 
-La **primera gran división** fue:
 
-- carros con `displacement &gt;= 153`
-- carros con `displacement &lt; 153`
+```r
+library(quantreg)
 
-Eso ya nos dice algo importante:
+taus &lt;- c(0.10, 0.50, 0.90)
 
-.center[.font140[**la cilindrada fue la primera variable que más ayudó a separar consumos distintos**]]
+modelo_qr_simple &lt;- rq(
+  log_salary ~ yrs_since_phd,
+  tau = taus,
+  data = salarios
+)
+
+summary(modelo_qr_simple, se = "nid")
+```
+
+```
+## 
+## Call: rq(formula = log_salary ~ yrs_since_phd, tau = taus, data = salarios)
+## 
+## tau: [1] 0.1
+## 
+## Coefficients:
+##               Value     Std. Error t value   Pr(&gt;|t|) 
+## (Intercept)    11.18064   0.01856  602.56673   0.00000
+## yrs_since_phd   0.00542   0.00168    3.23108   0.00134
+## 
+## Call: rq(formula = log_salary ~ yrs_since_phd, tau = taus, data = salarios)
+## 
+## tau: [1] 0.5
+## 
+## Coefficients:
+##               Value     Std. Error t value   Pr(&gt;|t|) 
+## (Intercept)    11.37447   0.02167  524.89179   0.00000
+## yrs_since_phd   0.01104   0.00113    9.78092   0.00000
+## 
+## Call: rq(formula = log_salary ~ yrs_since_phd, tau = taus, data = salarios)
+## 
+## tau: [1] 0.9
+## 
+## Coefficients:
+##               Value     Std. Error t value   Pr(&gt;|t|) 
+## (Intercept)    11.57538   0.04681  247.28010   0.00000
+## yrs_since_phd   0.01464   0.00137   10.65903   0.00000
+```
 
 --
 
-### Rama izquierda: `displacement &gt;= 153`
-
-Ese grupo tiene un `mpg` promedio de **17.13**.
-
-Después el árbol vuelve a preguntar por `horsepower` y por `year`.
-
-Por ejemplo:
-
-- si `horsepower &gt;= 127`, la predicción baja hasta **14.51 mpg**
-- si `horsepower &lt; 127` y además `year &gt;= 78.5`, la predicción sube a **24.92 mpg**
+### Qué responde
+¿Cómo cambia el p10, p50 y p90 del salario cuando aumentan los años desde el PhD?
 
 ---
 
-### Rama derecha: `displacement &lt; 153`
+# Visualmente
 
-Ese grupo tiene un `mpg` promedio más alto: **29.39**.
 
-Luego el árbol refina con `horsepower`, `year` y `weight`.
+.center[
+&lt;img src="Class_3_files/figures/qr_vs_ols_simple.png" width="70%"&gt;
+]
 
-Por ejemplo:
 
-- si `horsepower &lt; 70.5` y `year &gt;= 77.5`, predice **36.29 mpg**
-- si `horsepower &gt;= 70.5`, `year &lt; 78.5` y `weight &gt;= 2305`, predice **22.99 mpg**
+
+---
+
+# Cómo leer estas líneas
+
+
+### OLS
+Efecto sobre la media condicional.
+
+### QR p10
+Efecto en la parte baja del salario.
+
+### QR p50
+Efecto en la mediana.
+
+### QR p90
+Efecto en la parte alta.
+
+---
+
+# Interpretación del coeficiente
+
+Supongamos que el coeficiente de `yrs_since_phd` es:
+
+- 0.005 en p10,
+- 0.011 en p50,
+- 0.014 en p90.
 
 --
 
 ### Lectura
-
-Este árbol está diciendo algo como esto:
-
-&gt; los carros más grandes y más potentes tienden a tener menor `mpg`,  
-&gt; mientras que los más livianos, menos potentes y más recientes tienden a tener mayor `mpg`.
-
----
-
-# ¿Y por qué en el código usamos `method = "anova"`?
-
-Porque aquí estamos haciendo un **árbol de regresión**.
-
-Y en regresión la variable respuesta es **numérica continua**.
-
-En este caso, la respuesta es `mpg`.
-
---
-
-### Entonces, ¿qué hace `anova` aquí?
-
-Le dice a `rpart` que busque cortes que ayuden a reducir la variación de una variable continua.
-
-Es decir, que forme grupos donde los valores de `mpg` queden lo más parecidos posible.
-
----
-
-## Ojo con esto
-
-Aquí `anova` **no significa** que estamos haciendo la ANOVA clásica de comparar medias entre tratamientos.
-
-Aquí simplemente es la forma en que `rpart` nombra el criterio para árboles de regresión.
-
---
-
-### En palabras simples
-
-- si la respuesta fuera una categoría, usaríamos otra lógica
-- como la respuesta es un número, usamos `method = "anova"`
-
-.center[
-.orange[En el fondo, el árbol está buscando cortes que reduzcan el error dentro de cada nodo.]
-]
-
-
----
-
-
-# Dibujar el árbol
-
-
-```r
-rpart.plot(arbol_simple, type = 3, fallen.leaves = TRUE)
-```
-
-![](Class_3_files/figure-html/unnamed-chunk-7-1.png)&lt;!-- --&gt;
-
----
-
-# ¿Cómo se lee este árbol?
-
-### De arriba hacia abajo
-
-Cada caja hace una pregunta.
-
-Por ejemplo:
-
-- si una condición se cumple, baja por una rama,
-- si no se cumple, baja por la otra.
-
---
-
-### Al final
-se llega a una hoja con una predicción de `mpg`.
-
-
----
-
-
-# ¿Cómo leer esta figura del árbol?
-
-Esta figura es la **versión visual** del árbol que antes vimos en texto.
-
-La función:
-
-```r
-rpart.plot(arbol_simple, type = 3, fallen.leaves = TRUE)
-```
-
-lo que hace es **dibujar el árbol de una forma más fácil de leer**.
-
---
-
-### ¿Qué estamos viendo?
-
-- Arriba está la primera partición: `displacement &gt;= 153`
-- Luego cada rama se sigue dividiendo con nuevas preguntas
-- Al final aparecen las **hojas terminales**
-- Cada hoja representa un grupo final de carros que quedaron parecidos entre sí
-
----
-
-### ¿Qué significan los números de abajo?
-
-Por ejemplo, en una hoja aparece:
-
-```r
-15
-25%
-```
-
-Eso se puede leer así:
-
-- **15**: el `mpg` predicho para ese grupo
-- **25%**: el porcentaje de observaciones del entrenamiento que cayó en esa hoja
-
-O sea, esa hoja representa un grupo de carros para los que el árbol predice, aproximadamente, **15 millas por galón**, y allí cayó el **25%** de los datos.
-
----
-
-### Lectura de la figura
-
-La figura deja ver mejor la lógica del árbol:
-
-- primero separa por `displacement`
-- después por `horsepower`
-- luego por `year`
-- y en algunas ramas también por `weight`
-
-Es decir, el árbol va armando reglas tipo:
-
-&gt; si el carro tiene cierta cilindrada, cierta potencia, cierto año y cierto peso, entonces su `mpg` esperado es más o menos este.
-
----
-
-# ¿Qué significa `type = 3`?
-
-`type = 3` controla la **forma en que se muestran las etiquetas de los cortes**.
-
-Aquí hace algo muy útil:
-
-.center[.font140[**pone etiquetas separadas para la rama izquierda y la rama derecha**]]
-
----
-
-### ¿Eso qué significa en la práctica?
-
-En vez de mostrar solo la variable del corte de manera más compacta, el gráfico escribe cosas como:
-
-- `displacement &gt;= 153` en una rama
-- `&lt; 153` en la otra
-
-o también:
-
-- `horsepower &gt;= 127`
-- `&lt; 127`
-
-Entonces queda mucho más visual porque uno ve de inmediato **qué condición manda hacia cada lado**.
-
----
-
-### En palabras simples
-
-`type = 3` hace que el árbol se vea más "explicado"
-
-porque cada bifurcación muestra claramente:
-
-- qué pasa si cumples la condición
-- y qué pasa si no la cumples
-
-Eso es muy útil, porque la lectura se vuelve más natural.
-
----
-
-# ¿Y qué hace `fallen.leaves = TRUE`?
-
-Ese argumento hace que las **hojas terminales queden todas abajo**, alineadas al final del árbol.
-
---
-
-### ¿Para qué sirve eso?
-
-Sirve para que la figura quede más limpia visualmente.
-
-Sin eso, algunas hojas pueden quedar a distintas alturas.
-
-Con `fallen.leaves = TRUE`, todas las predicciones finales bajan al mismo nivel y el árbol se ve más ordenado.
-
---
-
-### Idea visual
-
-Es como decirle al gráfico:
-
-&gt; bájame todas las respuestas finales al piso para que se vea más claro dónde termina cada camino.
-
----
-
-# ¿Cómo se interpreta esta figura completa?
-
-Este árbol sugiere algo bastante intuitivo:
-
-- carros con mayor `displacement` y mayor `horsepower` terminan con `mpg` más bajo
-- carros con menor `displacement`, menor `horsepower` y años más recientes tienden a terminar con `mpg` más alto
-
-Por eso las hojas de la derecha muestran valores como **30, 33 y 36**,
-mientras que las hojas de la izquierda muestran valores como **15 y 19**.
-
---
-
-### La idea de fondo
-
-El árbol no está estimando una recta.
-
-Lo que está haciendo es dividir el espacio en pedacitos y decir:
-
-&gt; para este tipo de carros, predigo este `mpg`;
-&gt; para este otro tipo de carros, predigo otro.
-
-Y esta figura justamente nos deja ver esa lógica de decisión de forma mucho más amigable.
-
-
-
----
-
-# Importante
-
-- El árbol es fácil de explicar visualmente.
-- No pide una relación lineal estricta.
-- Puede capturar comportamientos distintos en diferentes zonas de los datos.
+Un año adicional desde el PhD se asocia con:
+
+- 0.5% más salario en p10,
+- 1.1% más en la mediana,
+- 1.4% más en p90.
 
 --
 
 .center[
-.orange[Pero también puede crecer demasiado.]
+.orange[No es el mismo efecto en toda la distribución.]
 ]
 
 ---
 
-# Hagamos predicción con este árbol
+# Ojo: asociación, no magia causal
+
+Esta clase no convierte automáticamente el modelo en causal.
+
+--
+
+### El modelo cuantílico dice
+condicional a las variables incluidas, el predictor se asocia con distintos cuantiles de `Y`.
+
+--
+
+### No dice por sí solo
+que si aumento `X`, todos los individuos cambiarán exactamente así.
+
+--
+
+.center[
+.orange[La interpretación debe cuidar el diseño del estudio.]
+]
+
+---
+class: center, middle, inverse
+
+# Modelo completo
+## ¿Qué cambia cuando dejamos de mirar solo el promedio?
+
+---
+
+# Primero: el modelo OLS
 
 
 ```r
-pred_arbol_simple &lt;- predict(arbol_simple, newdata = test)
+modelo_lm &lt;- lm(
+  log_salary ~ yrs_since_phd + yrs_service + rank + discipline + sex,
+  data = salarios
+)
 
-metricas_reg(test$mpg, pred_arbol_simple, "Árbol simple")
+summary(modelo_lm)
 ```
-
-```
-## # A tibble: 1 × 3
-##   modelo        RMSE   MAE
-##   &lt;chr&gt;        &lt;dbl&gt; &lt;dbl&gt;
-## 1 Árbol simple  3.61  2.57
-```
-
----
-
-# ¿Qué ventaja tiene un árbol?
-
-### Su lectura es muy amigable
-
-A veces, para alguien no técnico, un árbol se entiende más fácil que una ecuación con muchos coeficientes.
 
 --
 
-### Pero ojo:
-que algo se vea simple no significa que siempre prediga mejor.
+### ¿Qué estamos estimando?
 
----
+OLS responde una pregunta muy concreta:
 
-class: center, middle
-
-# Ahora viene el problema clásico
-
-
-.orange[.font170[**Si dejamos crecer mucho el árbol, puede memorizar demasiado el train.**]]
-
----
-
-# ¿Qué es overfitting aquí?
-
-El árbol sigue partiendo y partiendo la base hasta acomodarse demasiado a detalles particulares.
+.center[
+.font130[
+**¿Cómo cambia el salario promedio condicional cuando cambia X, manteniendo constantes las demás variables?**
+]
+]
 
 --
 
-### Eso puede hacer que:
-- en `train` se vea “muy bueno”,
-- pero en `test` falle más de lo esperado.
+Como la variable dependiente es `log_salary`, podemos transformar los coeficientes a cambios porcentuales:
 
---
-
-### Intuición rápida del sobreajuste
-
-Si hago demasiadas divisiones:
-
-- cada hoja termina con muy pocos datos,
-- el promedio de esa hoja se vuelve inestable,
-- y el modelo deja de capturar patrón general para capturar ruido.
+`$$100\left(e^{\beta}-1\right)$$`
 
 ---
 
-# Construyamos un árbol más profundo
+# OLS: resultados en lenguaje de negocio
+
+
+|Variable               | Efecto estimado | p-valor | ¿p &lt; 0.05? |
+|:----------------------|:---------------:|:-------:|:----------:|
+|Años desde el PhD      |     +0.33%      |  0.089  |     No     |
+|Años de servicio       |     -0.39%      |  0.022  |     Sí     |
+|Asistente vs. Asociado |     -14.25%     | &lt;0.001  |     Sí     |
+|Profesor vs. Asociado  |     +34.40%     | &lt;0.001  |     Sí     |
+|Disciplina B vs. A     |     +14.10%     | &lt;0.001  |     Sí     |
+|Hombre vs. Mujer       |     +4.66%      |  0.142  |     No     |
+
+.center[
+.font80[
+**Nota:** los porcentajes corresponden a cambios multiplicativos aproximados/exactos derivados del modelo en logaritmos.
+]
+]
+
+---
+
+# ¿Qué nos cuenta OLS?
+
+### Tres resultados muy claros
+
+.pull-left[
+
+**Rango académico**
+
+- Profesor vs. Asociado: **+34.4%**
+- Asistente vs. Asociado: **−14.2%**
+
+El rango académico aparece fuertemente asociado con el salario.
+
+]
+
+.pull-right[
+
+**Disciplina**
+
+Trabajar en la disciplina B se asocia con aproximadamente:
+
+### **+14.1%**
+
+frente a la disciplina A.
+
+]
+
+--
+
+### Pero hay algo menos claro...
+
+Años desde el PhD:
+
+### **+0.33% por año**
+
+pero con `p = 0.089`.
+
+.center[
+.orange[Con OLS no encontramos evidencia fuerte, al 5%, de un efecto promedio de los años desde el PhD.]
+]
+
+---
+
+# Ojo con los años de experiencia
+
+El modelo contiene simultáneamente:
+
+- `yrs_since_phd`: años desde el doctorado.
+- `yrs_service`: años de servicio.
+
+--
+
+OLS estima:
+
+### Años de servicio: aproximadamente **−0.39% por año**
+`p = 0.022`
+
+--
+
+Pero la lectura correcta NO es:
+
+.center[
+.red["Trabajar más años reduce el salario."]
+]
+
+--
+
+La interpretación es:
+
+&gt; Manteniendo constantes los años desde el PhD, rango, disciplina y sexo, un año adicional de servicio está asociado con un salario ligeramente menor.
+
+.center[
+.orange[Estamos estimando efectos parciales, no relaciones causales simples.]
+]
+
+---
+
+# ¿Y qué tan bien explica el modelo?
+
+El modelo OLS obtiene:
+
+.center[
+.font160[
+\(R^2 = 0.525\)
+]
+]
+
+Aproximadamente **52.5% de la variación de `log_salary`** es explicada por las variables incluidas.
+
+--
+
+Además, el modelo es globalmente significativo:
+
+\[
+p &lt; 0.001
+\]
+
+--
+
+### Pero...
+
+.center[
+.font130[
+**Un buen modelo promedio todavía puede ocultar historias diferentes dentro de la distribución.**
+]
+]
+
+---
+
+class: center, middle, inverse
+
+# Regresión cuantílica
+## La misma pregunta, en distintas partes de la distribución
+
+---
+
+# El mismo modelo en cinco cuantiles
 
 
 ```r
-arbol_profundo &lt;- rpart(
-  mpg ~ horsepower + weight + displacement + year + cylinders + acceleration,
-  data = train,
-  method = "anova",
-  control = rpart.control(
-    cp = 0.0001,
-    maxdepth = 10,
-    minsplit = 5
+taus &lt;- c(0.10, 0.25, 0.50, 0.75, 0.90)
+
+modelo_qr &lt;- rq(
+  log_salary ~ yrs_since_phd + yrs_service + rank + discipline + sex,
+  tau = taus,
+  data = salarios
+)
+```
+
+Ahora preguntamos:
+
+.center[
+.font130[
+**¿El efecto de X es igual para salarios condicionalmente bajos, medios y altos?**
+]
+]
+
+--
+
+- \(\tau=0.10\): parte baja
+- \(\tau=0.50\): mediana
+- \(\tau=0.90\): parte alta
+
+---
+
+# Construimos una tabla limpia
+
+
+```r
+qr_tabla &lt;- purrr::map_dfr(taus, function(tau_actual) {
+
+  modelo &lt;- rq(
+    log_salary ~ yrs_since_phd + yrs_service +
+      rank + discipline + sex,
+    tau = tau_actual,
+    data = salarios
   )
-)
 
-arbol_profundo
-```
-
-```
-## n= 313 
-## 
-## node), split, n, deviance, yval
-##       * denotes terminal node
-## 
-##    1) root 313 1.968372e+04 23.62843  
-##      2) displacement&gt;=153 147 2.422327e+03 17.12653  
-##        4) horsepower&gt;=127 77 3.311553e+02 14.50779  
-##          8) year&lt; 76.5 60 1.754833e+02 13.81667  
-##           16) weight&gt;=4498.5 15 3.733333e+01 12.33333  
-##             32) year&lt; 70.5 2 5.000000e-01  9.50000 *
-##             33) year&gt;=70.5 13 1.830769e+01 12.76923  
-##               66) year&lt; 74.5 11 4.545455e+00 12.36364 *
-##               67) year&gt;=74.5 2 2.000000e+00 15.00000 *
-##           17) weight&lt; 4498.5 45 9.414444e+01 14.31111  
-##             34) acceleration&gt;=14.75 3 6.000000e+00 12.00000 *
-##             35) acceleration&lt; 14.75 42 7.097619e+01 14.47619  
-##               70) displacement&gt;=306 34 3.900735e+01 14.19118  
-##                140) horsepower&lt; 177.5 27 2.896296e+01 14.03704  
-##                  280) weight&gt;=3799 20 2.255000e+01 13.85000  
-##                    560) horsepower&gt;=155.5 6 2.833333e+00 13.16667  
-##                     1120) displacement&lt; 380 4 7.500000e-01 12.75000 *
-##                     1121) displacement&gt;=380 2 0.000000e+00 14.00000 *
-##                    561) horsepower&lt; 155.5 14 1.571429e+01 14.14286  
-##                     1122) weight&lt; 4068.5 3 0.000000e+00 13.00000 *
-##                     1123) weight&gt;=4068.5 11 1.072727e+01 14.45455 *
-##                  281) weight&lt; 3799 7 3.714286e+00 14.57143 *
-##                141) horsepower&gt;=177.5 7 6.928571e+00 14.78571  
-##                  282) year&lt; 71.5 5 8.000000e-01 14.20000 *
-##                  283) year&gt;=71.5 2 1.250000e-01 16.25000 *
-##               71) displacement&lt; 306 8 1.746875e+01 15.68750  
-##                142) weight&lt; 3441 2 4.500000e+00 14.50000 *
-##                143) weight&gt;=3441 6 9.208333e+00 16.08333  
-##                  286) horsepower&gt;=145 3 4.666667e+00 15.33333 *
-##                  287) horsepower&lt; 145 3 1.166667e+00 16.83333 *
-##          9) year&gt;=76.5 17 2.586235e+01 16.94706  
-##           18) weight&gt;=3947.5 8 5.308750e+00 15.98750  
-##             36) year&lt; 77.5 4 1.875000e-01 15.37500 *
-##             37) year&gt;=77.5 4 2.120000e+00 16.60000 *
-##           19) weight&lt; 3947.5 9 6.640000e+00 17.80000  
-##             38) acceleration&gt;=15.3 2 3.200000e-01 16.60000 *
-##             39) acceleration&lt; 15.3 7 2.617143e+00 18.14286 *
-##        5) horsepower&lt; 127 70 9.822664e+02 20.00714  
-##         10) year&lt; 78.5 55 2.312811e+02 18.66727  
-##           20) displacement&gt;=241 21 5.340571e+01 17.21429  
-##             40) acceleration&gt;=16.7 9 8.888889e+00 15.88889  
-##               80) year&lt; 75.5 7 1.714286e+00 15.42857 *
-##               81) year&gt;=75.5 2 5.000000e-01 17.50000 *
-##             41) acceleration&lt; 16.7 12 1.684917e+01 18.20833  
-##               82) horsepower&gt;=115 2 3.380000e+00 16.80000 *
-##               83) horsepower&lt; 115 10 8.709000e+00 18.49000  
-##                166) displacement&lt; 259 8 3.375000e+00 18.12500 *
-##                167) displacement&gt;=259 2 5.000000e-03 19.95000 *
-##           21) displacement&lt; 241 34 1.061576e+02 19.56471  
-##             42) weight&gt;=3434.5 8 1.403875e+01 18.03750  
-##               84) acceleration&lt; 17.2 3 2.166667e+00 16.83333 *
-##               85) acceleration&gt;=17.2 5 4.912000e+00 18.76000  
-##                170) horsepower&gt;=107.5 2 1.280000e+00 17.80000 *
-##                171) horsepower&lt; 107.5 3 5.600000e-01 19.40000 *
-##             43) weight&lt; 3434.5 26 6.771885e+01 20.03462  
-##               86) acceleration&lt; 14.75 5 1.000000e+01 19.00000  
-##                172) weight&gt;=2895.5 2 5.000000e-01 17.50000 *
-##                173) weight&lt; 2895.5 3 2.000000e+00 20.00000 *
-##               87) acceleration&gt;=14.75 21 5.109238e+01 20.28095  
-##                174) displacement&gt;=199.5 15 2.715733e+01 19.84667  
-##                  348) year&lt; 74.5 4 7.500000e-01 18.25000 *
-##                  349) year&gt;=74.5 11 1.250182e+01 20.42727  
-##                    698) year&lt; 75.5 4 2.750000e+00 19.75000 *
-##                    699) year&gt;=75.5 7 6.868571e+00 20.81429  
-##                     1398) year&gt;=77 5 9.720000e-01 20.24000 *
-##                     1399) year&lt; 77 2 1.250000e-01 22.25000 *
-##                175) displacement&lt; 199.5 6 1.403333e+01 21.36667  
-##                  350) weight&gt;=2917 2 5.000000e-01 19.50000 *
-##                  351) weight&lt; 2917 4 3.080000e+00 22.30000 *
-##         11) year&gt;=78.5 15 2.902040e+02 24.92000  
-##           22) year&lt; 81.5 11 9.776909e+01 23.89091  
-##             44) weight&gt;=2712.5 8 4.973500e+01 22.67500  
-##               88) year&lt; 80 4 1.318750e+01 20.87500 *
-##               89) year&gt;=80 4 1.062750e+01 24.47500 *
-##             45) weight&lt; 2712.5 3 4.666667e+00 27.13333 *
-##           23) year&gt;=81.5 4 1.487500e+02 27.75000 *
-##      3) displacement&lt; 153 166 5.543898e+03 29.38614  
-##        6) horsepower&gt;=70.5 107 2.243061e+03 26.97850  
-##         12) year&lt; 78.5 67 7.470400e+02 24.90000  
-##           24) weight&gt;=2305 36 1.776075e+02 22.99167  
-##             48) weight&gt;=2775 10 2.864100e+01 21.07000  
-##               96) horsepower&gt;=100 5 7.408000e+00 19.78000  
-##                192) year&lt; 74.5 2 5.000000e-01 18.50000 *
-##                193) year&gt;=74.5 3 1.446667e+00 20.63333 *
-##               97) horsepower&lt; 100 5 4.592000e+00 22.36000 *
-##             49) weight&lt; 2775 26 9.783538e+01 23.73077  
-##               98) acceleration&gt;=17.75 4 6.000000e+00 21.00000 *
-##               99) acceleration&lt; 17.75 22 5.658364e+01 24.22727  
-##                198) displacement&lt; 128 15 3.238933e+01 23.72667  
-##                  396) year&gt;=76 3 3.840000e+00 22.30000 *
-##                  397) year&lt; 76 12 2.091667e+01 24.08333  
-##                    794) year&lt; 73.5 6 9.500000e+00 23.50000  
-##                     1588) year&gt;=71 3 6.666667e-01 22.33333 *
-##                     1589) year&lt; 71 3 6.666667e-01 24.66667 *
-##                    795) year&gt;=73.5 6 7.333333e+00 24.66667  
-##                     1590) horsepower&gt;=94 4 2.000000e+00 24.00000 *
-##                     1591) horsepower&lt; 94 2 0.000000e+00 26.00000 *
-##                199) displacement&gt;=128 7 1.238000e+01 25.30000  
-##                  398) weight&gt;=2568.5 5 3.788000e+00 24.62000  
-##                    796) acceleration&gt;=15.9 2 1.125000e+00 23.75000 *
-##                    797) acceleration&lt; 15.9 3 1.400000e-01 25.20000 *
-##                  399) weight&lt; 2568.5 2 5.000000e-01 27.00000 *
-##           25) weight&lt; 2305 31 2.860819e+02 27.11613  
-##             50) weight&gt;=2087.5 26 1.962112e+02 26.42692  
-##              100) acceleration&lt; 13.75 2 3.200000e+01 22.00000 *
-##              101) acceleration&gt;=13.75 24 1.217496e+02 26.79583  
-##                202) acceleration&gt;=15.4 13 5.976923e+01 25.80769  
-##                  404) displacement&gt;=105.5 5 2.600000e+01 24.50000  
-##                    808) horsepower&lt; 88 2 4.500000e+00 22.50000 *
-##                    809) horsepower&gt;=88 3 8.166667e+00 25.83333 *
-##                  405) displacement&lt; 105.5 8 1.987500e+01 26.62500  
-##                    810) displacement&lt; 93.5 2 5.000000e-01 24.50000 *
-##                    811) displacement&gt;=93.5 6 7.333333e+00 27.33333  
-##                     1622) acceleration&gt;=17.35 2 0.000000e+00 26.00000 *
-##                     1623) acceleration&lt; 17.35 4 2.000000e+00 28.00000 *
-##                203) acceleration&lt; 15.4 11 3.428545e+01 27.96364  
-##                  406) year&lt; 76.5 7 8.000000e+00 27.00000  
-##                    812) weight&gt;=2215 2 5.000000e-01 25.50000 *
-##                    813) weight&lt; 2215 5 1.200000e+00 27.60000 *
-##                  407) year&gt;=76.5 4 8.410000e+00 29.65000 *
-##             51) weight&lt; 2087.5 5 1.330000e+01 30.70000  
-##              102) acceleration&lt; 14.7 3 5.000000e-01 29.50000 *
-##              103) acceleration&gt;=14.7 2 2.000000e+00 32.50000 *
-##         13) year&gt;=78.5 40 7.217360e+02 30.46000  
-##           26) weight&gt;=2620 18 1.088000e+02 27.33333  
-##             52) horsepower&gt;=83 11 5.017636e+01 26.18182  
-##              104) weight&gt;=2788 6 1.484000e+01 24.70000  
-##                208) weight&lt; 2940 4 8.487500e+00 24.22500 *
-##                209) weight&gt;=2940 2 3.645000e+00 25.65000 *
-##              105) weight&lt; 2788 5 6.352000e+00 27.96000  
-##                210) horsepower&lt; 89 2 8.000000e-02 26.80000 *
-##                211) horsepower&gt;=89 3 1.786667e+00 28.73333 *
-##             53) horsepower&lt; 83 7 2.111714e+01 29.14286  
-##              106) year&lt; 80 2 2.000000e-02 27.30000 *
-##              107) year&gt;=80 5 1.158800e+01 29.88000  
-##                214) horsepower&gt;=77.5 3 5.806667e+00 29.03333 *
-##                215) horsepower&lt; 77.5 2 4.050000e-01 31.15000 *
-##           27) weight&lt; 2620 22 2.929927e+02 33.01818  
-##             54) weight&gt;=2174 18 1.797800e+02 32.06667  
-##              108) acceleration&lt; 12.95 3 3.752667e+01 28.56667 *
-##              109) acceleration&gt;=12.95 15 9.815333e+01 32.76667  
-##                218) acceleration&gt;=15.15 8 4.610000e+01 31.30000  
-##                  436) weight&gt;=2442.5 4 1.296750e+01 29.37500 *
-##                  437) weight&lt; 2442.5 4 3.487500e+00 33.22500 *
-##                219) acceleration&lt; 15.15 7 1.517714e+01 34.44286  
-##                  438) acceleration&lt; 14.9 5 6.388000e+00 33.82000  
-##                    876) displacement&lt; 127 3 3.800000e-01 33.20000 *
-##                    877) displacement&gt;=127 2 3.125000e+00 34.75000 *
-##                  439) acceleration&gt;=14.9 2 2.000000e+00 36.00000 *
-##             55) weight&lt; 2174 4 2.358000e+01 37.30000 *
-##        7) horsepower&lt; 70.5 59 1.555727e+03 33.75254  
-##         14) year&lt; 77.5 23 2.349130e+02 29.78261  
-##           28) weight&gt;=2119 2 1.125000e+00 23.75000 *
-##           29) weight&lt; 2119 21 1.540714e+02 30.35714  
-##             58) weight&gt;=1829.5 16 8.023438e+01 29.46875  
-##              116) horsepower&lt; 60.5 5 9.200000e+00 27.40000  
-##                232) displacement&gt;=91 3 6.666667e-01 26.33333 *
-##                233) displacement&lt; 91 2 0.000000e+00 29.00000 *
-##              117) horsepower&gt;=60.5 11 3.990909e+01 30.40909  
-##                234) acceleration&lt; 15.95 3 6.000000e+00 28.00000 *
-##                235) acceleration&gt;=15.95 8 9.968750e+00 31.31250  
-##                  470) weight&gt;=1947.5 6 3.333333e+00 30.83333 *
-##                  471) weight&lt; 1947.5 2 1.125000e+00 32.75000 *
-##             59) weight&lt; 1829.5 5 2.080000e+01 33.20000  
-##              118) weight&lt; 1784 3 1.066667e+01 32.33333 *
-##              119) weight&gt;=1784 2 4.500000e+00 34.50000 *
-##         15) year&gt;=77.5 36 7.267356e+02 36.28889  
-##           30) horsepower&gt;=55 33 5.413188e+02 35.60606  
-##             60) displacement&gt;=94 15 1.020773e+02 33.44667  
-##              120) acceleration&gt;=15.2 11 6.339636e+01 32.58182  
-##                240) year&lt; 79 2 1.250000e-01 29.75000 *
-##                241) year&gt;=79 9 4.366889e+01 33.21111  
-##                  482) acceleration&gt;=20.3 2 5.000000e-03 29.95000 *
-##                  483) acceleration&lt; 20.3 7 1.631714e+01 34.14286  
-##                    966) weight&lt; 2122.5 3 3.246667e+00 32.93333 *
-##                    967) weight&gt;=2122.5 4 5.390000e+00 35.05000 *
-##              121) acceleration&lt; 15.2 4 7.827500e+00 35.82500 *
-##             61) displacement&lt; 94 18 3.110094e+02 37.40556  
-##              122) weight&lt; 2090 16 2.050444e+02 36.61875  
-##                244) acceleration&gt;=15.1 14 1.331750e+02 35.95000  
-##                  488) acceleration&lt; 16.1 3 1.232667e+01 32.66667 *
-##                  489) acceleration&gt;=16.1 11 7.968727e+01 36.84545  
-##                    978) acceleration&gt;=17.45 6 6.012833e+01 35.71667  
-##                     1956) weight&lt; 2022.5 4 3.874750e+01 34.47500 *
-##                     1957) weight&gt;=2022.5 2 2.880000e+00 38.20000 *
-##                    979) acceleration&lt; 17.45 5 2.740000e+00 38.20000  
-##                     1958) weight&gt;=1935 3 3.266667e-01 37.63333 *
-##                     1959) weight&lt; 1935 2 5.000000e-03 39.05000 *
-##                245) acceleration&lt; 15.1 2 2.178000e+01 41.30000 *
-##              123) weight&gt;=2090 2 1.682000e+01 43.70000 *
-##           31) horsepower&lt; 55 3 7.800000e-01 43.80000 *
+  broom::tidy(modelo, se.type = "nid") %&gt;%
+    mutate(
+      tau = tau_actual,
+      conf.low = estimate - 1.96 * std.error,
+      conf.high = estimate + 1.96 * std.error
+    )
+})
 ```
 
 ---
 
-
-# Construyamos un árbol más profundo
-
-
-Que hacen los parámetros:
-
-- **Pone límites de crecimiento (maxdepth = 10):** Le dice al árbol: "No puedes tener más de 10 pisos de altura". Es como ponerle un techo para que no crezca infinitamente.
+# ¿Cómo cambia cada efecto?
 
 
-- **Exige un mínimo de datos para actuar (minsplit = 5):** Le ordena al árbol que no intente hacer una nueva rama a menos que tenga al menos 5 datos (autos) en ese grupo. Si hay menos de 5, se queda como está.
+|Variable               |   p10   |   p25   |   p50   |   p75   |   p90   |
+|:----------------------|:-------:|:-------:|:-------:|:-------:|:-------:|
+|Años desde el PhD      | -0.29*  |  -0.36  |  +0.04  |  +0.60  | +0.90*  |
+|Años de servicio       | -0.26*  |  +0.09  |  -0.09  |  -0.24  | -0.64*  |
+|Asistente vs. Asociado | -17.24* | -14.80* | -12.14* | -11.53* | -16.28* |
+|Profesor vs. Asociado  | +23.25* | +29.21* | +34.56* | +36.16* | +41.39* |
+|Disciplina B vs. A     | +9.93*  | +12.91* | +18.72* | +17.31* | +12.96* |
+|Hombre vs. Mujer       | +7.24*  | +6.16*  |  +2.61  |  +1.46  | +8.36*  |
 
-
-- **Define qué tan exigente es con el error (cp = 0.0001):** El Complexity Parameter es como un filtro de calidad. Un número tan pequeño le dice al árbol: "Crea una nueva rama aunque mejore el modelo solo un poquito".
-
-
----
-
-# Ver el árbol profundo
-
-
-```r
-rpart.plot(arbol_profundo, type = 3, fallen.leaves = TRUE, cex = 0.5)
-```
-
-![](Class_3_files/figure-html/unnamed-chunk-10-1.png)&lt;!-- --&gt;
-
----
-
-# ¿Qué pasó ahora?
-
-Probablemente el árbol se volvió:
-
-- más grande,
-- más enredado,
-- y menos fácil de explicar.
-
---
-
-### Esa es una señal típica:
-más flexibilidad, pero también más riesgo de sobreajuste.
-
----
-
-# La profundidad del árbol
-
-La **profundidad** dice qué tan lejos puede crecer el árbol.
-
---
-
-### Si la profundidad es pequeña
-el modelo es más simple.
-
-### Si la profundidad es grande
-el modelo puede capturar más detalle, pero también puede sobreajustar.
-
----
-
-# Otra palabra importante: poda
-
-**Podar** un árbol significa cortarlo.
-
-Es decir:
-
-- quitar ramas que ya no aportan mucho,
-- simplificar la estructura,
-- y tratar de mejorar generalización.
-
----
-
-# Ver tabla de complejidad
-
-
-```r
-printcp(arbol_profundo)
-```
-
-```
-## 
-## Regression tree:
-## rpart(formula = mpg ~ horsepower + weight + displacement + year + 
-##     cylinders + acceleration, data = train, method = "anova", 
-##     control = rpart.control(cp = 1e-04, maxdepth = 10, minsplit = 5))
-## 
-## Variables actually used in tree construction:
-## [1] acceleration displacement horsepower   weight       year        
-## 
-## Root node error: 19684/313 = 62.887
-## 
-## n= 313 
-## 
-##            CP nsplit rel error  xerror     xstd
-## 1  0.59528860      0  1.000000 1.00613 0.067928
-## 2  0.08865757      1  0.404711 0.42722 0.044675
-## 3  0.05633615      2  0.316054 0.36094 0.041643
-## 4  0.03933630      3  0.259718 0.30093 0.035773
-## 5  0.03018122      4  0.220381 0.23160 0.029042
-## 6  0.02340926      5  0.190200 0.21308 0.028016
-## 7  0.01625421      6  0.166791 0.19075 0.024917
-## 8  0.01439518      7  0.150537 0.18038 0.021380
-## 9  0.00938018      8  0.136142 0.18254 0.021683
-## 10 0.00659477      9  0.126761 0.18942 0.021961
-## 11 0.00651462     10  0.120167 0.18384 0.021933
-## 12 0.00455365     11  0.113652 0.17591 0.021173
-## 13 0.00452887     12  0.109098 0.18573 0.021325
-## 14 0.00404988     13  0.104569 0.18296 0.020794
-## 15 0.00389006     14  0.100520 0.19294 0.023401
-## 16 0.00364351     15  0.096629 0.19545 0.024336
-## 17 0.00269446     16  0.092986 0.19397 0.024414
-## 18 0.00259764     17  0.090292 0.20026 0.025383
-## 19 0.00254471     18  0.087694 0.20097 0.025374
-## 20 0.00224043     19  0.085149 0.20409 0.025538
-## 21 0.00223563     20  0.082909 0.21235 0.027597
-## 22 0.00221934     21  0.080673 0.21235 0.027597
-## 23 0.00220321     22  0.078454 0.21409 0.027622
-## 24 0.00215719     23  0.076251 0.21482 0.027619
-## 25 0.00209112     24  0.074093 0.21505 0.027627
-## 26 0.00190546     25  0.072002 0.21528 0.027544
-## 27 0.00187344     26  0.070097 0.21146 0.027293
-## 28 0.00179091     27  0.068223 0.21530 0.027611
-## 29 0.00158127     28  0.066432 0.21828 0.027685
-## 30 0.00156746     29  0.064851 0.21653 0.027472
-## 31 0.00150607     30  0.063284 0.21945 0.029231
-## 32 0.00147250     31  0.061778 0.21906 0.029235
-## 33 0.00140700     32  0.060305 0.22163 0.029763
-## 34 0.00140561     33  0.058898 0.22150 0.029765
-## 35 0.00131682     34  0.057493 0.22295 0.029762
-## 36 0.00123961     35  0.056176 0.22382 0.029958
-## 37 0.00121625     36  0.054936 0.22371 0.029961
-## 38 0.00119259     37  0.053720 0.22364 0.029961
-## 39 0.00094117     39  0.051335 0.22209 0.029889
-## 40 0.00090813     40  0.050394 0.22138 0.029913
-## 41 0.00089718     41  0.049485 0.22216 0.029901
-## 42 0.00087221     43  0.047691 0.22188 0.029906
-## 43 0.00084542     44  0.046819 0.22232 0.029918
-## 44 0.00073665     45  0.045973 0.22128 0.029911
-## 45 0.00070686     46  0.045237 0.22136 0.029898
-## 46 0.00070587     47  0.044530 0.22116 0.029902
-## 47 0.00067738     48  0.043824 0.22057 0.029909
-## 48 0.00061176     49  0.043147 0.22146 0.029933
-## 49 0.00060021     50  0.042535 0.22009 0.029944
-## 50 0.00059756     51  0.041935 0.21999 0.029946
-## 51 0.00054868     52  0.041337 0.22103 0.029945
-## 52 0.00051538     53  0.040788 0.22222 0.030056
-## 53 0.00048310     57  0.038711 0.22228 0.030057
-## 54 0.00043352     58  0.038228 0.22301 0.029923
-## 55 0.00041110     59  0.037795 0.22527 0.030019
-## 56 0.00039019     60  0.037383 0.22581 0.030013
-## 57 0.00038777     61  0.036993 0.22406 0.029128
-## 58 0.00038103     62  0.036606 0.22406 0.029128
-## 59 0.00035360     63  0.036225 0.22420 0.029138
-## 60 0.00034491     64  0.035871 0.22457 0.029142
-## 61 0.00033909     65  0.035526 0.22439 0.029144
-## 62 0.00032006     66  0.035187 0.22411 0.029150
-## 63 0.00031117     67  0.034867 0.22419 0.029148
-## 64 0.00028619     69  0.034244 0.22454 0.029150
-## 65 0.00027995     70  0.033958 0.22370 0.029143
-## 66 0.00027745     71  0.033678 0.22370 0.029143
-## 67 0.00027314     72  0.033401 0.22399 0.029139
-## 68 0.00027095     73  0.033128 0.22411 0.029136
-## 69 0.00025628     75  0.032586 0.22294 0.029103
-## 70 0.00023165     77  0.032073 0.22424 0.029137
-## 71 0.00022787     79  0.031610 0.22449 0.029132
-## 72 0.00021985     80  0.031382 0.22405 0.029128
-## 73 0.00019793     82  0.030942 0.22410 0.029115
-## 74 0.00019104     85  0.030349 0.22376 0.029102
-## 75 0.00018812     86  0.030158 0.22376 0.029102
-## 76 0.00017146     87  0.029969 0.22383 0.029101
-## 77 0.00015607     88  0.029798 0.22392 0.029088
-## 78 0.00015247     89  0.029642 0.22484 0.029162
-## 79 0.00014647     90  0.029489 0.22426 0.029158
-## 80 0.00013755     91  0.029343 0.22425 0.029159
-## 81 0.00012818     92  0.029205 0.22454 0.029153
-## 82 0.00012235     93  0.029077 0.22437 0.029096
-## 83 0.00010584     94  0.028955 0.22370 0.029118
-## 84 0.00010000     95  0.028849 0.22321 0.029119
-```
-
----
-
-# ¿Qué mirar aquí?
-
-No quiero meterlos fuerte en la tabla.
-
-Solo quédense con esta idea:
-
-- el árbol prueba distintos tamaños,
-- calcula un error interno,
-- y eso ayuda a decidir hasta dónde conviene dejarlo crecer.
-
----
-
-# Graficar complejidad
-
-
-```r
-plotcp(arbol_profundo)
-```
-
-![](Class_3_files/figure-html/unnamed-chunk-12-1.png)&lt;!-- --&gt;
-
----
-
-# Elegir un punto de poda
-
-
-```r
-cp_optimo &lt;- arbol_profundo$cptable[
-  which.min(arbol_profundo$cptable[, "xerror"]),
-  "CP"
+.center[
+.font75[
+`*` indica \(p&lt;0.05\). Valores expresados como cambio porcentual aproximado en el salario.
+]
 ]
 
-cp_optimo
-```
-
-```
-## [1] 0.004553648
-```
-
 ---
 
-# Podar el árbol
+# El resultado central
 
+## Años desde el PhD
 
-```r
-arbol_podado &lt;- prune(arbol_profundo, cp = cp_optimo)
+.pull-left[
 
-arbol_podado
-```
+### p10
 
-```
-## n= 313 
-## 
-## node), split, n, deviance, yval
-##       * denotes terminal node
-## 
-##  1) root 313 19683.72000 23.62843  
-##    2) displacement&gt;=153 147  2422.32700 17.12653  
-##      4) horsepower&gt;=127 77   331.15530 14.50779  
-##        8) year&lt; 76.5 60   175.48330 13.81667 *
-##        9) year&gt;=76.5 17    25.86235 16.94706 *
-##      5) horsepower&lt; 127 70   982.26640 20.00714  
-##       10) year&lt; 78.5 55   231.28110 18.66727 *
-##       11) year&gt;=78.5 15   290.20400 24.92000 *
-##    3) displacement&lt; 153 166  5543.89800 29.38614  
-##      6) horsepower&gt;=70.5 107  2243.06100 26.97850  
-##       12) year&lt; 78.5 67   747.04000 24.90000  
-##         24) weight&gt;=2305 36   177.60750 22.99167 *
-##         25) weight&lt; 2305 31   286.08190 27.11613 *
-##       13) year&gt;=78.5 40   721.73600 30.46000  
-##         26) weight&gt;=2620 18   108.80000 27.33333 *
-##         27) weight&lt; 2620 22   292.99270 33.01818 *
-##      7) horsepower&lt; 70.5 59  1555.72700 33.75254  
-##       14) year&lt; 77.5 23   234.91300 29.78261 *
-##       15) year&gt;=77.5 36   726.73560 36.28889  
-##         30) horsepower&gt;=55 33   541.31880 35.60606  
-##           60) displacement&gt;=94 15   102.07730 33.44667 *
-##           61) displacement&lt; 94 18   311.00940 37.40556 *
-##         31) horsepower&lt; 55 3     0.78000 43.80000 *
-```
+Coeficiente:
 
----
+\[
+-0.00295
+\]
 
-# Dibujar el árbol podado
+Equivale aproximadamente a:
 
+### **−0.29% por año**
 
-```r
-rpart.plot(arbol_podado, type = 3, fallen.leaves = TRUE)
-```
+`p = 0.002`
 
-![](Class_3_files/figure-html/unnamed-chunk-15-1.png)&lt;!-- --&gt;
+]
 
----
+.pull-right[
 
-# Predicción del árbol podado
+### p90
 
+Coeficiente:
 
-```r
-pred_arbol_podado &lt;- predict(arbol_podado, newdata = test)
+\[
+0.00899
+\]
 
-bind_rows(
-  metricas_reg(test$mpg, pred_arbol_simple, "Árbol simple"),
-  metricas_reg(test$mpg, pred_arbol_podado, "Árbol podado")
-)
-```
+Equivale aproximadamente a:
 
-```
-## # A tibble: 2 × 3
-##   modelo        RMSE   MAE
-##   &lt;chr&gt;        &lt;dbl&gt; &lt;dbl&gt;
-## 1 Árbol simple  3.61  2.57
-## 2 Árbol podado  3.50  2.45
-```
+### **+0.90% por año**
 
----
+`p &lt; 0.001`
 
-# Lectura conceptual
-
-### Un árbol muy profundo
-puede perseguir demasiado el train.
-
-### Un árbol podado
-busca quedarse con una estructura más razonable.
+]
 
 --
 
 .center[
-.orange[Podar es una forma de pelear contra el overfitting.]
+.font130[
+.orange[El efecto cambia de signo a lo largo de la distribución.]
+]
 ]
 
 ---
 
-# Lo que quiero que te quede de árboles
+# ¿Qué ocurrió en la mitad?
 
-- Un árbol parte la base con reglas simples.
-- Cada hoja terminal da una predicción promedio.
-- Si lo dejas crecer demasiado, puede sobreajustar.
-- La profundidad importa.
-- La poda ayuda a simplificar y generalizar mejor.
-
----
-
-class: inverse, center, middle
-
-# <i class="fas fa-tree" role="presentation" aria-label="tree icon"></i>
-# Sección 2
-# Random Forest para regresión
-
----
-
-# Problema de un árbol solo
-
-Un árbol puede ser muy sensible.
-
-A veces, con pequeños cambios en la muestra:
-
-- cambia la primera partición,
-- cambian las ramas,
-- y cambian bastante las predicciones.
+| Cuantil | Efecto de años desde PhD | p-valor |
+|:---:|---:|---:|
+| p10 | **−0.29%** | 0.002 |
+| p25 | −0.36% | 0.208 |
+| p50 | +0.04% | 0.888 |
+| p75 | +0.60% | 0.083 |
+| p90 | **+0.90%** | &lt;0.001 |
 
 --
 
-Eso quiere decir que un árbol solo puede tener **alta varianza**.
+### La historia no es lineal
+
+En la parte central de la distribución el efecto prácticamente desaparece.
+
+En la parte alta se vuelve claramente positivo.
+
+En la parte baja aparece negativo.
+
+.center[
+.orange[Un único coeficiente OLS de +0.33% mezcla estas relaciones diferentes.]
+]
 
 ---
 
-# La gran idea de Random Forest
+# OLS vs. regresión cuantílica
 
-En lugar de confiar en **un solo árbol**:
+.pull-left[
 
-- construimos **muchos árboles**,
-- cada uno ve una versión un poco distinta de los datos,
-- y luego promediamos sus predicciones.
+### OLS
+
+`$$\hat\beta = 0.00329$$`
+
+Aproximadamente:
+
+### **+0.33%**
+
+`p = 0.089`
+
+Una sola respuesta para toda la distribución.
+
+]
+
+.pull-right[
+
+### Regresión cuantílica
+
+- p10: **−0.29%**
+- p50: **+0.04%**
+- p90: **+0.90%**
+
+La relación cambia dependiendo del cuantil.
+
+]
 
 --
 
 .center[
-.orange[.font150[Muchos árboles débiles juntos pueden formar un modelo más estable.]]
+.font125[
+**OLS no estaba necesariamente equivocado. Estaba resumiendo efectos que se compensan entre sí.**
+]
 ]
 
 ---
 
-# Intuición muy simple
+# Perfil de coeficientes
 
-### Un árbol solo
-puede ser caprichoso.
+En lugar de colocar todos los coeficientes sobre la misma escala, los separamos por variable.
 
-### Un bosque
-promedia muchos puntos de vista.
+&lt;img src="Class_3_files/figure-html/perfil_coeficientes_limpio-1.png" width="70%" /&gt;
+
+.center[
+.font70[
+Cada panel utiliza su propia escala vertical. Compare la **forma del efecto**, no la altura entre paneles.
+]
+]
+
+---
+
+# ¿Qué historias aparecen?
+
+### Rango académico
+
+El premio asociado a ser **Profesor**, frente a Profesor Asociado, aumenta claramente:
+
+`$$23.3\% \quad \rightarrow \quad 41.4\%$$`
+
+de p10 a p90.
 
 --
 
-Eso suele reducir la inestabilidad.
+### Disciplina
 
----
+La disciplina B presenta una prima positiva en **todos los cuantiles**.
 
-# ¿Cómo se construye el bosque?
-
-### Paso 1
-Se toman muchas muestras bootstrap del train.
-
-### Paso 2
-En cada árbol, no se dejan entrar todas las variables en cada corte, sino solo una muestra aleatoria de variables.
-
-### Paso 3
-Se promedian las predicciones de todos los árboles.
-
----
-
-
-# Bootstrap:
-
-**Bootstrap** es volver a armar muchas versiones del mismo `train`,  
-pero **muestreando filas al azar con reemplazo**.
-
-¿Qué significa eso?
-
-- una fila puede salir **más de una vez**
-- algunas filas pueden **no salir**
-- cada árbol termina viendo un dataset **parecido**, pero **no idéntico**
-
-.footnote[
-En otras palabras: no hacemos un solo árbol mirando siempre exactamente los mismos datos, sino muchos árboles viendo versiones distintas del mismo problema.
-]
-
-
-
----
-
-# ¿Por qué no usar los mismos datos siempre?
-
-Porque si todos los árboles fueran iguales:
-
-- el promedio no aportaría mucho,
-- y el bosque no ganaría diversidad.
+Su mayor magnitud aparece alrededor de la mediana.
 
 --
 
-### El truco está en generar árboles distintos
-pero razonablemente útiles.
+### Sexo
 
----
+El coeficiente de Hombre vs. Mujer **no presenta un patrón monotónico**:
 
+es significativo en algunos cuantiles y no en otros.
 
-
-class: center, middle, inverse
-
-# <i class="fas fa-sliders" role="presentation" aria-label="sliders icon"></i>
-# ¿Por qué no entran todas las variables?
-## La lógica de Random Forest
-
----
-
-# En cada corte, el árbol no ve todo
-
-En un árbol común, en cada punto de decisión, el algoritmo revisa **todas** las variables  
-y escoge la que mejor separa.
-
-En **Random Forest** no.
-
-Aquí, en cada corte, el algoritmo mira **solo unas poquitas variables elegidas al azar**.  
-Por ejemplo, en vez de revisar:
-
-- `horsepower`
-- `weight`
-- `year`
-- `displacement`
-
-puede que en ese corte solo le dejen mirar:
-
-- `weight`
-- `year`
-
----
-
-# En cada corte, el árbol no ve todo
-
-Y con esas dos, decide por dónde partir.
-
-.center[¿Por qué hacer eso?]
-
-Porque si todos los árboles vieran siempre todas las variables,  
-muchos terminarían pareciéndose demasiado.
-
-Al obligarlos a mirar **subconjuntos distintos de variables**,  
-los árboles salen más variados, y eso hace al bosque más fuerte como conjunto.
-
-.footnote[
-Idea clave: no es que las otras variables desaparezcan para siempre.  
-Simplemente, en **ese corte puntual**, el árbol no las puede usar.
+.center[
+.orange[No sería correcto resumir estos resultados diciendo simplemente que existe una brecha salarial constante por sexo.]
 ]
 
+---
 
+# El gráfico clave: QR frente a OLS
+
+.center[
+.font110[
+Ahora concentrémonos únicamente en **años desde el PhD**.
+]
+]
+
+&lt;img src="Class_3_files/figure-html/grafico_qr_ols_bandas-1.png" width="70%" /&gt;
 
 ---
 
+# ¿Cómo leo este gráfico?
 
-# Random Forest y sesgo-varianza
+### 1. Línea gris
 
-Solo esta intuición:
+OLS estima aproximadamente:
 
-### Un árbol profundo
-puede tener bajo sesgo, pero alta varianza.
+.center[
+.font140[
+**+0.33% por año**
+]
+]
 
-### Un bosque
-suele bajar la varianza al promediar muchos árboles.
+Es el efecto promedio condicional.
+
+Su banda incluye el cero, consistente con `p = 0.089`.
+
+--
+
+### 2. Línea naranja
+
+Cada punto responde la misma pregunta en un cuantil diferente.
+
+.center[
+.orange[Ya no existe un único efecto.]
+]
+
+---
+
+# Ahora sí: interpretar la figura
+
+.pull-left[
+
+### Parte baja
+
+Alrededor de p10:
+
+### **−0.29%**
+
+por cada año adicional desde el PhD.
+
+El intervalo está por debajo de cero.
+
+]
+
+.pull-right[
+
+### Parte alta
+
+Alrededor de p90:
+
+### **+0.90%**
+
+por cada año adicional desde el PhD.
+
+El intervalo está por encima de cero.
+
+]
+
+--
+
+### En la mitad
+
+Alrededor de p50 el efecto es prácticamente cero.
+
+.center[
+.font125[
+**La relación cambia no solo de magnitud, sino también de signo.**
+]
+]
+
+---
+
+# ¿Qué aprendimos que OLS no mostraba?
+
+Supongamos dos profesores con características comparables en:
+
+- rango,
+- disciplina,
+- sexo,
+- años de servicio.
+
+--
+
+En la parte baja de la distribución salarial condicional, más años desde el PhD **no están asociados con una prima salarial positiva**.
+
+--
+
+En la parte alta, la asociación sí es positiva y aumenta.
+
+.center[
+.orange[
+**El retorno asociado al tiempo desde el PhD parece concentrarse en la parte alta de la distribución salarial.**
+]
+]
+
+---
+
+# Una precisión importante
+
+No debemos decir:
+
+.center[
+.red["Los años desde el PhD causan salarios altos."]
+]
+
+Los modelos muestran **asociaciones condicionales**.
+
+--
+
+Y tampoco debemos interpretar p90 como simplemente:
+
+&gt; "las personas que pertenecen al 10% más rico".
+
+--
+
+### p90 es un cuantil condicional
+
+Es la parte alta de la distribución de salario **para perfiles comparables según las variables incluidas en el modelo**.
+
+---
+
+# ¿Qué significa la banda?
+
+### Banda naranja
+
+IC aproximado del 95% para cada coeficiente cuantílico.
+
+Si no contiene cero:
+
+.center[
+**hay evidencia de un efecto distinto de cero en ese cuantil.**
+]
+
+--
+
+### Banda gris
+
+IC aproximado del 95% para el coeficiente OLS.
+
+--
+
+### Importante
+
+La comparación visual entre bandas sirve para detectar heterogeneidad.
+
+.center[
+.orange[
+Pero una diferencia visual entre QR y OLS no reemplaza una prueba formal de igualdad de coeficientes.
+]
+]
+
+---
+
+# El rango académico cuenta otra historia
+
+Comparemos Profesor frente a Profesor Asociado:
+
+| Cuantil | Prima estimada |
+|:---:|---:|
+| p10 | **+23.3%** |
+| p25 | **+29.2%** |
+| p50 | **+34.6%** |
+| p75 | **+36.2%** |
+| p90 | **+41.4%** |
 
 --
 
 .center[
-.orange[La magia del ensamble está en estabilizar.]
+.font125[
+La prima asociada al rango de Profesor es considerablemente mayor en la parte alta de la distribución.
+]
 ]
 
----
-
-# Ajustar un Random Forest en R
-
-
-```r
-set.seed(123)
-
-bosque &lt;- randomForest(
-  mpg ~ horsepower + weight + displacement + year + cylinders + acceleration,
-  data = train,
-  ntree = 500,
-  mtry = 3,
-  importance = TRUE
-)
-
-bosque
-```
-
-```
-## 
-## Call:
-##  randomForest(formula = mpg ~ horsepower + weight + displacement +      year + cylinders + acceleration, data = train, ntree = 500,      mtry = 3, importance = TRUE) 
-##                Type of random forest: regression
-##                      Number of trees: 500
-## No. of variables tried at each split: 3
-## 
-##           Mean of squared residuals: 7.679099
-##                     % Var explained: 87.79
-```
-
----
-
-# ¿Qué significan esos argumentos?
-
-### `ntree = 500`
-cantidad de árboles del bosque.
-
-### `mtry = 3`
-cantidad de variables candidatas que se prueban en cada corte.
-
-### `importance = TRUE`
-permite calcular importancia de variables.
-
----
-
-# Predicción con el bosque
-
-
-```r
-pred_bosque &lt;- predict(bosque, newdata = test)
-
-metricas_reg(test$mpg, pred_bosque, "Random Forest")
-```
-
-```
-## # A tibble: 1 × 3
-##   modelo         RMSE   MAE
-##   &lt;chr&gt;         &lt;dbl&gt; &lt;dbl&gt;
-## 1 Random Forest  2.78  1.96
-```
-
----
-
-# Comparación rápida: árbol vs bosque
-
-
-```r
-bind_rows(
-  metricas_reg(test$mpg, pred_arbol_podado, "Árbol podado"),
-  metricas_reg(test$mpg, pred_bosque, "Random Forest")
-)
-```
-
-```
-## # A tibble: 2 × 3
-##   modelo         RMSE   MAE
-##   &lt;chr&gt;         &lt;dbl&gt; &lt;dbl&gt;
-## 1 Árbol podado   3.50  2.45
-## 2 Random Forest  2.78  1.96
-```
-
----
-
-# ¿Qué suele pasar en la práctica?
-
-Muchas veces Random Forest mejora a un árbol solo porque:
-
-- reduce inestabilidad,
-- combina muchas particiones,
-- y captura patrones más ricos sin depender de una sola estructura.
-
----
-
-# Importancia de variables
-
-Una ventaja práctica del bosque es que puede darnos una idea de qué variables parecen más influyentes.
-
-
-```r
-importance(bosque)
-```
-
-```
-##               %IncMSE IncNodePurity
-## horsepower   19.03832     2918.0321
-## weight       21.25435     4517.1974
-## displacement 21.82392     5484.6661
-## year         63.83262     2168.1902
-## cylinders    13.26637     3576.7352
-## acceleration 15.48288      598.7314
-```
-
-
----
-
-
-# ¿Qué nos está diciendo esta tabla?
-
-Esta salida intenta responder una pregunta muy práctica:
-
-**¿qué variables parecen ayudar más al bosque a predecir `mpg`?**
-
-
-- **%IncMSE**: mide cuánto empeora el modelo cuando una variable se “revuelve”.
-  Es decir, se le cambian de orden sus valores para romper la información que aportaba.
-  Si al hacer eso el error sube bastante, esa variable era importante.
-
-- **IncNodePurity**: mide cuánto ayudó una variable a hacer cortes útiles dentro de los árboles.
-  Si una variable aparece haciendo particiones que mejoran mucho el ajuste,
-  su valor de importancia será más alto.
-  
-
-**Idea práctica:**  
-en ambos casos, **valores más altos suelen indicar variables más influyentes** en la predicción.
-  
-
 --
 
+OLS daba:
 
-- En esta salida, **`year`** sobresale mucho en `%IncMSE`, así que parece ser una variable **muy clave** para predecir.
+### **+34.4%**
 
-- También **`displacement`** y **`weight`** muestran bastante aporte.  
-- En cambio, **`acceleration`** se ve menos influyente que las demás.
+Una cifra útil...
 
-.footnote[
-Lectura: una medida mira qué pasa si “daño” la variable; la otra mira cuánto ayudó esa variable a construir buenos árboles.
+.orange[pero nuevamente es solo el promedio de una relación heterogénea.]
+
+---
+
+# OLS y QR juntos
+
+.pull-left[
+
+### OLS sirve para
+
+- Resumir el efecto promedio.
+- Tener una lectura compacta.
+- Identificar relaciones generales.
+- Construir un buen benchmark.
+
 ]
 
+.pull-right[
 
+### QR agrega
 
----
+- Heterogeneidad.
+- Diferencias entre colas y centro.
+- Cambios de signo.
+- Efectos que OLS puede cancelar.
 
-# Graficar importancia de variables
-
-
-```r
-varImpPlot(bosque)
-```
-
-![](Class_3_files/figure-html/unnamed-chunk-21-1.png)&lt;!-- --&gt;
-
----
-
-# ¿Cómo leer esto sin enredarnos?
-
-Si una variable aparece como muy importante, eso sugiere que:
-
-- ayudó bastante a reducir error,
-- o fue útil en las particiones del bosque.
-
---
-
-### Pero cuidado
-esto **no es** lo mismo que interpretar un beta en regresión lineal.
-
----
-
-# Diferencia clave con regresión lineal
-
-### En regresión lineal
-puedo decir algo como:
-&gt; “si X sube una unidad, Y cambia en promedio…”
-
-### En Random Forest
-eso ya no sale tan limpio.
-
---
-
-Aquí la lógica es más:
-
-&gt; “esta variable fue útil para predecir”.
-
----
-
-# Ventajas de Random Forest
-
-- suele predecir mejor que un árbol solo,
-- maneja no linealidades e interacciones de forma automática,
-- es bastante robusto,
-- y da una noción útil de importancia de variables.
-
-
-
-# Limitaciones de Random Forest
-
-- ya no es tan fácil de explicar como un árbol,
-- puede sentirse como una “caja más oscura”,
-- no entrega una ecuación sencilla,
-- y exige más cómputo que un árbol simple.
-
----
-
-# Mensaje corto de esta sección
-
-.center[.font150[**Un árbol divide.  
-Un bosque promedia muchos árboles.  
-Y al promediar, normalmente gana estabilidad.**]]
-
----
-
-class: inverse, center, middle
-
-# <i class="fas fa-vector-square" role="presentation" aria-label="vector-square icon"></i>
-# Sección 3
-# SVM para regresión
-
----
-
-
-class: center, middle
-
-
-# ¿Qué es SVM?
-## una idea muy simple antes de meternos al modelo
-
----
-
-# Pensemoslo sin tecnicismos
-
-SVM es una técnica de aprendizaje supervisado.
-
-Eso quiere decir que:
-
-- tenemos una variable respuesta que queremos explicar o predecir,
-- tenemos varias variables explicativas,
-- y el modelo intenta **encontrar una regla útil** para relacionarlas.
-
-En palabras muy simples, SVM busca una forma "inteligente" de usar las variables `\((X)\)` para predecir `\((Y)\)`.
-
----
-
-# ¿Cuál es el propósito de SVM?
-
-La idea no es solo ajustarse a los datos porque sí.
-
-La técnica busca una regla que:
-
-- **prediga bien**,
-- **no se complique de más**,
-- y **generalice mejor** cuando lleguen datos nuevos.
-
-O sea, SVM no quiere aprenderse los datos de memoria.
-
-Quiere encontrar una frontera o una función que capture el patrón importante, sin quedarse pegado al ruido.
-
----
-
-# ¿Qué hace realmente SVM?
-
-Depende del problema:
-
-- si la respuesta es una **categoría**, SVM ayuda a **separar grupos**;
-- si la respuesta es **numérica**, SVM ayuda a **predecir valores**.
-
-En esta clase nos interesa lo segundo.
-
-Entonces, en regresión, SVM intenta construir una función que pase por la tendencia general de los datos, sin obsesionarse con cada punto.
-
-La lógica es más o menos esta:
-
-&gt; "voy a buscar una función razonable, estable y útil,  
-&gt; que siga el patrón general,  
-&gt; pero sin reaccionar exageradamente a pequeñas variaciones"
-
----
-
-# ¿Por qué puede ser útil?
-
-Porque en la vida real muchas relaciones:
-
-- no son perfectamente lineales,
-- tienen ruido,
-- y a veces cambian de forma en distintas zonas de los datos.
-
-SVM es útil porque puede adaptarse a relaciones más complejas sin volverse tan inestable como otros métodos.
-
-Por eso suele verse como una técnica interesante cuando:
-
-- la relación entre variables no es tan obvia,
-- hay muchas variables,
-- o queremos un modelo con buena capacidad predictiva.
-
----
-
-# Idea intuitiva para quedarnos con algo
-
-Si una regresión lineal tradicional dice:
-
-&gt; "voy a dibujar una línea que minimice errores"
-
-SVM para regresión dice algo más parecido a:
-
-&gt; "voy a dibujar una función que represente bien la tendencia general,  
-&gt; permitiendo pequeños errores que no me preocupan tanto,  
-&gt; y evitando una forma demasiado enredada"
-
-Esa es la intuición más importante.
-
----
-
-class: center, middle
-
-# Entonces...
-## SVM es una técnica de predicción
-## que busca equilibrio entre
-## ajuste, estabilidad y generalización
-
-### No quiere perseguir cada punto.
-### Quiere capturar el patrón.
-
-
-
----
-
-# Una duda clave:
-## ¿SVM al final me da una ecuación?
-
-Sí, pero depende del tipo de SVM que usemos.
-
-En general, SVM **sí estima una función de predicción**.
-
-O sea, al final el modelo sí queda con una regla matemática para calcular:
-
-$$
-\hat{Y} = f(X)
-$$
-
-La diferencia es que esa función a veces es:
-
-- **simple y explícita**, como una ecuación parecida a regresión,
-- o **más escondida**, cuando usamos kernels no lineales.
-
----
-
-# Si SVM es lineal
-
-Cuando usamos un **kernel lineal**, SVM sí termina muy cerca de una ecuación clásica:
-
-$$
-\hat{Y} = \beta_0 + \beta_1 X_1 + \beta_2 X_2 + \cdots + \beta_p X_p
-$$
-
-Entonces ahí sí podríamos decir:
-
-- hay intercepto,
-- hay coeficientes,
-- y sí existe una ecuación bastante clara.
-
-La diferencia con una regresión tradicional no es tanto la forma final,
-sino **la forma en que esa ecuación fue estimada**.
-
-SVM no la calcula buscando minimizar el error cuadrático como OLS,
-sino usando su propia lógica de margen, tolerancia y penalización.
-
----
-
-# Si SVM es no lineal
-
-Cuando usamos un kernel como **RBF** o **polinomial**,
-la cosa cambia.
-
-Ahí el modelo **sigue teniendo una función matemática**,
-pero ya no aparece como una ecuación sencilla del tipo:
-
-$$
-\hat{Y} = \beta_0 + \beta_1 X_1 + \beta_2 X_2
-$$
-
-Más bien, la predicción se construye a partir de:
-
-- los puntos más importantes del entrenamiento,
-- y una función que mide cercanía o similitud entre observaciones.
-
-Entonces:
-
-- **sí hay modelo**,
-- **sí hay una fórmula detrás**,
-- pero **no suele ser una fórmula simple de interpretar a ojo**.
-
----
-
-# Entonces, ¿cómo "estima" esa función?
-
-La idea dummy sería esta:
-
-SVM mira los datos y trata de encontrar una función que:
-
-- siga la tendencia general,
-- ignore errores pequeños,
-- y no se vuelva demasiado ondulada o complicada.
-
-Es decir, no quiere una curva que pase exactico por todos los puntos.
-
-Quiere una función que logre un buen equilibrio entre:
-
-- ajuste,
-- tolerancia al ruido,
-- y capacidad de predecir datos nuevos.
-
----
-
-# En términos prácticos
-
-Entonces la respuesta corta sería:
-
-- **sí**, SVM sí estima un modelo,
-- **sí**, al final queda una función de predicción,
-- **a veces sí** la podemos escribir como ecuación clara,
-- pero **a veces no** queda en una forma tan bonita de interpretar.
-
-Por eso SVM suele ser fuerte para **predicción**,
-pero no siempre tan cómodo para **explicar coeficiente por coeficiente**.
-
-
-
-
-
----
-
-# ¿Por qué SVM en regresión?
-
-Cuando la gente oye SVM, muchas veces piensa solo en clasificación.
-
-Pero también existe **SVM para regresión**.
-
---
-
-La idea no es predecir clases, sino una variable numérica como `mpg`.
-
----
-
-# La intuición de SVM regresión
-
-SVM para regresión trata de encontrar una función que:
-
-- siga razonablemente bien la tendencia de los datos,
-- pero sin perseguir cada punto de manera obsesiva.
+]
 
 --
 
 .center[
-.orange[.font140[No quiere pegarse a todos los puntos.  
-Quiere capturar una zona razonable.]]
+.font130[
+.orange[La pregunta no es “¿cuál modelo gana?” sino “¿qué información adicional necesito para decidir?”.]
 ]
-
----
-
-# La idea del margen `\(\epsilon\)`
-
-SVM regresión usa una especie de “tubo” alrededor de la función estimada.
-
-Mientras una observación quede **dentro** de ese tubo:
-
-- no se penaliza fuerte.
-
-Si queda **fuera**:
-
-- sí empieza a contar como error.
-
----
-
-# En palabras muy suaves
-
-### Si el error es pequeño
-el modelo dice:
-&gt; “está bien, no me voy a poner dramático por eso”.
-
-### Si el error ya sale del margen `\(\epsilon\)`
-el modelo dice:
-&gt; “bueno, aquí sí necesito corregir”.
-
----
-
-# ¿Por qué eso puede ser útil?
-
-Porque evita reaccionar demasiado a pequeñas variaciones.
-
---
-
-En otras palabras:
-
-- tolera una pequeña franja de error,
-- y se enfoca más en la tendencia general.
-
----
-
-# Otra idea importante: el kernel
-
-El **kernel** define la forma en que el modelo ve la relación entre variables.
-
-### Kernel lineal
-sirve cuando la relación parece más simple o más cercana a una recta en el espacio de predicción.
-
-### Kernel radial (RBF)
-sirve cuando queremos más flexibilidad para relaciones curvas.
-
-
-.orange[El Kernel es una función matemática que toma datos que son imposibles de separar en su estado actual y los proyecta a un "espacio" de más dimensiones donde sí se pueden organizar fácilmente.]
-
----
-
-# Regla muy simple para arrancar
-
-### Si el patrón parece relativamente simple
-pruebe primero **lineal**.
-
-### Si sospecha curvatura o relaciones más complejas
-pruebe **RBF**.
-
---
-
-.center[
-.orange[No es una ley absoluta, pero es una guía muy útil.]
 ]
-
----
-
-# SVM también necesita cuidado con la escala
-
-En estos métodos, la escala de las variables importa bastante.
-
-Si una variable está en una escala enorme y otra en una pequeña:
-
-- la grande puede dominar,
-- y eso sesga la noción de distancia o cercanía.
-
---
-
-### Por eso
-en SVM normalmente se escala.
-
----
-
-# En `e1071::svm()`
-
-El argumento `scale = TRUE` hace esa tarea automáticamente.
-
-Es una ventaja, porque simplifica bastante el flujo.
-
----
-
-# Ajustar un SVM lineal
-
-
-```r
-svm_lineal &lt;- svm(
-  mpg ~ horsepower + weight + displacement + year + cylinders + acceleration,
-  data = train,
-  type = "eps-regression",
-  kernel = "linear",
-  cost = 1,
-  epsilon = 0.3,
-  scale = TRUE
-)
-
-svm_lineal
-```
-
-```
-## 
-## Call:
-## svm(formula = mpg ~ horsepower + weight + displacement + year + cylinders + 
-##     acceleration, data = train, type = "eps-regression", kernel = "linear", 
-##     cost = 1, epsilon = 0.3, scale = TRUE)
-## 
-## 
-## Parameters:
-##    SVM-Type:  eps-regression 
-##  SVM-Kernel:  linear 
-##        cost:  1 
-##       gamma:  0.1666667 
-##     epsilon:  0.3 
-## 
-## 
-## Number of Support Vectors:  143
-```
-
----
-
-
-
-
-# Cómo leer esta salida de SVM
-
-```r
-svm(formula = mpg ~ horsepower + weight + displacement + year + cylinders + 
-    acceleration, data = train, type = "eps-regression", kernel = "linear", 
-    cost = 1, epsilon = 0.3, scale = TRUE)
-```
-
-Esta salida nos está diciendo **cómo quedó configurado el modelo** que ajustamos.
-
-
----
-
-# Cómo leer esta salida de SVM
-
-Veámoslo muy simple:
-
-- `formula = mpg ~ ...`  
-  la variable que queremos predecir es **mpg**.
-
-- `type = "eps-regression"`  
-  estamos usando **SVM para regresión**, no para clasificación.
-
-- `kernel = "linear"`  
-  el modelo está buscando una relación **lineal** entre las variables `\((X)\)` y la respuesta.
-
-- `cost = 1`  
-  este parámetro controla qué tanto castiga el modelo los errores grandes.
-
-- `epsilon = 0.3`  
-  aquí se define una zona de tolerancia: errores pequeños, de hasta 0.3, no preocupan tanto al modelo.
-
-- `scale = TRUE`  
-  significa que las variables fueron reescaladas antes de ajustar el modelo, para que ninguna domine solo por tener números más grandes.
-
----
-
-# ¿Qué significa esto de Number of Support Vectors: 143?
-
-Esta es una de las partes más importantes de SVM.
-
-Los .orange[**support vectors**] son las observaciones del entrenamiento que el modelo considera más importantes para construir la solución.
-
-No quiere decir que las otras observaciones no sirvan.
-
-Quiere decir que, al final, .orange[**estas 143 son las que más "sostienen" la forma del modelo**].
-
-Por eso se llaman *support vectors*:
-porque son los puntos que ayudan a definir la función estimada.
-
----
-
-# Intuición
-
-Imagina que SVM está tratando de poner una línea o una función que represente bien el patrón general.
-
-Pero no todos los puntos empujan esa línea con la misma fuerza.
-
-Los que realmente quedan:
-
-- cerca del borde,
-- tocando la zona de tolerancia,
-- o por fuera de esa zona
-
-son los que más influyen.
-
-Esos son los **support vectors**.
-
----
-
-# Entonces, ¿por qué no usa todos igual?
-
-Porque SVM no construye la solución pensando en "promediar todo" como lo haría uno intuitivamente.
-
-Más bien se concentra en los casos que son más críticos para definir la función.
-
-En regresión, esos casos suelen ser los puntos que:
-
-- están justo sobre el borde del tubo epsilon,
-- o se salen de ese tubo.
-
-Esos puntos son los que obligan al modelo a acomodarse.
-
----
-
-# ¿Y 143 qué significa?
-
-Significa que, de todas las observaciones de entrenamiento, **143 quedaron como casos clave** para definir la función de predicción.
-
-No necesariamente es "bueno" o "malo" por sí solo.
-
-Solo nos dice cuántos puntos terminaron siendo importantes en la construcción del modelo.
-
-Muy en simple:
-
-- **pocos vectores soporte**: solución más apoyada en un grupo reducido de puntos,
-- **muchos vectores soporte**: solución influida por una mayor parte de los datos.
-
----
-
-
-## ¿por qué se llaman *support vectors* y no *support points*?
-
-Se llaman **vectores** porque cada observación no es un solo número.
-
-Cada observación está formada por varias variables al mismo tiempo.
-
-En este ejemplo, cada fila del dataset tiene:
-
-- `horsepower`
-- `weight`
-- `displacement`
-- `year`
-- `cylinders`
-- `acceleration`
-
-Entonces, cada observación puede verse como un objeto así:
-
-$$
-x_i = (x_{i1}, x_{i2}, x_{i3}, x_{i4}, x_{i5}, x_{i6})
-$$
-
-O sea: una fila completa de predictores.
-
-Eso, en lenguaje matemático, es un **vector**.
-
----
-
-# ¿Entonces también son puntos?
-
-Sí, también.
-
-De hecho, una misma observación se puede pensar de dos formas:
-
-- como un **vector** de características,
-- o como un **punto** en un espacio de muchas dimensiones.
-
-No hay contradicción.
-
-Por ejemplo:
-
-- con 2 variables, una observación es un punto en el plano;
-- con 3 variables, es un punto en el espacio;
-- con 6 variables, es un punto en un espacio de 6 dimensiones.
-
-Entonces podrían llamarse "points" en una explicación visual.
-
-Pero en SVM se usa más la palabra **vector** porque el método trabaja matemáticamente con vectores.
-
----
-
-# ¿Por qué a SVM le gusta tanto la palabra vector?
-
-Porque SVM no piensa solo en dibujitos.
-
-Internamente, el método trabaja con operaciones entre observaciones como:
-
-- productos internos,
-- distancias,
-- similitudes,
-- transformaciones por kernel.
-
-Y todo eso se formula usando **vectores**.
-
-Entonces el nombre *support vectors* viene de la matemática del método.
-
-No es solo una forma bonita de hablar.
-
----
-
-# ¿Y qué sería un support vector en este caso?
-
-Sería una observación del entrenamiento, por ejemplo una fila específica, algo como:
-
-$$
-(130,\ 3504,\ 307,\ 70,\ 8,\ 12.0)
-$$
-
-Eso representa una combinación de valores de las variables explicativas.
-
-Si esa observación queda entre las que más influyen en la solución,
-entonces se convierte en un **support vector**.
-
-O sea:
-
-- es una fila real de los datos,
-- compuesta por varias variables,
-- que ayuda a sostener la función estimada.
-
----
-
-
-
-
-# Predicción del SVM lineal
-
-
-```r
-pred_svm_lineal &lt;- predict(svm_lineal, newdata = test)
-
-metricas_reg(test$mpg, pred_svm_lineal, "SVM lineal")
-```
-
-```
-## # A tibble: 1 × 3
-##   modelo      RMSE   MAE
-##   &lt;chr&gt;      &lt;dbl&gt; &lt;dbl&gt;
-## 1 SVM lineal  3.32  2.56
-```
-
----
-
-# Ajustar un SVM radial
-
-
-```r
-svm_rbf &lt;- svm(
-  mpg ~ horsepower + weight + displacement + year + cylinders + acceleration,
-  data = train,
-  type = "eps-regression",
-  kernel = "radial",
-  cost = 10,
-  gamma = 0.05,
-  epsilon = 0.3,
-  scale = TRUE
-)
-
-svm_rbf
-```
-
-```
-## 
-## Call:
-## svm(formula = mpg ~ horsepower + weight + displacement + year + cylinders + 
-##     acceleration, data = train, type = "eps-regression", kernel = "radial", 
-##     cost = 10, gamma = 0.05, epsilon = 0.3, scale = TRUE)
-## 
-## 
-## Parameters:
-##    SVM-Type:  eps-regression 
-##  SVM-Kernel:  radial 
-##        cost:  10 
-##       gamma:  0.05 
-##     epsilon:  0.3 
-## 
-## 
-## Number of Support Vectors:  88
-```
-
----
-
-# Predicción del SVM radial
-
-
-```r
-pred_svm_rbf &lt;- predict(svm_rbf, newdata = test)
-
-bind_rows(
-  metricas_reg(test$mpg, pred_svm_lineal, "SVM lineal"),
-  metricas_reg(test$mpg, pred_svm_rbf, "SVM radial")
-)
-```
-
-```
-## # A tibble: 2 × 3
-##   modelo      RMSE   MAE
-##   &lt;chr&gt;      &lt;dbl&gt; &lt;dbl&gt;
-## 1 SVM lineal  3.32  2.56
-## 2 SVM radial  2.77  2.13
-```
-
----
-
-# Lectura rápida
-
-Si el SVM radial mejora frente al lineal, eso puede sugerir que:
-
-- había una relación más curva,
-- o que un patrón más flexible ayudó.
-
---
-
-Si no mejora, no pasa nada.
-
-A veces lo simple ya era suficiente.
-
----
-
-# Hiperparámetros: la idea general
-
-En SVM hay varios controles importantes.
-
-### `epsilon`
-ancho de la zona de tolerancia.
-
-### `cost`
-qué tan caro es equivocarse por fuera del margen.
-
-### `gamma`
-qué tan flexible es el kernel radial.
-
----
-
-# Intuición de `cost`
-
-### `cost` pequeño
-el modelo es más relajado.
-
-### `cost` grande
-castiga más los errores y puede volverse más rígido para ajustarse.
-
----
-
-# Intuición de `gamma` en RBF
-
-### `gamma` pequeño
-la forma del modelo cambia más suavemente.
-
-### `gamma` grande
-el modelo se vuelve más sensible a cambios locales.
-
---
-
-.center[
-.orange[Gamma muy grande puede llevar a sobreajuste.]
-]
-
----
-
-# ¿Y cómo elegimos esos valores?
-
-No adivinando.
-
-Lo correcto es usar **validación cruzada**.
-
----
-
-# Idea de validación cruzada aquí
-
-Tomamos el conjunto de entrenamiento y lo dividimos varias veces.
-
-Probamos combinaciones de hiperparámetros.
-
-Y elegimos la que mejor funciona en promedio dentro de esas validaciones.
-
---
-
-### Luego
-recién al final evaluamos en `test`.
-
----
-
-# Parámetro, hiperparámetro y tuning
-
-Un **parámetro** es algo que el modelo **aprende de los datos** al entrenarse.
-
-Ejemplo: en un modelo lineal, los \(\beta\).
-
-Un **hiperparámetro** es algo que **definimos nosotros antes** de entrenar el modelo.
-
-En SVM, por ejemplo:
-
-- `cost`
-- `epsilon`
-- tipo de `kernel`
-
-Un **tuning** o **tunear el modelo** significa **probar distintos hiperparámetros**
-para encontrar la combinación que prediga mejor.
-
-## Idea clave
-
-**Parámetro** = lo aprende el modelo.  
-**Hiperparámetro** = lo escogemos nosotros.  
-**Tuning** = buscar cuáles hiperparámetros funcionan mejor.
-
-
-
-
-
-
-
-
----
-
-# Tuning con validación cruzada
-
-Para no enredarnos demasiado, aquí vamos a:
-
-- dejar fijo `epsilon = 0.3`,
-- y buscar buenos valores de `cost` y `gamma`.
-
-
-```r
-set.seed(123)
-
-tuning_svm &lt;- tune(
-  svm,
-  mpg ~ horsepower + weight + displacement + year + cylinders + acceleration,
-  data = train,
-  kernel = "radial",
-  type = "eps-regression",
-  epsilon = 0.3,
-  scale = TRUE,
-  ranges = list(
-    cost = c(0.1, 1, 10, 50),
-    gamma = c(0.001, 0.01, 0.05, 0.1)
-  ),
-  tunecontrol = tune.control(cross = 5)
-)
-
-summary(tuning_svm)
-```
-
-```
-## 
-## Parameter tuning of 'svm':
-## 
-## - sampling method: 5-fold cross validation 
-## 
-## - best parameters:
-##  cost gamma
-##    50  0.01
-## 
-## - best performance: 7.929142 
-## 
-## - Detailed performance results:
-##    cost gamma     error dispersion
-## 1   0.1 0.001 49.779571   8.488848
-## 2   1.0 0.001 19.672546   4.111223
-## 3  10.0 0.001 12.428973   2.482372
-## 4  50.0 0.001 10.040494   2.441835
-## 5   0.1 0.010 20.334722   4.210510
-## 6   1.0 0.010 10.436752   2.236019
-## 7  10.0 0.010  8.210330   2.590297
-## 8  50.0 0.010  7.929142   2.614062
-## 9   0.1 0.050 12.973685   2.337338
-## 10  1.0 0.050  8.644307   2.324684
-## 11 10.0 0.050  8.073271   2.248132
-## 12 50.0 0.050  8.733915   2.978760
-## 13  0.1 0.100 12.624358   2.011130
-## 14  1.0 0.100  8.755450   2.095571
-## 15 10.0 0.100  8.425555   2.651947
-## 16 50.0 0.100  9.462118   3.988667
-```
-
----
-
-# Mejores hiperparámetros encontrados
-
-
-```r
-tuning_svm$best.parameters
-```
-
-```
-##   cost gamma
-## 8   50  0.01
-```
-
----
-
-# Extraer el mejor modelo
-
-
-```r
-svm_rbf_tuneado &lt;- tuning_svm$best.model
-
-svm_rbf_tuneado
-```
-
-```
-## 
-## Call:
-## best.tune(method = svm, train.x = mpg ~ horsepower + weight + displacement + 
-##     year + cylinders + acceleration, data = train, ranges = list(cost = c(0.1, 
-##     1, 10, 50), gamma = c(0.001, 0.01, 0.05, 0.1)), tunecontrol = tune.control(cross = 5), 
-##     kernel = "radial", type = "eps-regression", epsilon = 0.3, scale = TRUE)
-## 
-## 
-## Parameters:
-##    SVM-Type:  eps-regression 
-##  SVM-Kernel:  radial 
-##        cost:  50 
-##       gamma:  0.01 
-##     epsilon:  0.3 
-## 
-## 
-## Number of Support Vectors:  88
-```
-
----
-
-# Evaluar el SVM tuneado en test
-
-
-```r
-pred_svm_tuneado &lt;- predict(svm_rbf_tuneado, newdata = test)
-
-bind_rows(
-  metricas_reg(test$mpg, pred_svm_lineal, "SVM lineal"),
-  metricas_reg(test$mpg, pred_svm_rbf, "SVM radial"),
-  metricas_reg(test$mpg, pred_svm_tuneado, "SVM radial tuneado")
-)
-```
-
-```
-## # A tibble: 3 × 3
-##   modelo              RMSE   MAE
-##   &lt;chr&gt;              &lt;dbl&gt; &lt;dbl&gt;
-## 1 SVM lineal          3.32  2.56
-## 2 SVM radial          2.77  2.13
-## 3 SVM radial tuneado  2.85  2.10
-```
-
----
-
-# Lectura conceptual del tuning
-
-### Antes
-yo había puesto hiperparámetros “a mano”.
-
-### Ahora
-dejo que una validación cruzada compare opciones y me sugiera una combinación mejor.
-
---
-
-.center[
-.orange[.font130[Esto es mucho más serio que escoger valores al ojo.]]
-]
-
----
-
-# Comparación final de modelos
-
-
-```r
-resultados_finales &lt;- bind_rows(
-  metricas_reg(test$mpg, pred_arbol_podado, "Árbol podado"),
-  metricas_reg(test$mpg, pred_bosque, "Random Forest"),
-  metricas_reg(test$mpg, pred_svm_lineal, "SVM lineal"),
-  metricas_reg(test$mpg, pred_svm_tuneado, "SVM radial tuneado")
-)
-
-resultados_finales %&gt;%
-  arrange(RMSE)
-```
-
-```
-## # A tibble: 4 × 3
-##   modelo              RMSE   MAE
-##   &lt;chr&gt;              &lt;dbl&gt; &lt;dbl&gt;
-## 1 Random Forest       2.78  1.96
-## 2 SVM radial tuneado  2.85  2.10
-## 3 SVM lineal          3.32  2.56
-## 4 Árbol podado        3.50  2.45
-```
-
----
-
-# ¿Qué me interesa que lean aquí?
-
-No quiero que memoricen “qué modelo ganó hoy”.
-
-Quiero que vean esta lógica:
-
-- distintos modelos producen errores distintos,
-- la flexibilidad no siempre gana,
-- y el tuning importa bastante.
-
----
-
-# Resumen de las tres herramientas
-
-### Árbol
-- muy intuitivo,
-- fácil de visualizar,
-- pero puede ser inestable.
-
-### Random Forest
-- más robusto,
-- suele predecir mejor,
-- menos interpretable.
-
-### SVM
-- potente,
-- flexible con kernels,
-- sensible a hiperparámetros y tuning.
-
----
-
-# Una brújula rápida para decidir
-
-### Si quiero algo muy explicable visualmente
-árbol.
-
-### Si quiero una herramienta fuerte y estable de predicción
-Random Forest.
-
-### Si quiero una alternativa poderosa con control fino de complejidad
-SVM.
-
----
-
-# Pero ojo con esta idea
-
-.center[.font150[**No existe “el mejor método para todo”.  
-Existe el método que funciona mejor para un problema, unos datos y una meta concreta.**]]
-
----
-
-# ¿Qué preguntas debería hacerse uno?
-
-- ¿Me importa más interpretar o predecir?
-- ¿La relación parece simple o compleja?
-- ¿Tengo suficiente muestra?
-- ¿Estoy validando bien?
-- ¿Estoy tuneando con cuidado?
-
----
-
-# Error clásico en esta parte del curso
-
-Probar muchos modelos y decidir con base en el `test`.
-
---
-
-### Eso está mal
-porque el `test` se vuelve parte del proceso de decisión.
-
-### Lo correcto
-es decidir dentro de train con validación, y dejar el `test` para el cierre.
-
----
-
-# Cierre conceptual
-
-Hoy no aprendimos a “adorar” modelos complejos.
-
-Aprendimos algo mejor:
-
-- que hay formas distintas de modelar,
-- que la flexibilidad tiene beneficios y riesgos,
-- y que la evaluación fuera de muestra manda.
-
----
-
-class: center, middle, inverse
-
-# <i class="fas fa-laptop-code" role="presentation" aria-label="laptop-code icon"></i>
-# Mini ejercicio sugerido
-
----
-
-# Propuesta de ejercicio
-
-Con la base `Carseats` del paquete `ISLR`:
-
-1. ajuste un árbol de regresión para predecir `Sales`,
-2. pruebe un árbol más profundo y luego pódelo,
-3. ajuste un Random Forest,
-4. ajuste un SVM lineal,
-5. tunee un SVM radial con validación cruzada,
-6. compare todos los modelos con RMSE y MAE en test.
-
---
-
-Para cargarla:
-
-library(ISLR)   # o library(ISLR2)
-data(Carseats)
-
-head(Carseats)
-str(Carseats)
-
-
 ---
 
 
 class: center, middle, inverse
 
-# <i class="fas fa-scale-balanced" role="presentation" aria-label="scale-balanced icon"></i>
-# Regresión clásica vs regresión en machine learning
-## una guía simple para cerrar el curso
+# Errores estándar
+## Qué reportar sin enredarse
 
 ---
 
-# No compiten siempre: muchas veces responden preguntas distintas
+# ¿Por qué importan?
+
+El coeficiente estimado no viene solo.
+
+Necesitamos saber si está estimado con mucha o poca incertidumbre.
+
+--
+
+### En R
 
 
-.pull-left[
+```r
+summary(modelo_qr, se = "nid")
+```
 
-## Regresión clásica
-Suele usarse cuando queremos:
+--
 
-- entender relaciones entre variables,
-- interpretar signos y magnitudes,
-- evaluar evidencia estadística,
-- explicar efectos promedio.
-
-]
-
-.pull-right[
-
-## Regresión tipo machine learning
-Suele usarse cuando queremos:
-
-- predecir lo mejor posible,
-- capturar relaciones complejas,
-- tolerar no linealidades e interacciones,
-- priorizar desempeño en datos nuevos.
-
-]
-
-### Idea clave
-
-A veces la pregunta no es **qué modelo es mejor**,
-sino **mejor para qué objetivo**.
+### Alternativa más robusta
 
 
+```r
+summary(modelo_qr, se = "boot", R = 500)
+```
+
+--
+
+### Consejo práctico
+Si el dataset es pequeño o hay sospecha de heterocedasticidad, bootstrap es una buena opción.
 
 ---
 
-# ¿Qué nos da un modelo lineal?
+# Qué NO reportar
 
-Un modelo lineal nos da algo muy valioso:
+No basta con decir:
 
-- una ecuación clara,
-- coeficientes interpretables,
-- facilidad para explicar efectos,
-- una estructura estadística muy conocida.
+“corrí regresión cuantílica”.
 
-Por eso, si la pregunta es:
+--
 
-&gt; “¿cómo cambia `\(Y\)` cuando cambia `\(X\)`?”
+### Reporta mínimo
 
-muchas veces un `lm()` sigue siendo una muy buena herramienta.
-
-## Pero también tiene límites
-
-- asume una forma funcional bastante rígida,
-- puede quedarse corto si la relación es muy no lineal,
-- puede sufrir con interacciones complejas,
-- no siempre es el campeón en predicción.
+- cuantiles estimados,
+- fórmula del modelo,
+- variable dependiente,
+- controles,
+- tipo de error estándar,
+- interpretación de una variable clave.
 
 ---
 
-# ¿Qué aportan las técnicas de machine learning?
+# Ventajas del modelo
 
-Modelos como:
+- Muestra heterogeneidad.
+- Es útil con colas y asimetrías.
+- Ayuda a diseñar decisiones por percentiles.
+- Complementa OLS.
+- Es intuitivo cuando el problema se entiende como p10, p50, p90.
 
-- knn
-- árboles,
-- Random Forest,
-- boosting,
-- SVM,
-- redes neuronales,
+--
 
-aparecen cuando la relación entre variables ya no es tan simple.
-
----
-
-# ¿Qué aportan las técnicas de machine learning?
-
-## Su fortaleza suele estar en:
-
-- flexibilidad,
-- capacidad predictiva,
-- adaptación a patrones complejos,
-- mejor desempeño fuera de muestra.
-
-## Pero pagamos un costo
-
-- menor interpretabilidad,
-- más necesidad de tuning,
-- más hiperparámetros,
-- resultados menos "bonitos" para explicar en una reunión o en un paper causal.
-
----
-
-# Interpretar no es lo mismo que predecir
-
-Un error común es mezclar estas dos metas.
-
-.pull-left[
-
-## Si quiero interpretar
-me importan mucho cosas como:
-
-- signo del efecto,
-- tamaño del efecto,
-- significancia estadística,
-- claridad del modelo.
-
-]
-
-.pull-right[
-
-## Si quiero predecir
-me importan más cosas como:
-
-- RMSE,
-- MAE,
-- error en test,
-- estabilidad fuera de muestra.
-
-]
-
-### Entonces
-
-Un modelo puede ser:
-
-- **muy interpretable pero regular prediciendo**, o
-- **muy bueno prediciendo pero difícil de explicar**.
-
-Y eso no significa que esté mal.
-
----
-
-# ¿Qué pasa con muestras muy grandes?
-
-Si algún día tienes **50 mil observaciones**,
-sí, **claro que tiene sentido ajustar un `lm()`**.
-
-De hecho, puede correr perfectamente y dar resultados muy útiles.
-
-.pull-left[
-
-## El problema no es usar `lm()`
-
-El problema es **leerlo ingenuamente**.
-
-Con muestras muy grandes suele pasar que:
-
-- los errores estándar bajan,
-- los valores p se vuelven muy pequeños,
-- efectos muy chiquitos salen "significativos".
-
-]
-
-.pull-right[
-
-## Entonces
-
-Con mucho `\(n\)`, el `\(valor p\)` puede decir:
-
-&gt; “sí hay evidencia de efecto”
-
-pero eso **no implica** que el efecto sea grande, relevante o útil en la práctica.
-
+.center[
+.orange[Su mayor valor no es técnico: es narrativo y de decisión.]
 ]
 
 ---
 
-# En muestras grandes, mirar solo valores p puede engañar
+# Limitaciones
 
-Cuando `\(n\)` es enorme, casi todo puede terminar pareciendo importante.
-
-
-.pull.left[
-
-## Por eso conviene mirar también:
-
-- tamaño del coeficiente,
-- magnitud práctica del efecto,
-- intervalos de confianza,
-- capacidad predictiva fuera de muestra,
-- error de predicción.
-
-]
-
-.pull-right[
-
-### Reflexión importante
-
-En datos grandes, la pregunta deja de ser solo:
-
-&gt; “¿es significativo?”
-
-y pasa a ser también:
-
-&gt; “¿es importante de verdad?”  
-&gt; “¿me ayuda a explicar?”  
-&gt; “¿me ayuda a predecir?”
-
-]
+- No reemplaza una buena pregunta de investigación.
+- No soluciona endogeneidad por sí solo.
+- Puede ser más difícil de explicar si se usan muchos cuantiles.
+- Requiere cuidar gráficos y narrativa.
+- Los cuantiles extremos pueden ser inestables en muestras pequeñas.
 
 ---
 
-# Parámetros e hiperparámetros: otra diferencia importante
-
-## En regresión clásica
-normalmente estimamos **parámetros**.
-
-Por ejemplo, en `lm()`:
-
-- intercepto,
-- pendientes \(\beta\).
-
-## En machine learning
-además de parámetros, aparecen **hiperparámetros**.
-
-Por ejemplo:
-
-- profundidad del árbol,
-- número de árboles,
-- `mtry`,
-- `cost`,
-- `epsilon`,
-- tipo de kernel.
-
-
----
-
-
-# Parámetros e hiperparámetros: otra diferencia importante
-
-## Eso cambia la lógica del trabajo
-
-Ya no basta con “ajustar el modelo”.
-
-Ahora también toca:
-
-- tunear,
-- validar,
-- comparar configuraciones,
-- elegir la que generaliza mejor.
-
----
-
-# Entonces, ¿cuándo usar qué?
-
-## Usa una regresión clásica cuando:
-
-- quieres interpretar efectos,
-- necesitas una ecuación clara,
-- buscas un modelo explicable,
-- la relación parece razonablemente simple.
-
-## Usa machine learning cuando:
-
-- la prioridad es predecir,
-- sospechas relaciones no lineales,
-- hay muchas variables o complejidad,
-- el objetivo principal es desempeño fuera de muestra.
-
-
----
-
-
-# Entonces, ¿cuándo usar qué?
-
-## Y en la práctica...
-
-Muchas veces lo más sensato no es escoger un solo bando.
-
-Lo más sensato es:
-
-- empezar con un modelo simple,
-- entender el problema,
-- y luego comparar con modelos más flexibles.
-
----
-
-class: center, middle
-
-# Idea final para quedarse
-
-## `lm()` no está "viejo".
-## Y machine learning no es "mejor" por default.
-
-## Todo depende de la pregunta:
-## explicar, interpretar o predecir.
-
-### Un buen analista no se casa con una técnica.
-### Escoge la herramienta según el problema.
-
-
-
-
----
 
 
 
@@ -3182,7 +1473,7 @@ width="150px"
 
 ### [www.joaquibarandica.com](https://www.joaquibarandica.com)
 
-<i class="far fa-envelope" role="presentation" aria-label="envelope icon"></i> orlando.joaqui@correounivalle.edu.co
+orlando.joaqui@correounivalle.edu.co
 
 &lt;img src="img/Logo.jpg" width="120%"&gt;
 
@@ -3190,15 +1481,6 @@ width="150px"
 
 
 &lt;br&gt;&lt;br&gt;&lt;br&gt;
-
-
-
-
-
-
-
-
-
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
