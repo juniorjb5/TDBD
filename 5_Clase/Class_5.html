@@ -1,0 +1,1579 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>ACP Dual</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Orlando Joaqui-Barandica" />
+    <script src="libs/header-attrs/header-attrs.js"></script>
+    <link href="libs/remark-css/default.css" rel="stylesheet" />
+    <link href="libs/remark-css/rladies.css" rel="stylesheet" />
+    <link href="libs/remark-css/rladies-fonts.css" rel="stylesheet" />
+    <script src="libs/clipboard/clipboard.min.js"></script>
+    <link href="libs/shareon/shareon.min.css" rel="stylesheet" />
+    <script src="libs/shareon/shareon.min.js"></script>
+    <link href="libs/xaringanExtra-shareagain/shareagain.css" rel="stylesheet" />
+    <script src="libs/xaringanExtra-shareagain/shareagain.js"></script>
+    <link href="libs/xaringanExtra-clipboard/xaringanExtra-clipboard.css" rel="stylesheet" />
+    <script src="libs/xaringanExtra-clipboard/xaringanExtra-clipboard.js"></script>
+    <script>window.xaringanExtraClipboard(null, {"button":"Copy Code","success":"Copied!","error":"Press Ctrl+C to Copy"})</script>
+    <link href="libs/tile-view/tile-view.css" rel="stylesheet" />
+    <script src="libs/tile-view/tile-view.js"></script>
+    <link rel="stylesheet" href="fonts_mtheme.css" type="text/css" />
+    <link rel="stylesheet" href="sidney.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+
+
+
+
+class: inverse, left, bottom
+background-image: url("img/fondo.jpg")
+background-size: cover
+
+# **ACP Dual**
+----
+
+## **&lt;br/&gt; De reducir variables a comparar estructuras entre grupos**
+
+### Orlando Joaqui-Barandica
+###  
+
+
+
+
+
+
+
+---
+
+class: center, middle, inverse
+
+# Ruta de la sesión de hoy
+
+## ACP → lectura de ejes → ACP Dual → grupos → decisión
+
+&lt;br&gt;
+
+.orange[La idea no es aprender otra función de R, sino aprender a leer cuándo una estructura global cambia entre grupos.]
+
+---
+
+# ¿Dónde quedamos?
+
+En clases anteriores hemos usado modelos para explicar o predecir una variable de interés.
+
+--
+
+Hoy la lógica cambia.
+
+### Antes:
+¿Cuál variable explica mejor una respuesta?
+
+### Ahora:
+¿Cómo puedo resumir muchas variables al mismo tiempo y leer patrones generales?
+
+--
+
+.center[
+.orange[ACP y ACP Dual sirven cuando la información está repartida entre muchas variables.]
+]
+
+---
+
+# Pregunta de arranque
+
+Supongamos que una empresa mayorista conoce el gasto anual de sus clientes en varias categorías:
+
+- productos frescos,
+- leche,
+- abarrotes,
+- congelados,
+- detergentes y papel,
+- delicatessen.
+
+--
+
+### Pregunta inicial
+¿Podemos resumir estos seis gastos en dos o tres dimensiones fáciles de interpretar?
+
+--
+
+### Segunda pregunta
+¿La estructura de gasto es la misma para todos los canales comerciales?
+
+.center[
+.orange[La segunda pregunta es la que nos lleva al ACP Dual.]
+]
+
+---
+
+class: center, middle, inverse
+
+# Primero: recordemos ACP
+## Lo suficiente para leer bien la clase
+
+---
+
+# ¿Para qué sirve el ACP?
+
+ACP significa **Análisis de Componentes Principales**.
+
+En palabras sencillas, toma varias variables numéricas que pueden estar relacionadas entre sí y construye unas variables nuevas llamadas **componentes** o **dimensiones**.
+
+--
+
+### La idea práctica
+
+Si tengo seis variables de gasto, quizás dos dimensiones capturan buena parte de la información.
+
+ACP no elimina información al azar: intenta conservar la mayor variabilidad posible.
+
+--
+
+.center[
+.orange[ACP transforma muchas variables correlacionadas en pocas dimensiones no correlacionadas.]
+]
+
+---
+
+# ¿Qué es una dimensión?
+
+Una dimensión del ACP es una mezcla de las variables originales.
+
+--
+
+### Ejemplo intuitivo
+
+Una dimensión podría representar:
+
+- gasto general alto vs. bajo,
+- clientes más orientados a abarrotes vs. frescos,
+- clientes con consumo especializado vs. consumo básico.
+
+--
+
+### Importante
+
+La dimensión no viene con nombre.
+
+.center[
+.orange[El nombre lo ponemos nosotros después de mirar qué variables la construyen.]
+]
+
+---
+
+# Eigenvalue y varianza explicada
+
+### Eigenvalue o valor propio
+
+Es la cantidad de información que captura una dimensión.
+
+Si una dimensión tiene un eigenvalue alto, resume bastante variabilidad de los datos.
+
+--
+
+### Varianza explicada
+
+Es el porcentaje de información total que queda resumido en cada dimensión.
+
+Ejemplo: si Dim.1 explica 45% y Dim.2 explica 25%, el plano Dim.1–Dim.2 explica 70%.
+
+--
+
+.center[
+.orange[No necesitamos memorizar la fórmula. Necesitamos leer cuánto informa cada dimensión.]
+]
+
+---
+
+# Contribución y cos²
+
+.pull-left[
+
+### Contribución
+
+Pregunta:
+
+**¿Quién construye la dimensión?**
+
+Sirve para nombrar Dim.1, Dim.2, etc.
+
+Una variable con alta contribución es importante para interpretar el eje.
+
+]
+
+.pull-right[
+
+### Cos²
+
+Pregunta:
+
+**¿Qué tan bien se ve este punto en el plano?**
+
+Sirve para saber si conviene interpretar una variable o individuo en las dimensiones mostradas.
+
+]
+
+--
+
+.center[
+.orange[Contribución dice importancia para el eje. Cos² dice calidad de representación.]
+]
+
+---
+
+# Cómo leer un gráfico de variables
+
+### Variables cercanas
+Se mueven de manera parecida.
+
+### Variables en lados opuestos
+Tienden a representar patrones contrarios sobre el eje.
+
+### Variables largas y alejadas del centro
+Están mejor representadas en el plano.
+
+### Color por contribución
+Variables con mayor contribución ayudan más a construir los ejes.
+
+.center[
+.orange[La interpretación del ACP empieza mirando variables, no individuos.]
+]
+
+---
+
+class: center, middle, inverse
+
+# Base de trabajo
+## Clientes mayoristas y patrones de gasto
+
+---
+
+# Vamos a usar un solo ejemplo
+
+Trabajaremos con una base didáctica de **clientes mayoristas**.
+
+Cada fila es un cliente.
+
+--
+
+### Variables cuantitativas activas
+
+`Fresh`, `Milk`, `Grocery`, `Frozen`, `Detergents_Paper`, `Delicassen`.
+
+--
+
+### Variables cualitativas
+
+- `Canal`: grupo principal para comparar.
+- `Region`: variable suplementaria para acompañar la lectura.
+
+.center[
+.orange[La clase usa una sola historia: patrones de gasto, estructura global y comparación entre canales.]
+]
+
+---
+
+# Cargar datos
+
+
+```r
+library(tidyverse)
+library(FactoMineR)
+library(factoextra)
+library(scales)
+
+clientes &lt;- read_csv(
+  "Datos/clientes_mayoristas_demo.csv",
+  show_col_types = FALSE
+) %&gt;%
+  mutate(
+    Region = factor(Region),
+    Canal = factor(Canal)
+  )
+
+glimpse(clientes)
+```
+
+```
+## Rows: 240
+## Columns: 9
+## $ Cliente_ID       &lt;chr&gt; "C001", "C002", "C003", "C004", "C005", "C006", "C007…
+## $ Region           &lt;fct&gt; Cali, Medellín, Cali, Bogotá, Cali, Cali, Cali, Bogot…
+## $ Canal            &lt;fct&gt; Retail, Retail, Horeca, Horeca, Horeca, Retail, Horec…
+## $ Fresh            &lt;dbl&gt; 2480, 1965, 1488, 33072, 35374, 3007, 8142, 22327, 21…
+## $ Milk             &lt;dbl&gt; 4159, 1859, 4091, 6705, 2701, 3147, 5060, 2897, 1034,…
+## $ Grocery          &lt;dbl&gt; 3992, 3075, 1513, 4144, 2557, 4505, 2562, 2759, 4709,…
+## $ Frozen           &lt;dbl&gt; 1002, 1610, 1898, 5126, 9455, 1468, 4000, 4433, 10462…
+## $ Detergents_Paper &lt;dbl&gt; 2952, 3542, 1570, 2318, 1490, 3077, 2671, 1894, 2644,…
+## $ Delicassen       &lt;dbl&gt; 750, 967, 1936, 10264, 4593, 938, 2524, 2143, 2452, 3…
+```
+
+---
+
+# Variables activas y descriptivo inicial
+
+
+```r
+vars_gasto &lt;- c(
+  "Fresh", "Milk", "Grocery", "Frozen",
+  "Detergents_Paper", "Delicassen"
+)
+
+clientes %&gt;%
+  group_by(Canal) %&gt;%
+  summarise(
+    n = n(),
+    across(all_of(vars_gasto), mean),
+    .groups = "drop"
+  )
+```
+
+```
+## # A tibble: 2 × 8
+##   Canal      n  Fresh  Milk Grocery Frozen Detergents_Paper Delicassen
+##   &lt;fct&gt;  &lt;int&gt;  &lt;dbl&gt; &lt;dbl&gt;   &lt;dbl&gt;  &lt;dbl&gt;            &lt;dbl&gt;      &lt;dbl&gt;
+## 1 Horeca   114 10221. 2873.   3454.  4329.            1677.      2638.
+## 2 Retail   126  3764. 6552.  10140.  2046.            7045.      1351.
+```
+
+--
+
+### Lectura
+
+Si los promedios cambian entre canales, tiene sentido preguntarse si la estructura multivariada también cambia.
+
+---
+
+# Distribución de las variables
+
+&lt;img src="Class_5_files/figure-html/boxplot_gastos-1.png" width="75%" style="display: block; margin: auto;" /&gt;
+
+---
+
+# ¿Por qué estandarizar?
+
+Las variables están en unidades parecidas, pero no necesariamente tienen la misma escala.
+
+Si una variable tiene valores muy grandes o muy dispersos, podría dominar el ACP solo por escala.
+
+--
+
+### Estandarizar significa
+
+Convertir cada variable para que tenga:
+
+- media 0;
+- desviación estándar 1.
+
+--
+
+.center[
+.orange[Así el ACP compara patrones y no solamente tamaños.]
+]
+
+---
+
+class: center, middle, inverse
+
+# ACP global
+## La estructura promedio de todos los clientes
+
+---
+
+# Ejecutar el ACP
+
+
+```r
+res.pca &lt;- PCA(
+  clientes %&gt;% select(all_of(vars_gasto)),
+  scale.unit = TRUE,
+  graph = FALSE
+)
+```
+
+--
+
+### Qué hicimos
+
+- Tomamos seis variables cuantitativas.
+- Las estandarizamos.
+- Construimos dimensiones principales.
+- Guardamos el resultado en `res.pca`.
+
+---
+
+# Varianza explicada
+
+
+```r
+res.pca$eig
+```
+
+```
+##        eigenvalue percentage of variance cumulative percentage of variance
+## comp 1  2.8562131              47.603551                          47.60355
+## comp 2  2.0748620              34.581034                          82.18458
+## comp 3  0.4085836               6.809726                          88.99431
+## comp 4  0.2705699               4.509498                          93.50381
+## comp 5  0.2576975               4.294959                          97.79877
+## comp 6  0.1320739               2.201232                         100.00000
+```
+
+--
+
+### Cómo leer la tabla
+
+- `eigenvalue`: información capturada por cada dimensión.
+- `% of variance`: porcentaje explicado por esa dimensión.
+- `cumulative % of variance`: porcentaje acumulado hasta esa dimensión.
+
+.center[
+.orange[La primera decisión es cuántas dimensiones vale la pena mirar.]
+]
+
+---
+
+# Scree plot
+
+&lt;img src="Class_5_files/figure-html/pca_scree-1.png" width="60%" style="display: block; margin: auto;" /&gt;
+
+### Qué mirar
+
+Altura de las barras, caída entre dimensiones y porcentaje acumulado.
+
+.center[
+.orange[El ACP resume; no pretende contar absolutamente todo en dos ejes.]
+]
+
+---
+
+# Resultados de las variables
+
+
+```r
+res.var &lt;- get_pca_var(res.pca)
+
+res.var$coord      # coordenadas de las variables
+```
+
+```
+##                       Dim.1     Dim.2         Dim.3       Dim.4       Dim.5
+## Fresh            -0.5963004 0.6833877  0.0933130094  0.39506366 -0.10832617
+## Milk              0.7405690 0.5479259  0.0002176656 -0.09550673 -0.34807810
+## Grocery           0.8108936 0.5055534  0.0218996339 -0.03815811  0.02857794
+## Frozen           -0.5829402 0.6528759  0.3944726457 -0.25727008  0.10639214
+## Detergents_Paper  0.8347398 0.3868159  0.0204622608  0.14729898  0.32617723
+## Delicassen       -0.5079746 0.6900455 -0.4933246944 -0.12661802  0.07922765
+```
+
+```r
+res.var$contrib    # contribuciones
+```
+
+```
+##                      Dim.1     Dim.2        Dim.3      Dim.4      Dim.5
+## Fresh            12.449149 22.508422 2.131098e+00 57.6839131  4.5536171
+## Milk             19.201732 14.469528 1.159575e-05  3.3712310 47.0157295
+## Grocery          23.021689 12.318133 1.173796e-01  0.5381388  0.3169214
+## Frozen           11.897545 20.543390 3.808490e+01 24.4624031  4.3924708
+## Detergents_Paper 24.395608  7.211396 1.024770e-01  8.0189968 41.2854518
+## Delicassen        9.034276 22.949131 5.956413e+01  5.9253173  2.4358093
+```
+
+```r
+res.var$cos2       # calidad de representación
+```
+
+```
+##                      Dim.1     Dim.2        Dim.3       Dim.4        Dim.5
+## Fresh            0.3555742 0.4670187 8.707318e-03 0.156075294 0.0117345583
+## Milk             0.5484424 0.3002227 4.737832e-08 0.009121536 0.1211583669
+## Grocery          0.6575485 0.2555843 4.795940e-04 0.001456041 0.0008166986
+## Frozen           0.3398192 0.4262470 1.556087e-01 0.066187895 0.0113192882
+## Detergents_Paper 0.6967905 0.1496265 4.187041e-04 0.021696990 0.1063915838
+## Delicassen       0.2580382 0.4761628 2.433693e-01 0.016032124 0.0062770201
+```
+
+---
+
+# Resultados de las variables
+
+### Traducción
+
+- `coord`: dónde cae cada variable en el plano.
+- `contrib`: cuánto ayudó a construir cada dimensión.
+- `cos2`: qué tan bien se representa en las dimensiones.
+
+---
+
+# Gráfico de variables
+
+&lt;img src="Class_5_files/figure-html/pca_var_plot-1.png" width="60%" style="display: block; margin: auto;" /&gt;
+
+### Lectura
+
+Variables cercanas se mueven juntas. Variables opuestas diferencian perfiles. Variables alejadas del centro son más interpretables.
+
+---
+
+# Contribuciones a Dim.1 y Dim.2
+
+.pull-left[
+&lt;img src="Class_5_files/figure-html/contrib_dim1-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+.pull-right[
+&lt;img src="Class_5_files/figure-html/contrib_dim2-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+---
+
+# Cómo nombrar las dimensiones
+
+Miro las variables que más contribuyen a cada dimensión.
+
+--
+
+### Si aparecen `Grocery`, `Milk` y `Detergents_Paper`
+
+Podríamos leer la dimensión como un patrón de compras más asociado a abastecimiento comercial o minorista.
+
+--
+
+### Si aparecen `Fresh`, `Frozen` o `Delicassen`
+
+Podría indicar una dimensión más asociada a consumo de alimentos frescos, preparación de comidas o consumo especializado.
+
+.center[
+.orange[El nombre de una dimensión se justifica con variables, no con intuición suelta.]
+]
+
+---
+
+# Individuos en el ACP
+
+&lt;img src="Class_5_files/figure-html/pca_ind_plot-1.png" width="60%" style="display: block; margin: auto;" /&gt;
+
+### Lectura
+
+Puntos cercanos = perfiles de gasto parecidos. Puntos alejados = perfiles distintos.
+
+---
+
+# Biplot: individuos y variables juntos
+
+&lt;img src="Class_5_files/figure-html/pca_biplot-1.png" width="60%" style="display: block; margin: auto;" /&gt;
+
+### Lectura
+
+Si un cliente cae hacia una variable, su perfil tiende a estar asociado con valores altos en esa variable.
+
+---
+
+class: center, middle, inverse
+
+# La limitación del ACP global
+## ¿Promedio de estructuras o estructura por grupos?
+
+---
+
+# ¿Qué no responde el ACP global?
+
+El ACP global nos dice cómo se organizan las variables en toda la muestra.
+
+Pero no responde completamente esta pregunta:
+
+.center[
+.font140[
+¿Las variables se relacionan igual dentro de cada canal?
+]
+]
+
+--
+
+### Ejemplo
+
+`Grocery` puede ser central en Retail, pero no tener el mismo papel en Horeca.
+
+.center[
+.orange[El ACP global puede ocultar diferencias estructurales entre grupos.]
+]
+
+---
+
+# Aquí aparece el ACP Dual
+
+ACP Dual se usa cuando tenemos:
+
+- individuos descritos por variables cuantitativas;
+- una variable cualitativa que define grupos;
+- interés en comparar la estructura de las variables entre esos grupos.
+
+--
+
+### En nuestro caso
+
+- individuos: clientes;
+- variables: categorías de gasto;
+- grupo: canal comercial.
+
+.center[
+.orange[La estrella de la clase no es reducir dimensiones; es comparar estructuras.]
+]
+
+---
+
+# ACP vs. ACP Dual
+
+| Pregunta | ACP | ACP Dual |
+|---|---:|---:|
+| ¿Resume muchas variables? | Sí | Sí |
+| ¿Construye dimensiones principales? | Sí | Sí |
+| ¿Mira individuos y variables? | Sí | Sí |
+| ¿Usa un grupo conocido como parte central del análisis? | No | Sí |
+| ¿Permite comparar el papel de las variables entre grupos? | No directamente | Sí |
+
+.center[
+.orange[ACP pregunta: ¿cómo se organiza la información? ACP Dual pregunta: ¿esa organización cambia entre grupos?]
+]
+
+---
+
+# La intuición del Dual
+
+.center[
+.font150[
+ACP global = una estructura común.
+]
+]
+
+&lt;br&gt;
+
+.center[
+.font150[
+ACP Dual = estructura común + lectura por grupo.
+]
+]
+
+--
+
+### Traducción
+
+Una variable puede tener una posición global y varias posiciones parciales, una por grupo.
+
+Si esas posiciones parciales se separan, la variable no juega el mismo papel en todos los grupos.
+
+---
+
+# Qué buscamos en el Dual
+
+### Si las posiciones parciales son cercanas
+
+La variable juega un papel parecido en los grupos.
+
+### Si las posiciones parciales se separan mucho
+
+La variable no tiene el mismo papel en todos los grupos.
+
+### Si un grupo se aleja de otro
+
+La estructura multivariada del grupo puede ser distinta.
+
+.center[
+.orange[El Dual no solo pregunta quién compra más, sino cómo se organizan las compras dentro de cada grupo.]
+]
+
+---
+
+class: center, middle, inverse
+
+# ACP Dual en R
+## Estructura de datos y ejecución
+
+---
+
+# Preparar la base dual
+
+
+```r
+base_dual &lt;- clientes %&gt;%
+  select(
+    Region,      # cualitativa suplementaria
+    Canal,       # factor que define los grupos
+    all_of(vars_gasto)
+  )
+
+head(base_dual)
+```
+
+```
+## # A tibble: 6 × 8
+##   Region   Canal  Fresh  Milk Grocery Frozen Detergents_Paper Delicassen
+##   &lt;fct&gt;    &lt;fct&gt;  &lt;dbl&gt; &lt;dbl&gt;   &lt;dbl&gt;  &lt;dbl&gt;            &lt;dbl&gt;      &lt;dbl&gt;
+## 1 Cali     Retail  2480  4159    3992   1002             2952        750
+## 2 Medellín Retail  1965  1859    3075   1610             3542        967
+## 3 Cali     Horeca  1488  4091    1513   1898             1570       1936
+## 4 Bogotá   Horeca 33072  6705    4144   5126             2318      10264
+## 5 Cali     Horeca 35374  2701    2557   9455             1490       4593
+## 6 Cali     Retail  3007  3147    4505   1468             3077        938
+```
+
+
+Columna 1 = `Region`, suplementaria. Columna 2 = `Canal`, factor de agrupación. Columnas 3 a 8 = variables cuantitativas activas.
+
+---
+
+# Ejecutar ACP Dual
+
+
+```r
+res.dual &lt;- DMFA(
+  base_dual,
+  num.fact = 2,
+  quali.sup = 1,
+  scale.unit = TRUE,
+  graph = FALSE
+)
+```
+
+### Lectura de los argumentos
+
+- `num.fact = 2`: la columna 2 define los grupos.
+- `quali.sup = 1`: la columna 1 acompaña la interpretación.
+- `scale.unit = TRUE`: estandariza las variables cuantitativas.
+
+---
+
+# Cuidado con `num.fact`
+
+`num.fact = 2` no significa que quiero dos factores.
+
+--
+
+Significa:
+
+.center[
+.font150[
+la variable que define los grupos está en la columna 2.
+]
+]
+
+--
+
+En nuestro caso, la columna 2 es `Canal`.
+
+.center[
+.orange[Esta es una de las confusiones más comunes al usar DMFA.]
+]
+
+---
+
+# Varianza explicada en el Dual
+
+
+```r
+res.dual$eig
+```
+
+```
+##        eigenvalue percentage of variance cumulative percentage of variance
+## comp 1  2.8937152              48.228586                          48.22859
+## comp 2  1.2094187              20.156978                          68.38556
+## comp 3  0.5677629               9.462715                          77.84828
+## comp 4  0.5119438               8.532396                          86.38068
+## comp 5  0.4556415               7.594025                          93.97470
+## comp 6  0.3615179               6.025299                         100.00000
+```
+
+### Qué miro
+
+Igual que en ACP: cuánto explica Dim.1, cuánto explica Dim.2 y cuánto acumulan juntas.
+
+### Qué cambia
+
+Ahora esas dimensiones se construyen teniendo en cuenta la estructura dual definida por el factor de grupo.
+
+---
+
+# Variables globales del Dual
+
+
+```r
+res.dual$var$coord
+```
+
+```
+##                      Dim.1      Dim.2         Dim.3      Dim.4        Dim.5
+## Fresh            0.7292401 -0.4505757  0.0005984077  0.1724925 -0.326739635
+## Milk             0.7351280  0.3600846 -0.2168347359 -0.3139422 -0.372357366
+## Grocery          0.7399024  0.3986378  0.0293142705 -0.2780692  0.347736287
+## Frozen           0.6480188 -0.4936943  0.4954802258 -0.1785343  0.087808184
+## Detergents_Paper 0.5930022  0.5846219  0.2440718842  0.4863194 -0.007769274
+## Delicassen       0.7088550 -0.3637449 -0.4634805266  0.1947484  0.285554782
+```
+
+```r
+res.dual$var$contrib
+```
+
+```
+##                     Dim.1    Dim.2        Dim.3     Dim.4       Dim.5
+## Fresh            18.37745 16.78645 6.307064e-05  5.811904 23.43043606
+## Milk             18.67541 10.72093 8.281151e+00 19.252053 30.42962714
+## Grocery          18.91878 13.13954 1.513530e-01 15.103701 26.53852358
+## Frozen           14.51174 20.15299 4.323999e+01  6.226169  1.69218064
+## Detergents_Paper 12.15225 28.26009 1.049225e+01 46.197756  0.01324761
+## Delicassen       17.36437 10.94000 3.783519e+01  7.408417 17.89598497
+```
+
+```r
+res.dual$var$cos2
+```
+
+```
+##                      Dim.1     Dim.2        Dim.3      Dim.4        Dim.5
+## Fresh            0.5317912 0.2030184 3.580917e-07 0.02975368 1.067588e-01
+## Milk             0.5404132 0.1296610 4.701730e-02 0.09855968 1.386500e-01
+## Grocery          0.5474555 0.1589121 8.593265e-04 0.07732245 1.209205e-01
+## Frozen           0.4199284 0.2437341 2.455007e-01 0.03187449 7.710277e-03
+## Detergents_Paper 0.3516516 0.3417828 5.957108e-02 0.23650653 6.036162e-05
+## Delicassen       0.5024753 0.1323104 2.148142e-01 0.03792693 8.154153e-02
+```
+
+
+---
+
+# Variables globales del Dual
+
+### Lectura
+
+Esto se parece mucho al ACP: coordenadas, contribuciones y calidad de representación.
+
+.center[
+.orange[La lectura global se conserva, pero todavía no hemos llegado a lo más importante.]
+]
+
+---
+
+# Gráfico de individuos en el Dual
+
+&lt;img src="Class_5_files/figure-html/dual_ind-1.png" width="60%" style="display: block; margin: auto;" /&gt;
+
+### Qué observar
+
+Si los clientes de un canal se agrupan, si hay mezcla entre canales, si aparecen individuos extremos o si algún grupo queda más disperso.
+
+---
+
+# Gráfico de variables en el Dual
+
+&lt;img src="Class_5_files/figure-html/dual_var_plot-1.png" width="80%" style="display: block; margin: auto;" /&gt;
+
+
+---
+
+# Gráfico de variables en el Dual
+
+### ¿Cómo leemos este gráfico?
+
+Las **flechas negras** muestran la estructura global.  
+Las **flechas de color** muestran cómo aparece cada variable dentro de **Horeca** y **Retail**.
+
+- **Dim. 1 (48.2%)** recoge principalmente un nivel general de compra.
+- **Dim. 2 (20.2%)** contrapone `Milk`, `Grocery` y `Detergents_Paper`
+  frente a `Fresh`, `Frozen` y `Delicassen`.
+- Retail presenta una asociación más marcada con `Milk`, `Grocery`
+  y `Detergents_Paper`, mientras que Horeca se proyecta relativamente
+  más hacia `Fresh` y `Frozen`.
+
+.center[
+.orange[La estructura general se conserva, pero el peso de algunas variables cambia según el canal. Si la flecha azul y la rosada de una variable quedan casi juntas, esa variable juega un papel parecido en ambos grupos. Si se separan, el DUAL nos está diciendo que su papel cambia según el grupo.]
+]
+
+
+
+---
+
+
+---
+
+# Biplots por canal
+
+.pull-left[
+.center[
+![](img/Horeca.png)
+]
+]
+
+.pull-right[
+.center[
+![](img/Retail.png)
+]
+]
+
+.center[
+.orange[Ahora no miramos solo la estructura global: miramos cómo se comportan las variables dentro de cada canal.]
+]
+
+---
+
+# ¿Cómo se leen estos gráficos?
+
+Cada gráfico muestra la relación entre las variables y las dos primeras dimensiones, pero **separando por canal**.
+
+- Los puntos cerca del borde están mejor representados por Dim. 1 y Dim. 2.
+- Variables cercanas entre sí tienen comportamientos parecidos.
+- Variables en direcciones opuestas ayudan a diferenciar perfiles.
+- La Dim. 1 está asociada con un nivel general de compra.
+- La Dim. 2 separa dos tipos de canasta.
+
+.center[
+**Arriba:** `Milk`, `Grocery`, `Detergents_Paper`  
+**Abajo:** `Fresh`, `Frozen`, `Delicassen`
+]
+
+.orange[
+La pregunta clave no es solo dónde cae cada variable, sino si esa estructura cambia entre Horeca y Retail.
+]
+
+---
+
+# Interpretación: Horeca vs Retail
+
+En ambos canales aparece una estructura común: todas las variables apuntan hacia la derecha, por lo que la **Dim. 1** resume una intensidad general de compra.
+
+La **Dim. 2** separa dos perfiles de productos:
+
+.pull-left[
+### Horeca
+
+`Milk`, `Grocery` y `Detergents_Paper` aparecen arriba.
+
+`Fresh`, `Frozen` y `Delicassen` aparecen abajo.
+
+La separación existe, pero es menos marcada.
+]
+
+.pull-right[
+### Retail
+
+La oposición es más clara.
+
+`Detergents_Paper`, `Grocery` y `Milk` tienen una relación más fuerte con la parte positiva de Dim. 2.
+
+`Fresh`, `Frozen` y `Delicassen` quedan en la dirección contraria.
+]
+
+.center[
+.orange[
+Conclusión: la estructura general se mantiene, pero Retail muestra con mayor fuerza la separación entre tipos de canasta.
+]
+]
+
+
+
+---
+
+# La salida clave: `var.partiel`
+
+
+```r
+res.dual$var.partiel
+```
+
+```
+## $Horeca
+##                      Dim.1      Dim.2       Dim.3      Dim.4       Dim.5
+## Fresh            0.7387355 -0.6022804  0.06081927  0.1661626 -0.23520626
+## Milk             0.6155878  0.2247231 -0.29820946 -0.3683143 -0.46161689
+## Grocery          0.6385692  0.1836433  0.06174620 -0.3828767  0.54211396
+## Frozen           0.7374989 -0.5420865  0.46385126 -0.1204854  0.10260302
+## Detergents_Paper 0.4614280  0.4647426  0.36256156  0.6356130 -0.02872586
+## Delicassen       0.7428090 -0.4551491 -0.41480174  0.1510540  0.26808113
+## 
+## $Retail
+##                      Dim.1      Dim.2         Dim.3      Dim.4       Dim.5
+## Fresh            0.7230398 -0.3306323 -0.0555813635  0.1899292 -0.44776334
+## Milk             0.8346870  0.4696162 -0.1409722497 -0.2552137 -0.27235626
+## Grocery          0.8245508  0.5720360 -0.0009344026 -0.1482794  0.11789154
+## Frozen           0.5760938 -0.4565861  0.5251052097 -0.2672817  0.07191316
+## Detergents_Paper 0.7021150  0.6825006  0.1335914419  0.3060143  0.01778609
+## Delicassen       0.6825662 -0.2917812 -0.5090036026  0.2646108  0.31447717
+```
+
+
+---
+
+# La salida clave: `var.partiel`
+
+### Qué contiene
+
+Las coordenadas parciales de las variables por grupo.
+
+### En lenguaje sencillo
+
+Para cada variable, el Dual permite observar cómo se ubica dentro de cada canal.
+
+.center[
+.orange[Esta es la salida que convierte el ACP en una comparación entre estructuras.]
+]
+
+---
+
+# Cómo interpretar `var.partiel`
+
+Supongamos que miramos `Grocery`.
+
+--
+
+### Caso 1
+
+`Grocery` tiene coordenadas parecidas en Retail y Horeca.
+
+Lectura: su papel en la estructura es semejante entre canales.
+
+--
+
+### Caso 2
+
+`Grocery` se ubica fuerte en Dim.1 para Retail, pero no para Horeca.
+
+Lectura: esa variable organiza más un canal que otro.
+
+.center[
+.orange[No miramos solo el promedio de una variable, miramos su papel dentro de la estructura multivariada.]
+]
+
+---
+
+# Gráfico de grupos
+
+&lt;img src="Class_5_files/figure-html/dual_group-1.png" width="60%" style="display: block; margin: auto;" /&gt;
+
+### Lectura
+
+Si los grupos están próximos, la estructura de variables es parecida. Si se separan, hay diferencias importantes en la forma como las variables organizan a los individuos.
+
+---
+
+# Variable suplementaria
+
+&lt;img src="Class_5_files/figure-html/dual_quali-1.png" width="60%" style="display: block; margin: auto;" /&gt;
+
+
+`Region` no construyó los ejes principales. Se proyecta para ayudar a interpretar.
+
+.center[
+.orange[La suplementaria acompaña la lectura; no define el análisis.]
+]
+
+
+---
+
+# Variable suplementaria
+
+### ¿Qué nos aporta `Region`?
+
+`Region` **no construye las dimensiones**: se proyecta después sobre el espacio factorial
+para ayudarnos a entender mejor los perfiles encontrados.
+
+- **Bogotá** y **Medellín** aparecen en zonas opuestas del plano, lo que sugiere perfiles de compra diferentes.
+- **Cali** se encuentra cerca del origen: las dos primeras dimensiones no la diferencian fuertemente del perfil promedio.
+- Las posiciones **Horeca** y **Retail** no coinciden completamente dentro de cada región:
+  el patrón regional también puede cambiar según el canal.
+
+.center[
+.orange[La variable suplementaria no modifica el mapa; nos ayuda a ponerle contexto al mapa.]
+]
+
+
+---
+
+# Receta para interpretar ACP Dual
+
+```text
+1. Leer varianza explicada.
+2. Nombrar Dim.1 y Dim.2 usando contribuciones.
+3. Mirar individuos y grupos.
+4. Revisar variables parciales con var.partiel.
+5. Preguntar qué variable cambia de papel entre grupos.
+6. Cerrar con una decisión.
+```
+
+--
+
+.center[
+.orange[Si no hay decisión, el análisis se queda en dibujo bonito.]
+]
+
+---
+
+# Ejemplo de interpretación completa
+
+Supongamos que Dim.1 está asociada con `Milk`, `Grocery` y `Detergents_Paper`.
+
+--
+
+Podemos decir:
+
+&gt; Dim.1 representa un patrón de compras orientado a abastecimiento comercial y productos de rotación.
+
+--
+
+Si Retail se ubica más fuerte en esa dirección:
+
+&gt; El canal Retail parece estar más conectado con ese patrón de compra.
+
+--
+
+Si `var.partiel` muestra que esas variables se separan por canal:
+
+&gt; El papel de esas categorías no es igual en todos los canales.
+
+---
+
+# Qué decisión podría tomar una empresa
+
+Con ACP y Dual, la empresa podría decidir:
+
+--
+
+### 1. Diferenciar portafolios
+No ofrecer el mismo paquete de productos a todos los canales.
+
+### 2. Diseñar promociones por patrón
+Promocionar categorías que caracterizan un grupo específico.
+
+### 3. Segmentar clientes
+Agrupar clientes a partir de sus coordenadas factoriales.
+
+.center[
+.orange[La técnica se justifica si cambia una decisión.]
+]
+
+---
+
+class: center, middle, inverse
+
+# Bonus aplicado
+## Clusterización sobre factores
+
+---
+
+# ¿Por qué clusterizar sobre factores?
+
+Podemos agrupar clientes usando las seis variables originales.
+
+Pero si esas variables están correlacionadas, el clustering puede duplicar información.
+
+--
+
+### Alternativa
+
+Primero usamos ACP para resumir la información.
+
+Luego aplicamos clustering sobre las coordenadas factoriales.
+
+.center[
+.font130[
+variables originales → ACP → coordenadas factoriales → clusters
+]
+]
+
+---
+
+# Coordenadas factoriales y k-means
+
+
+```r
+coord_factores &lt;- res.pca$ind$coord[, 1:3]
+
+set.seed(123)
+
+modelo_cluster &lt;- kmeans(
+  coord_factores,
+  centers = 3,
+  nstart = 25
+)
+
+clientes_cluster &lt;- clientes %&gt;%
+  mutate(cluster = factor(modelo_cluster$cluster))
+```
+
+--
+
+### Nota
+
+Usamos 3 clusters como ejercicio aplicado. En un análisis formal, justificaríamos mejor el número de clusters.
+
+---
+
+# Ver clusters en el plano factorial
+
+&lt;img src="Class_5_files/figure-html/cluster_plot-1.png" width="72%" style="display: block; margin: auto;" /&gt;
+
+---
+
+# Perfil promedio de los clusters
+
+
+```r
+perfil_cluster &lt;- clientes_cluster %&gt;%
+  group_by(cluster) %&gt;%
+  summarise(n = n(), across(all_of(vars_gasto), mean), .groups = "drop")
+
+perfil_cluster
+```
+
+```
+## # A tibble: 3 × 8
+##   cluster     n  Fresh   Milk Grocery Frozen Detergents_Paper Delicassen
+##   &lt;fct&gt;   &lt;int&gt;  &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;  &lt;dbl&gt;            &lt;dbl&gt;      &lt;dbl&gt;
+## 1 1          24  5129. 15181.  23812.  2615.           15571.      1807.
+## 2 2         168  4663.  3680.   5333.  2268.            3664.      1466.
+## 3 3          48 15269.  3553.   4249.  6405.            1867.      3778.
+```
+
+
+---
+
+# Perfil promedio de los clusters
+
+
+```r
+perfil_cluster &lt;- clientes_cluster %&gt;%
+  group_by(cluster) %&gt;%
+  summarise(n = n(), across(all_of(vars_gasto), mean), .groups = "drop")
+
+perfil_cluster %&gt;%
+  pivot_longer(all_of(vars_gasto), names_to = "variable", values_to = "media") %&gt;%
+  ggplot(aes(x = variable, y = media, group = cluster, color = cluster)) +
+  geom_line(linewidth = 1) +
+  geom_point(size = 2) +
+  scale_y_continuous(labels = comma) +
+  labs(title = "Perfil promedio de gasto por cluster", x = NULL, y = "Gasto promedio") +
+  theme_minimal(base_size = 13) +
+  theme(axis.text.x = element_text(angle = 30, hjust = 1))
+```
+
+
+---
+
+# Perfil promedio de los clusters
+
+&lt;img src="Class_5_files/figure-html/perfil_cluster3-1.png" width="80%" style="display: block; margin: auto;" /&gt;
+
+
+
+
+---
+
+
+# Cómo interpretar los clusters
+
+No basta con decir:
+
+.center[
+.red["salieron tres clusters".]
+]
+
+--
+
+Hay que describirlos.
+
+### Ejemplo de lectura
+
+- Cluster 1: clientes con alto gasto en categorías de abastecimiento.
+- Cluster 2: clientes más orientados a productos frescos o congelados.
+- Cluster 3: clientes de bajo volumen relativo o perfil mixto.
+
+.center[
+.orange[El cluster se vuelve útil cuando lo convertimos en segmento interpretable.]
+]
+
+---
+
+# ¿Dónde queda el Dual frente al cluster?
+
+No hacen lo mismo.
+
+--
+
+.pull-left[
+
+### ACP Dual
+
+Compara estructuras entre grupos conocidos.
+
+Ejemplo: Retail vs. Horeca.
+
+]
+
+.pull-right[
+
+### Clustering
+
+Crea grupos nuevos a partir de los datos.
+
+Ejemplo: segmento 1, 2 y 3.
+
+]
+
+--
+
+.center[
+.orange[Dual compara grupos que ya existen. Clustering descubre grupos posibles.]
+]
+
+---
+
+class: center, middle, inverse
+
+# Cierre
+## Qué se llevan de la clase
+
+---
+
+
+# Flujo de trabajo recomendado
+
+```text
+1. Definir variables cuantitativas activas
+2. Revisar descriptivos
+3. Correr ACP global
+4. Interpretar varianza explicada
+5. Leer variables: contribuciones y cos2
+6. Leer individuos y biplot
+7. Definir grupo de comparación
+8. Correr ACP Dual
+9. Revisar grupos y variables parciales
+10. Cerrar con decisión
+```
+
+---
+
+# Errores comunes
+
+### Error 1
+Interpretar Dim.1 sin mirar contribuciones.
+
+### Error 2
+Decir que cos² y contribución son lo mismo.
+
+### Error 3
+Usar una variable cualitativa como activa en ACP, cuando el método espera cuantitativas.
+
+### Error 4
+Correr Dual y no mirar `var.partiel`.
+
+.center[
+.orange[En esta clase, `var.partiel` es la pieza que no se puede olvidar.]
+]
+
+---
+
+# Pregunta final de decisión
+
+Después de hacer ACP y ACP Dual, la pregunta no es:
+
+.center[
+.red["¿me salió bonito el gráfico?"]
+]
+
+--
+
+La pregunta es:
+
+.center[
+.font150[
+¿Qué decisión cambia al saber que los grupos no organizan las variables de la misma manera?
+]
+]
+
+--
+
+### Esa respuesta puede ser
+
+segmentación, portafolio, priorización comercial, pricing, promoción o rediseño de oferta.
+
+---
+
+class: inverse, center, middle
+background-color: #122140
+
+.pull-left[
+
+.center[
+&lt;br&gt;&lt;br&gt;
+
+# Gracias!!!
+
+&lt;br&gt;
+
+### ¿Preguntas?
+
+&lt;br&gt;
+
+&lt;img src="img/qr-code.png" width="49%" style="display: block; margin: auto;" /&gt;
+
+]
+
+]
+
+.pull-right[
+
+&lt;br&gt; 
+&lt;br&gt; 
+&lt;img style="border-radius: 50%;" src="img/avatar.png"
+width="150px"
+/&gt;
+
+### [www.joaquibarandica.com](https://www.joaquibarandica.com)
+
+orlando.joaqui@correounivalle.edu.co
+
+&lt;img src="img/Logo.jpg" width="120%"&gt;
+
+]
+
+&lt;br&gt;&lt;br&gt;&lt;br&gt;
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script src="macros.js"></script>
+<script>var slideshow = remark.create({
+"ratio": "16:9",
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+// add `data-at-shortcutkeys` attribute to <body> to resolve conflicts with JAWS
+// screen reader (see PR #262)
+(function(d) {
+  let res = {};
+  d.querySelectorAll('.remark-help-content table tr').forEach(tr => {
+    const t = tr.querySelector('td:nth-child(2)').innerText;
+    tr.querySelectorAll('td:first-child .key').forEach(key => {
+      const k = key.innerText;
+      if (/^[a-z]$/.test(k)) res[k] = t;  // must be a single letter (key)
+    });
+  });
+  d.body.setAttribute('data-at-shortcutkeys', JSON.stringify(res));
+})(document);
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
