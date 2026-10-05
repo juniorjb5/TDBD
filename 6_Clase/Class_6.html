@@ -1,0 +1,1933 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>ACM</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Orlando Joaqui-Barandica" />
+    <script src="libs/header-attrs/header-attrs.js"></script>
+    <link href="libs/remark-css/default.css" rel="stylesheet" />
+    <link href="libs/remark-css/rladies.css" rel="stylesheet" />
+    <link href="libs/remark-css/rladies-fonts.css" rel="stylesheet" />
+    <script src="libs/clipboard/clipboard.min.js"></script>
+    <link href="libs/shareon/shareon.min.css" rel="stylesheet" />
+    <script src="libs/shareon/shareon.min.js"></script>
+    <link href="libs/xaringanExtra-shareagain/shareagain.css" rel="stylesheet" />
+    <script src="libs/xaringanExtra-shareagain/shareagain.js"></script>
+    <link href="libs/xaringanExtra-clipboard/xaringanExtra-clipboard.css" rel="stylesheet" />
+    <script src="libs/xaringanExtra-clipboard/xaringanExtra-clipboard.js"></script>
+    <script>window.xaringanExtraClipboard(null, {"button":"Copy Code","success":"Copied!","error":"Press Ctrl+C to Copy"})</script>
+    <link href="libs/tile-view/tile-view.css" rel="stylesheet" />
+    <script src="libs/tile-view/tile-view.js"></script>
+    <link rel="stylesheet" href="fonts_mtheme.css" type="text/css" />
+    <link rel="stylesheet" href="sidney.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+
+
+
+
+class: inverse, left, bottom
+background-image: url("img/fondo.jpg")
+background-size: cover
+
+# **ACM**
+----
+
+## **&lt;br/&gt; Análisis de Correspondencias Múltiples**
+
+### Orlando Joaqui-Barandica
+###  
+
+
+
+
+
+
+
+---
+
+class: center, middle, inverse
+
+# Ruta de la sesión de hoy
+
+## Categóricas → ACM → modalidades → perfiles → clusters → decisión
+
+&lt;br&gt;
+
+.orange[La idea no es producir otro mapa factorial. La idea es convertir muchas respuestas cualitativas en perfiles que permitan tomar una decisión.]
+
+---
+
+# ¿Dónde quedamos?
+
+En la clase anterior usamos ACP y ACP Dual para resumir variables cuantitativas.
+
+--
+
+Hoy cambiamos el tipo de dato.
+
+### Antes:
+Gasto, ingreso, ventas, precio, edad, puntaje.
+
+### Ahora:
+Sector, tamaño, formalización, acceso a crédito, uso digital, mercado, obstáculo.
+
+--
+
+.center[
+.orange[Cuando las variables son categóricas, el ACP ya no es la herramienta natural. Ahí aparece el ACM.]
+]
+
+---
+
+# Pregunta de arranque
+
+Supongamos que tenemos una encuesta a empresarios.
+
+Cada empresario responde preguntas como:
+
+- sector de actividad;
+- tamaño de empresa;
+- nivel de formalización;
+- financiación inicial;
+- uso de herramientas digitales;
+- principal obstáculo;
+- objetivo para los próximos 12 meses.
+
+--
+
+### Pregunta
+¿Podemos encontrar perfiles de empresarios a partir de sus respuestas?
+
+.center[
+.orange[El ACM sirve para leer asociaciones entre categorías, no para predecir una variable continua.]
+]
+
+---
+
+class: center, middle, inverse
+
+# Primero: la intuición del ACM
+## Leer bien los mapas
+
+---
+
+# ¿Qué es el ACM?
+
+ACM significa **Análisis de Correspondencias Múltiples**.
+
+Es una técnica exploratoria para bases donde varias variables son cualitativas o categóricas.
+
+--
+
+### En palabras sencillas
+
+El ACM convierte muchas categorías en un mapa.
+
+En ese mapa quedan cerca las categorías que tienden a aparecer juntas en los mismos individuos.
+
+--
+
+.center[
+.orange[Si muchos empresarios con uso digital alto también tienen mercado nacional e innovación alta, esas modalidades deberían aparecer cerca.]
+]
+
+---
+
+# ¿Qué analiza realmente el ACM?
+
+El ACM no analiza promedios.
+
+Analiza **patrones de co-ocurrencia** entre modalidades.
+
+--
+
+### Ejemplo
+
+No pregunta:
+
+.center[
+.red[¿cuánto vende cada empresario?]
+]
+
+Pregunta:
+
+.center[
+.font140[¿qué respuestas aparecen juntas con frecuencia?]
+]
+
+--
+
+.orange[Por eso el ACM es muy útil en encuestas, segmentación, perfiles de clientes, diagnósticos institucionales y estudios de mercado.]
+
+---
+
+# Variables y modalidades
+
+En ACM cada variable categórica tiene varias modalidades.
+
+### Variable
+`uso_digital`
+
+### Modalidades
+`Bajo`, `Medio`, `Alto`
+
+---
+
+
+# Variables y modalidades
+
+### Variable
+`principal_obstaculo`
+
+### Modalidades
+`Financiacion`, `Marketing`, `Costos de insumos`, `Formalizacion`.
+
+--
+
+.center[
+.orange[El mapa del ACM se interpreta principalmente mirando modalidades.]
+]
+
+---
+
+# ACP vs. ACM
+
+| Pregunta | ACP | ACM |
+|---|---:|---:|
+| Tipo de variables | Cuantitativas | Categóricas |
+| Unidad principal de lectura | Variables e individuos | Modalidades e individuos |
+| Distancia entre puntos | Diferencias numéricas | Diferencias de perfiles de respuesta |
+| Uso típico | Reducción de variables numéricas | Segmentación de respuestas categóricas |
+| Salida clave | Dimensiones, contribuciones, cos² | Dimensiones, modalidades, contribuciones, clusters |
+
+.center[
+.orange[La lógica factorial sigue, pero cambia lo que significa estar cerca o lejos.]
+]
+
+---
+
+# Cómo se lee la cercanía
+
+### Modalidades cercanas
+Tienden a aparecer juntas en los mismos empresarios.
+
+### Modalidades opuestas
+Ayudan a separar perfiles diferentes.
+
+### Modalidades cerca del origen
+No diferencian mucho. Son más promedio.
+
+### Modalidades alejadas del origen
+Son más características de algún perfil.
+
+.center[
+.orange[En ACM, lo lejos del centro suele ser más informativo que lo que queda pegado al centro.]
+]
+
+---
+
+# Cuidado con una mala lectura
+
+No podemos decir automáticamente:
+
+.center[
+.red["esta categoría causa esta otra".]
+]
+
+--
+
+El ACM no demuestra causalidad.
+
+El ACM muestra asociaciones y perfiles.
+
+--
+
+.center[
+.orange[La frase correcta es: estas modalidades tienden a aparecer juntas en la base.]
+]
+
+---
+
+class: center, middle, inverse
+
+# Base de trabajo
+## Empresarios y perfiles cualitativos
+
+---
+
+# Vamos a usar un solo ejemplo
+
+Trabajaremos con una base didáctica de empresarios.
+
+Cada fila es un empresario.
+
+--
+
+### Variables activas
+
+Todas las variables que entran al ACM son categóricas:
+
+`sector`, `tamano_empresa`, `formalizacion`, `uso_digital`, `mercado_principal`, `innovacion`, `principal_obstaculo`, entre otras.
+
+--
+
+.center[
+.orange[La historia de la clase es simple: usar respuestas cualitativas para construir perfiles de empresarios.]
+]
+
+---
+
+# Cargar datos
+
+
+```r
+library(tidyverse)
+library(ade4)
+library(FactoClass)
+
+empresarios_raw &lt;- read_delim(
+  "Datos/empresarios_acm_demo.csv",
+  delim = ";",
+  show_col_types = FALSE
+)
+
+glimpse(empresarios_raw)
+```
+
+```
+## Rows: 180
+## Columns: 16
+## $ id                      &lt;chr&gt; "E001", "E002", "E003", "E004", "E005", "E006"…
+## $ sector                  &lt;chr&gt; "Comercio", "Manufactura", "Servicios", "Comer…
+## $ tamano_empresa          &lt;chr&gt; "Micro", "Pequena", "Pequena", "Mediana", "Med…
+## $ antiguedad_empresa      &lt;chr&gt; "Mas de 5 anos", "Entre 2 y 5 anos", "Mas de 5…
+## $ formalizacion           &lt;chr&gt; "Camara de comercio", "Camara de comercio", "R…
+## $ educacion_emprendedor   &lt;chr&gt; "Tecnica", "Tecnica", "Secundaria", "Posgrado"…
+## $ experiencia_emprendedor &lt;chr&gt; "Entre 2 y 5 anos", "Mas de 5 anos", "Mas de 5…
+## $ financiacion_inicial    &lt;chr&gt; "Credito informal", "Credito bancario", "Famil…
+## $ uso_digital             &lt;chr&gt; "Medio", "Bajo", "Medio", "Alto", "Alto", "Med…
+## $ mercado_principal       &lt;chr&gt; "Ciudad", "Nacional", "Ciudad", "Ciudad", "Ciu…
+## $ innovacion              &lt;chr&gt; "Baja", "Media", "Baja", "Media", "Media", "Al…
+## $ principal_obstaculo     &lt;chr&gt; "Financiacion", "Costos de insumos", "Competen…
+## $ objetivo_12_meses       &lt;chr&gt; "Sostener el negocio", "Mejorar productividad"…
+## $ capacitacion_reciente   &lt;chr&gt; "Si", "Si", "No", "Si", "Si", "Si", "Si", "Si"…
+## $ red_apoyo               &lt;chr&gt; "Gremio", "Gremio", "Ninguna", "Gremio", "Grem…
+## $ region                  &lt;chr&gt; "Palmira", "Buga", "Buenaventura", "Jamundi", …
+```
+
+---
+
+# Preparar base para ACM
+
+
+```r
+empresarios &lt;- empresarios_raw %&gt;%
+  select(-id) %&gt;%
+  mutate(across(everything(), as.factor)) %&gt;%
+  as.data.frame()
+
+str(empresarios)
+```
+
+```
+## 'data.frame':	180 obs. of  15 variables:
+##  $ sector                 : Factor w/ 6 levels "Agroindustria",..: 3 4 5 3 5 5 5 3 4 6 ...
+##  $ tamano_empresa         : Factor w/ 3 levels "Mediana","Micro",..: 2 3 3 1 1 1 2 3 1 1 ...
+##  $ antiguedad_empresa     : Factor w/ 3 levels "Entre 2 y 5 anos",..: 2 1 2 3 3 3 2 2 2 1 ...
+##  $ formalizacion          : Factor w/ 3 levels "Camara de comercio",..: 1 1 3 3 3 3 3 1 1 1 ...
+##  $ educacion_emprendedor  : Factor w/ 4 levels "Posgrado","Profesional",..: 4 4 3 1 4 4 3 2 4 4 ...
+##  $ experiencia_emprendedor: Factor w/ 3 levels "Entre 2 y 5 anos",..: 1 2 2 1 2 1 1 1 2 2 ...
+##  $ financiacion_inicial   : Factor w/ 5 levels "Ahorros propios",..: 4 3 5 2 1 2 5 1 3 3 ...
+##  $ uso_digital            : Factor w/ 3 levels "Alto","Bajo",..: 3 2 3 1 1 3 3 3 3 1 ...
+##  $ mercado_principal      : Factor w/ 4 levels "Barrio o comuna",..: 2 3 2 2 2 2 1 2 3 2 ...
+##  $ innovacion             : Factor w/ 3 levels "Alta","Baja",..: 2 3 2 3 3 1 2 3 1 3 ...
+##  $ principal_obstaculo    : Factor w/ 7 levels "Competencia",..: 3 2 1 3 5 3 1 3 2 3 ...
+##  $ objetivo_12_meses      : Factor w/ 5 levels "Aumentar ventas",..: 5 4 1 1 1 1 5 1 2 2 ...
+##  $ capacitacion_reciente  : Factor w/ 2 levels "No","Si": 2 2 1 2 2 2 2 2 1 2 ...
+##  $ red_apoyo              : Factor w/ 5 levels "Familia","Gremio",..: 2 2 4 2 2 2 2 4 5 2 ...
+##  $ region                 : Factor w/ 6 levels "Buenaventura",..: 5 2 1 4 5 3 3 3 2 5 ...
+```
+
+--
+
+### Lectura
+
+El ACM necesita variables cualitativas. Por eso convertimos todas las columnas a `factor`.
+
+---
+
+# Descriptivo inicial
+
+
+```r
+empresarios %&gt;%
+  count(sector, sort = TRUE)
+```
+
+```
+##          sector  n
+## 1     Servicios 61
+## 2     Alimentos 41
+## 3      Comercio 38
+## 4 Agroindustria 15
+## 5   Manufactura 15
+## 6    Tecnologia 10
+```
+
+```r
+empresarios %&gt;%
+  count(uso_digital, sort = TRUE)
+```
+
+```
+##   uso_digital  n
+## 1       Medio 77
+## 2        Bajo 75
+## 3        Alto 28
+```
+
+---
+
+# Descriptivo inicial
+
+
+```r
+empresarios %&gt;%
+  count(principal_obstaculo, sort = TRUE)
+```
+
+```
+##   principal_obstaculo  n
+## 1        Financiacion 59
+## 2        Ventas bajas 29
+## 3      Talento humano 22
+## 4         Competencia 20
+## 5   Costos de insumos 18
+## 6           Marketing 18
+## 7       Formalizacion 14
+```
+
+--
+
+.orange[Antes de correr cualquier técnica, siempre miramos qué categorías tenemos y si hay categorías demasiado raras.]
+
+---
+
+
+---
+
+# Un gráfico antes del ACM
+
+&lt;img src="Class_6_files/figure-html/grafico_descriptivo-1.png" width="70%" style="display: block; margin: auto;" /&gt;
+
+---
+
+# ¿Por qué no basta con tablas cruzadas?
+
+Una tabla cruzada compara dos variables.
+
+Pero en la encuesta tenemos muchas variables al mismo tiempo.
+
+--
+
+### Problema
+
+Si cruzamos todo contra todo, el análisis se vuelve inmanejable.
+
+### Solución
+
+El ACM resume muchas relaciones categóricas en pocas dimensiones.
+
+.center[
+.orange[El ACM es una forma ordenada de leer muchas tablas cruzadas al mismo tiempo.]
+]
+
+---
+
+class: center, middle, inverse
+
+# ACM con FactoClass
+## Manteniendo la estructura de trabajo aplicada
+
+---
+
+# Ejecutar FactoClass
+
+
+```r
+clusters &lt;- FactoClass(
+  empresarios,
+  dudi.acm,
+  nf = 3,
+  nfcl = 3,
+  k.clust = 4,
+  scanFC = FALSE
+)
+```
+
+```
+## The number of retained axes for factorial analysis is  3 
+## 
+## The number of axes for clustering is  3
+```
+
+```
+## Look the histogram of 25 indexes 
+## Partition in  4  clusters
+```
+
+---
+
+
+# Ejecutar FactoClass
+
+### Qué hicimos
+
+- `dudi.acm`: ejecuta el ACM.
+- `nf = 3`: conserva 3 ejes factoriales para el análisis.
+- `nfcl = 3`: usa 3 coordenadas para clasificar.
+- `k.clust = 4`: propone 4 perfiles o clases.
+- `scanFC = FALSE`: evita que R pregunte valores por consola.
+
+---
+
+# La versión interactiva
+
+En consola también podría escribirse así:
+
+
+```r
+clusters &lt;- FactoClass(empresarios, dudi.acm)
+```
+
+--
+
+### Pero...
+
+Esa versión suele preguntar en consola cuántos ejes y cuántas clases usar. Como lo haciamos antes.
+
+Por ahora lo dejaremos fijo, para continuar:
+
+
+```r
+clusters &lt;- FactoClass(
+  empresarios,
+  dudi.acm,
+  nf = 3,
+  nfcl = 3,
+  k.clust = 4,
+  scanFC = FALSE
+)
+```
+
+
+---
+
+# Qué queda guardado en `clusters`
+
+
+```r
+names(clusters)
+```
+
+```
+##  [1] "dudi2"      "dudi"       "nfcl"       "k"          "indices"   
+##  [6] "cluster"    "cor.clus"   "clus.summ"  "carac.cont" "carac.cate"
+## [11] "carac.frec"
+```
+
+--
+
+### Lo importante para esta clase
+
+- `clusters$dudi`: resultados del ACM.
+- `clusters$cluster`: grupo asignado a cada empresario.
+- `clusters$carac.cate`: modalidades que caracterizan cada grupo.
+
+.center[
+.orange[La salida clave de negocio no es solo el mapa. Es la caracterización de perfiles.]
+]
+
+---
+
+# Agregar el cluster a la base
+
+
+```r
+Clus &lt;- cbind(
+  cluster = as.factor(clusters$cluster),
+  empresarios
+)
+
+table(Clus$cluster)
+```
+
+```
+## 
+##  1  2  3  4 
+## 58 45 47 30
+```
+
+--
+
+### Lectura
+
+Cada empresario queda asignado a un perfil.
+
+Luego podemos describir qué caracteriza a cada perfil.
+
+---
+
+# Primer mapa factorial
+
+
+```r
+plot(clusters$dudi)
+```
+
+&lt;img src="Class_6_files/figure-html/mapa_general-1.png" width="65%" style="display: block; margin: auto;" /&gt;
+
+
+
+---
+
+# Primer mapa factorial
+
+### Qué mirar
+
+- porcentaje de inercia de los ejes;
+- nube de individuos;
+- modalidades alejadas del centro;
+- separación entre perfiles.
+
+---
+
+# Mapa de individuos
+
+
+```r
+s.label(
+  clusters$dudi$li,
+  label = row.names(empresarios),
+  sub = "Empresarios en el plano factorial",
+  possub = "bottomright"
+)
+```
+
+&lt;img src="Class_6_files/figure-html/mapa_individuos-1.png" width="65%" style="display: block; margin: auto;" /&gt;
+
+---
+
+# Mapa de individuos
+
+### Lectura
+
+Individuos cercanos respondieron parecido.
+
+Individuos alejados tienen perfiles de respuesta distintos.
+
+---
+
+# Mapa de modalidades
+
+
+```r
+s.label(
+  clusters$dudi$co,
+  xax = 1,
+  yax = 2,
+  sub = "Modalidades: ejes 1 y 2",
+  possub = "bottomright"
+)
+```
+
+&lt;img src="Class_6_files/figure-html/mapa_modalidades-1.png" width="78%" style="display: block; margin: auto;" /&gt;
+
+---
+
+# Mapa de modalidades
+
+### Lectura
+
+Aquí aparecen las categorías de todas las variables.
+
+.center[
+.orange[Este es el gráfico central del ACM.]
+]
+
+---
+
+# ACM como lectura de oposiciones
+
+Una dimensión se interpreta mirando qué modalidades quedan en un extremo y qué modalidades quedan en el extremo contrario.
+
+--
+
+### Ejemplo de lectura posible
+
+A la derecha podrían aparecer:
+
+`uso_digital.Alto`, `mercado_principal.Nacional`, `innovacion.Alta`, `objetivo_12_meses.Escalar`.
+
+A la izquierda podrían aparecer:
+
+`uso_digital.Bajo`, `mercado_principal.Barrio o comuna`, `formalizacion.Informal`.
+
+--
+
+.center[
+.orange[Entonces Dim.1 podría leerse como un eje de sofisticación y alcance del negocio.]
+]
+
+---
+
+# Inercia: valores propios
+
+
+```r
+# Valores propios / inercia
+Inercia &lt;- inertia.dudi(
+  clusters$dudi,
+  row.inertia = TRUE,
+  col.inertia = TRUE
+)
+
+Inercia$tot.inertia
+```
+
+```
+##          inertia       cum    cum(%)
+## Ax1  0.461013958 0.4610140  14.71321
+## Ax2  0.246415758 0.7074297  22.57754
+## Ax3  0.177501336 0.8849311  28.24248
+## Ax4  0.112271052 0.9972021  31.82560
+## Ax5  0.111971619 1.1091737  35.39916
+## Ax6  0.106296820 1.2154705  38.79161
+## Ax7  0.103044082 1.3185146  42.08025
+## Ax8  0.099935820 1.4184504  45.26970
+## Ax9  0.092759603 1.5112100  48.23011
+## Ax10 0.087591832 1.5988019  51.02559
+## Ax11 0.084990658 1.6837925  53.73806
+## Ax12 0.082662487 1.7664550  56.37622
+## Ax13 0.079992993 1.8464480  58.92919
+## Ax14 0.076875141 1.9233232  61.38265
+## Ax15 0.072612943 1.9959361  63.70009
+## Ax16 0.070384330 2.0663204  65.94640
+## Ax17 0.067451386 2.1337718  68.09910
+## Ax18 0.064409306 2.1981811  70.15472
+## Ax19 0.061806983 2.2599881  72.12728
+## Ax20 0.059964058 2.3199522  74.04103
+## Ax21 0.057985855 2.3779380  75.89164
+## Ax22 0.053617768 2.4315558  77.60284
+## Ax23 0.052991854 2.4845476  79.29407
+## Ax24 0.048313802 2.5328614  80.83600
+## Ax25 0.046882142 2.5797436  82.33224
+## Ax26 0.045147383 2.6248910  83.77312
+## Ax27 0.043158661 2.6680496  85.15052
+## Ax28 0.039228857 2.7072785  86.40250
+## Ax29 0.038432810 2.7457113  87.62908
+## Ax30 0.036164775 2.7818761  88.78328
+## Ax31 0.035151363 2.8170274  89.90513
+## Ax32 0.034737681 2.8517651  91.01378
+## Ax33 0.031979580 2.8837447  92.03441
+## Ax34 0.029076770 2.9128215  92.96239
+## Ax35 0.026252737 2.9390742  93.80024
+## Ax36 0.024484569 2.9635588  94.58166
+## Ax37 0.022555950 2.9861147  95.30153
+## Ax38 0.021447358 3.0075621  95.98602
+## Ax39 0.020369326 3.0279314  96.63611
+## Ax40 0.019573502 3.0475049  97.26079
+## Ax41 0.017403713 3.0649086  97.81623
+## Ax42 0.014813026 3.0797216  98.28899
+## Ax43 0.013354310 3.0930760  98.71519
+## Ax44 0.012785383 3.1058613  99.12323
+## Ax45 0.010668364 3.1165297  99.46371
+## Ax46 0.009900424 3.1264301  99.77968
+## Ax47 0.006903206 3.1333333 100.00000
+```
+
+---
+
+# Inercia: valores propios
+
+### Cuidado
+
+En ACM los porcentajes de inercia suelen verse más bajos que en ACP.
+
+Eso no significa automáticamente que el análisis no sirva.
+
+.center[
+.orange[Con muchas modalidades, la inercia se reparte. Por eso interpretamos ejes, modalidades y perfiles juntos.]
+]
+
+---
+
+
+# ¿Cómo interpretamos esta inercia?
+
+.pull-left[
+
+### Primeros ejes
+
+- **Eje 1:** 14.7%
+- **Eje 2:** 7.9%
+- **Eje 3:** 5.7%
+
+Los dos primeros ejes acumulan aproximadamente:
+
+.center[
+## 22.6%
+]
+
+Con tres ejes llegamos a **28.2%**.
+]
+
+.pull-right[
+
+### ¿Eso es poco?
+
+En un **ACM** es normal encontrar porcentajes de inercia relativamente bajos.
+
+¿Por qué?
+
+Porque trabajamos con muchas variables categóricas y muchas modalidades...
+
+La información queda distribuida entre numerosos ejes.
+
+&lt;br&gt;
+
+
+]
+
+.orange[
+**No evaluamos el ACM solamente por el porcentaje explicado.**
+]
+
+Nos interesa principalmente identificar: - qué modalidades caracterizan cada eje. - cuáles aparecen próximas entre sí. - qué perfiles de individuos se forman
+
+
+
+---
+
+# Entonces... ¿con qué ejes trabajamos?
+
+Aunque los dos primeros ejes explican solo **22.6%** de la inercia total...
+
+.center[
+### utilizaremos principalmente el plano 1–2
+]
+
+porque permite construir una representación sencilla de las principales asociaciones entre modalidades.
+
+--
+
+Pero el porcentaje de inercia **no basta** para interpretar los ejes.
+
+Ahora debemos preguntar:
+
+.center[
+### ¿Qué modalidades son las que construyen cada eje?
+]
+
+Para responderlo revisamos:
+
+1. **Contribución** de las modalidades  
+2. **Calidad de representación**  
+3. **Posición en el plano factorial**
+
+.orange[
+Un eje adquiere significado cuando identificamos las modalidades que más lo caracterizan.
+]
+
+---
+
+# Contribución y calidad
+
+
+```r
+Contrib &lt;- inertia.dudi(
+  clusters$dudi,
+  row.inertia = TRUE,
+  col.inertia = TRUE
+)$col.abs / 100
+
+Calidad &lt;- inertia.dudi(
+  clusters$dudi,
+  row.inertia = TRUE,
+  col.inertia = TRUE
+)$col.rel / 100
+```
+
+--
+
+### Traducción
+
+- Contribución: qué modalidades construyen cada eje.
+- Calidad: qué tan bien se representa cada modalidad en el eje o plano.
+
+---
+
+# Modalidades que más construyen Dim.1
+
+
+```r
+Contrib_df &lt;- as.data.frame(Contrib)
+
+head(
+  Contrib_df[order(Contrib_df[[1]], decreasing = TRUE), , drop = FALSE],
+  12
+)
+```
+
+```
+##                                              Axis1        Axis2        Axis3
+## tamano_empresa.Mediana                  0.04782448 2.308124e-07 0.0133812933
+## tamano_empresa.Micro                    0.04226001 9.066542e-05 0.0026426266
+## financiacion_inicial.Credito.bancario   0.03905023 1.564644e-04 0.0083893976
+## formalizacion.Camara.de.comercio        0.03809195 5.536711e-03 0.0004664408
+## mercado_principal.Nacional              0.03607941 2.128348e-03 0.0036116204
+## objetivo_12_meses.Mejorar.productividad 0.03479910 5.873551e-02 0.0004573075
+## innovacion.Alta                         0.03354550 7.865778e-04 0.0134262382
+## mercado_principal.Barrio.o.comuna       0.03142052 9.085600e-03 0.0032889921
+## objetivo_12_meses.Escalar               0.03062719 8.867294e-03 0.0043697660
+## experiencia_emprendedor.Menos.de.2.anos 0.02951294 3.533174e-03 0.1159726862
+## financiacion_inicial.Familia.y.amigos   0.02937849 5.317257e-03 0.0070700755
+## objetivo_12_meses.Sostener.el.negocio   0.02929567 5.932134e-03 0.0158963485
+```
+
+---
+
+# Modalidades que más construyen Dim.2
+
+
+```r
+head(
+  Contrib_df[order(Contrib_df[[2]], decreasing = TRUE), , drop = FALSE],
+  12
+)
+```
+
+```
+##                                                Axis1      Axis2        Axis3
+## educacion_emprendedor.Posgrado          0.0049086609 0.09246184 1.735730e-04
+## uso_digital.Alto                        0.0057022142 0.08486116 1.762200e-05
+## principal_obstaculo.Marketing           0.0034320519 0.07875739 1.307276e-03
+## financiacion_inicial.Capital.semilla    0.0015602963 0.05939088 3.024835e-04
+## objetivo_12_meses.Mejorar.productividad 0.0347991003 0.05873551 4.573075e-04
+## sector.Tecnologia                       0.0043420452 0.04984921 5.943123e-05
+## principal_obstaculo.Costos.de.insumos   0.0269143482 0.04513319 7.663795e-05
+## mercado_principal.Regional              0.0254365740 0.04138562 8.995286e-05
+## objetivo_12_meses.Aumentar.ventas       0.0009923852 0.03690899 3.023098e-02
+## region.Tulua                            0.0214925239 0.03461669 1.025283e-03
+## region.Buga                             0.0279166530 0.03118390 2.982332e-03
+## sector.Manufactura                      0.0213512657 0.03101950 3.468016e-06
+```
+
+---
+
+
+# Calidad de representación
+
+
+```r
+Calidad_df &lt;- as.data.frame(Calidad)
+
+head(
+  Calidad_df[order(Calidad_df[[1]], decreasing = TRUE), , drop = FALSE],
+  12
+)
+```
+
+```
+##                                             Axis1         Axis2         Axis3
+## formalizacion.Camara.de.comercio        0.4939008 -3.837186e-02  0.0023285776
+## tamano_empresa.Mediana                  0.4650698  1.199724e-06 -0.0501018210
+## financiacion_inicial.Credito.bancario   0.3496927 -7.489159e-04 -0.0289255328
+## mercado_principal.Nacional              0.3402227  1.072756e-02 -0.0131127433
+## innovacion.Alta                         0.3163284  3.964606e-03 -0.0487467660
+## objetivo_12_meses.Mejorar.productividad 0.2831095 -2.554122e-01 -0.0014324594
+## objetivo_12_meses.Escalar               0.2665932  4.125602e-02 -0.0146449380
+## region.Buga                             0.2158317 -1.288655e-01 -0.0088775976
+## principal_obstaculo.Costos.de.insumos   0.2067982 -1.853588e-01  0.0002267223
+## mercado_principal.Regional              0.1966575 -1.710235e-01 -0.0002677654
+## red_apoyo.Universidad                   0.1950529  2.373529e-06 -0.0257043330
+## sector.Agroindustria                    0.1728451 -6.112238e-02 -0.0085800934
+```
+
+
+
+
+---
+
+
+# Calidad de representación
+
+
+```r
+Calidad_df &lt;- as.data.frame(Calidad)
+
+head(
+  Calidad_df[order(Calidad_df[[2]], decreasing = TRUE), , drop = FALSE],
+  12
+)
+```
+
+```
+##                                             Axis1      Axis2         Axis3
+## educacion_emprendedor.Posgrado        0.037950281 0.38209282 -5.166801e-04
+## uso_digital.Alto                      0.046695795 0.37144764  5.556188e-05
+## principal_obstaculo.Marketing         0.026370398 0.32345105 -3.867387e-03
+## financiacion_inicial.Capital.semilla  0.011492069 0.23381120 -8.577888e-04
+## objetivo_12_meses.Aumentar.ventas    -0.010042759 0.19964540  1.177911e-01
+## sector.Tecnologia                     0.031792396 0.19509297  1.675449e-04
+## formalizacion.Rut.solamente          -0.131061942 0.11485122  3.888357e-04
+## mercado_principal.Ciudad             -0.137073641 0.11072728  3.944388e-02
+## antiguedad_empresa.Menos.de.2.anos   -0.056523410 0.10991327 -2.863674e-01
+## region.Jamundi                       -0.014788065 0.09079029 -1.868771e-01
+## principal_obstaculo.Financiacion      0.004781005 0.07884473  1.721518e-04
+## sector.Comercio                      -0.023830549 0.07190503  1.378815e-04
+```
+
+
+---
+
+# ¿Qué parece representar la Dim. 1?
+
+.pull-left[
+
+### Modalidades que más la construyen
+
+Entre las contribuciones más altas aparecen:
+
+- Empresa **mediana**
+- Empresa **micro**
+- Crédito bancario
+- Cámara de Comercio
+- Mercado nacional
+- Alta innovación
+- Mejorar productividad
+- Escalar
+
+]
+
+.pull-right[
+
+### ¿Cuáles están bien representadas?
+
+En calidad de representación destacan:
+
+- Cámara de Comercio
+- Empresa mediana
+- Crédito bancario
+- Mercado nacional
+- Alta innovación
+
+.orange[
+Estas modalidades no solo contribuyen al eje... también están relativamente bien representadas en él.
+]
+
+]
+
+--
+
+.center[
+### Dim. 1 parece recoger diferencias en estructura, formalización y proyección del negocio.
+]
+
+---
+
+# ¿Qué parece representar la Dim. 2?
+
+.pull-left[
+
+### Modalidades que más contribuyen
+
+Las mayores contribuciones aparecen en:
+
+- Educación de posgrado
+- Uso digital alto
+- Marketing como obstáculo
+- Capital semilla
+- Mejorar productividad
+- Sector tecnología
+- Costos de insumos
+- Mercado regional
+
+]
+
+.pull-right[
+
+### ¿Cuáles están mejor representadas?
+
+Sobresalen especialmente:
+
+- Educación de posgrado
+- Uso digital alto
+- Marketing como obstáculo
+- Capital semilla
+- Aumentar ventas
+- Sector tecnología
+
+.orange[
+Aquí aparece un perfil más relacionado con capacidades, digitalización y orientación al crecimiento.
+]
+
+]
+
+--
+
+.center[
+### Dim. 2 parece diferenciar perfiles empresariales según capacidades y estrategia de desarrollo.
+]
+
+
+---
+
+# Contribución ≠ calidad de representación
+
+.pull-left[
+
+### Contribución
+
+Responde:
+
+.center[
+**¿Qué modalidades ayudan a construir el eje?**
+]
+
+Una modalidad con alta contribución tiene un papel importante en la definición de esa dimensión.
+
+]
+
+.pull-right[
+
+### Calidad
+
+Responde:
+
+.center[
+**¿Qué tan bien queda representada esa modalidad en el eje?**
+]
+
+Una modalidad puede contribuir bastante...
+
+pero no necesariamente quedar bien explicada por ese eje.
+
+]
+
+--
+
+.orange[
+### Para interpretar un eje buscamos modalidades que combinen:
+
+**alta contribución + buena calidad de representación**
+]
+
+.center[
+Después observamos **en qué lado del eje se ubican** para entender qué perfiles se contraponen.
+]
+
+
+
+---
+
+# Receta para nombrar dimensiones
+
+```text
+1. Mirar las modalidades que más contribuyen al eje.
+2. Separar extremo positivo y extremo negativo.
+3. Buscar la idea común en cada extremo.
+4. Poner un nombre corto al eje.
+5. Evitar nombres demasiado bonitos pero sin soporte.
+```
+
+--
+
+.center[
+.orange[El nombre del eje se gana leyendo contribuciones, no mirando el gráfico por encima.]
+]
+
+---
+
+class: center, middle, inverse
+
+# Perfiles de empresarios
+## La parte más útil para decisión
+
+---
+
+# Graficar clases sobre el plano
+
+
+```r
+Grupo &lt;- as.factor(as.vector(Clus[, 1]))
+
+s.class(
+  clusters$dudi$li,
+  Grupo,
+  sub = "Empresarios: clases en ejes 1 y 2",
+  possub = "bottomright",
+  xax = 1,
+  yax = 2,
+  col = c(1, 2, 3, 4)
+)
+```
+
+&lt;img src="Class_6_files/figure-html/mapa_clases-1.png" width="70%" style="display: block; margin: auto;" /&gt;
+
+---
+
+# Otro plano factorial
+
+
+```r
+s.class(
+  clusters$dudi$li,
+  Grupo,
+  sub = "Empresarios: clases en ejes 1 y 3",
+  possub = "bottomright",
+  xax = 1,
+  yax = 3,
+  col = c(1, 2, 3, 4)
+)
+```
+
+&lt;img src="Class_6_files/figure-html/mapa_clases_13-1.png" width="70%" style="display: block; margin: auto;" /&gt;
+
+
+---
+
+# La salida clave: `carac.cate`
+
+
+```r
+clusters$carac.cate
+```
+
+```
+## class: 1
+##                                          Test.Value p.Value Class.Cat Cat.Class
+## antiguedad_empresa.Mas de 5 anos              6.839   0.000      65.1      70.7
+## principal_obstaculo.Competencia               6.799   0.000     100.0      34.5
+## objetivo_12_meses.Sostener el negocio         5.959   0.000      72.5      50.0
+## financiacion_inicial.Familia y amigos         4.922   0.000      68.6      41.4
+## educacion_emprendedor.Secundaria              4.455   0.000      67.7      36.2
+## principal_obstaculo.Ventas bajas              4.419   0.000      69.0      34.5
+## innovacion.Baja                               4.334   0.000      58.7      46.6
+## region.Cali                                   4.221   0.000      55.8      50.0
+## tamano_empresa.Micro                          4.152   0.000      48.1      67.2
+## mercado_principal.Ciudad                      4.043   0.000      48.7      63.8
+## uso_digital.Bajo                              3.835   0.000      48.0      62.1
+## financiacion_inicial.Credito informal         3.703   0.000      66.7      27.6
+## objetivo_12_meses.Aumentar ventas             3.613   0.000      50.9      50.0
+## red_apoyo.Familia                             3.510   0.000      59.4      32.8
+## mercado_principal.Barrio o comuna             3.492   0.000      56.8      36.2
+## sector.Servicios                              3.159   0.002      47.5      50.0
+## experiencia_emprendedor.Entre 2 y 5 anos      2.946   0.003      42.2      65.5
+## region.Buenaventura                           2.614   0.009      56.5      22.4
+## red_apoyo.Ninguna                             2.475   0.013      50.0      29.3
+## formalizacion.Informal                        2.390   0.017      50.0      27.6
+## capacitacion_reciente.No                      2.125   0.034      40.3      53.4
+## educacion_emprendedor.Profesional            -2.090   0.037      22.4      22.4
+## capacitacion_reciente.Si                     -2.125   0.034      26.2      46.6
+## sector.Tecnologia                            -2.364   0.018       0.0       0.0
+## financiacion_inicial.Capital semilla         -2.515   0.012       0.0       0.0
+## principal_obstaculo.Formalizacion            -2.934   0.003       0.0       0.0
+## sector.Agroindustria                         -3.065   0.002       0.0       0.0
+## sector.Manufactura                           -3.065   0.002       0.0       0.0
+## region.Tulua                                 -3.065   0.002       0.0       0.0
+## principal_obstaculo.Talento humano           -3.209   0.001       4.5       1.7
+## antiguedad_empresa.Entre 2 y 5 anos          -3.377   0.001      18.7      24.1
+## principal_obstaculo.Costos de insumos        -3.438   0.001       0.0       0.0
+## principal_obstaculo.Marketing                -3.438   0.001       0.0       0.0
+## educacion_emprendedor.Posgrado               -3.556   0.000       0.0       0.0
+## mercado_principal.Regional                   -3.556   0.000       0.0       0.0
+## objetivo_12_meses.Formalizarse               -3.556   0.000       0.0       0.0
+## region.Buga                                  -3.556   0.000       0.0       0.0
+## formalizacion.Camara de comercio             -3.604   0.000      19.0      27.6
+## uso_digital.Alto                             -3.874   0.000       3.6       1.7
+## experiencia_emprendedor.Menos de 2 anos      -3.896   0.000       0.0       0.0
+## red_apoyo.Mentores                           -3.979   0.000       3.4       1.7
+## region.Jamundi                               -4.220   0.000       0.0       0.0
+## antiguedad_empresa.Menos de 2 anos           -4.259   0.000       7.1       5.2
+## objetivo_12_meses.Mejorar productividad      -4.427   0.000       0.0       0.0
+## red_apoyo.Universidad                        -4.729   0.000       0.0       0.0
+## objetivo_12_meses.Escalar                    -5.398   0.000       0.0       0.0
+## financiacion_inicial.Credito bancario        -5.765   0.000       0.0       0.0
+## mercado_principal.Nacional                   -6.390   0.000       0.0       0.0
+## innovacion.Alta                              -6.390   0.000       0.0       0.0
+## tamano_empresa.Mediana                       -6.740   0.000       0.0       0.0
+##                                          Global Weight
+## antiguedad_empresa.Mas de 5 anos           35.0     63
+## principal_obstaculo.Competencia            11.1     20
+## objetivo_12_meses.Sostener el negocio      22.2     40
+## financiacion_inicial.Familia y amigos      19.4     35
+## educacion_emprendedor.Secundaria           17.2     31
+## principal_obstaculo.Ventas bajas           16.1     29
+## innovacion.Baja                            25.6     46
+## region.Cali                                28.9     52
+## tamano_empresa.Micro                       45.0     81
+## mercado_principal.Ciudad                   42.2     76
+## uso_digital.Bajo                           41.7     75
+## financiacion_inicial.Credito informal      13.3     24
+## objetivo_12_meses.Aumentar ventas          31.7     57
+## red_apoyo.Familia                          17.8     32
+## mercado_principal.Barrio o comuna          20.6     37
+## sector.Servicios                           33.9     61
+## experiencia_emprendedor.Entre 2 y 5 anos   50.0     90
+## region.Buenaventura                        12.8     23
+## red_apoyo.Ninguna                          18.9     34
+## formalizacion.Informal                     17.8     32
+## capacitacion_reciente.No                   42.8     77
+## educacion_emprendedor.Profesional          32.2     58
+## capacitacion_reciente.Si                   57.2    103
+## sector.Tecnologia                           5.6     10
+## financiacion_inicial.Capital semilla        6.1     11
+## principal_obstaculo.Formalizacion           7.8     14
+## sector.Agroindustria                        8.3     15
+## sector.Manufactura                          8.3     15
+## region.Tulua                                8.3     15
+## principal_obstaculo.Talento humano         12.2     22
+## antiguedad_empresa.Entre 2 y 5 anos        41.7     75
+## principal_obstaculo.Costos de insumos      10.0     18
+## principal_obstaculo.Marketing              10.0     18
+## educacion_emprendedor.Posgrado             10.6     19
+## mercado_principal.Regional                 10.6     19
+## objetivo_12_meses.Formalizarse             10.6     19
+## region.Buga                                10.6     19
+## formalizacion.Camara de comercio           46.7     84
+## uso_digital.Alto                           15.6     28
+## experiencia_emprendedor.Menos de 2 anos    12.2     22
+## red_apoyo.Mentores                         16.1     29
+## region.Jamundi                             13.9     25
+## antiguedad_empresa.Menos de 2 anos         23.3     42
+## objetivo_12_meses.Mejorar productividad    15.0     27
+## red_apoyo.Universidad                      16.7     30
+## objetivo_12_meses.Escalar                  20.6     37
+## financiacion_inicial.Credito bancario      22.8     41
+## mercado_principal.Nacional                 26.7     48
+## innovacion.Alta                            26.7     48
+## tamano_empresa.Mediana                     28.9     52
+## ------------------------------------------------------------ 
+## class: 2
+##                                         Test.Value p.Value Class.Cat Cat.Class
+## objetivo_12_meses.Mejorar productividad      9.270   0.000     100.0      60.0
+## formalizacion.Camara de comercio             9.004   0.000      53.6     100.0
+## mercado_principal.Regional                   7.426   0.000     100.0      42.2
+## region.Buga                                  7.426   0.000     100.0      42.2
+## principal_obstaculo.Costos de insumos        7.185   0.000     100.0      40.0
+## tamano_empresa.Mediana                       6.918   0.000      61.5      71.1
+## sector.Agroindustria                         6.437   0.000     100.0      33.3
+## sector.Manufactura                           6.437   0.000     100.0      33.3
+## region.Tulua                                 6.437   0.000     100.0      33.3
+## financiacion_inicial.Credito bancario        5.686   0.000      61.0      55.6
+## mercado_principal.Nacional                   5.192   0.000      54.2      57.8
+## innovacion.Alta                              4.830   0.000      52.1      55.6
+## principal_obstaculo.Talento humano           4.545   0.000      68.2      33.3
+## red_apoyo.Universidad                        3.684   0.000      53.3      35.6
+## objetivo_12_meses.Escalar                    3.554   0.000      48.6      40.0
+## red_apoyo.Mentores                           2.613   0.009      44.8      28.9
+## experiencia_emprendedor.Mas de 5 anos        2.541   0.011      35.3      53.3
+## educacion_emprendedor.Profesional            2.441   0.015      36.2      46.7
+## antiguedad_empresa.Mas de 5 anos             2.327   0.020      34.9      48.9
+## educacion_emprendedor.Tecnica                2.208   0.027      33.3      53.3
+## sector.Alimentos                             2.022   0.043      36.6      33.3
+## financiacion_inicial.Capital semilla        -2.075   0.038       0.0       0.0
+## principal_obstaculo.Formalizacion           -2.435   0.015       0.0       0.0
+## uso_digital.Alto                            -2.545   0.011       7.1       4.4
+## principal_obstaculo.Marketing               -2.867   0.004       0.0       0.0
+## educacion_emprendedor.Posgrado              -2.968   0.003       0.0       0.0
+## objetivo_12_meses.Formalizarse              -2.968   0.003       0.0       0.0
+## principal_obstaculo.Competencia             -3.067   0.002       0.0       0.0
+## experiencia_emprendedor.Menos de 2 anos     -3.260   0.001       0.0       0.0
+## region.Buenaventura                         -3.354   0.001       0.0       0.0
+## financiacion_inicial.Credito informal       -3.447   0.001       0.0       0.0
+## region.Jamundi                              -3.538   0.000       0.0       0.0
+## principal_obstaculo.Ventas bajas            -3.889   0.000       0.0       0.0
+## educacion_emprendedor.Secundaria            -4.058   0.000       0.0       0.0
+## innovacion.Baja                             -4.084   0.000       4.3       4.4
+## formalizacion.Informal                      -4.141   0.000       0.0       0.0
+## red_apoyo.Familia                           -4.141   0.000       0.0       0.0
+## red_apoyo.Ninguna                           -4.305   0.000       0.0       0.0
+## financiacion_inicial.Familia y amigos       -4.386   0.000       0.0       0.0
+## mercado_principal.Barrio o comuna           -4.546   0.000       0.0       0.0
+## sector.Comercio                             -4.625   0.000       0.0       0.0
+## objetivo_12_meses.Sostener el negocio       -4.781   0.000       0.0       0.0
+## antiguedad_empresa.Menos de 2 anos          -4.935   0.000       0.0       0.0
+## region.Cali                                 -5.685   0.000       0.0       0.0
+## objetivo_12_meses.Aumentar ventas           -6.051   0.000       0.0       0.0
+## sector.Servicios                            -6.343   0.000       0.0       0.0
+## formalizacion.Rut solamente                 -6.561   0.000       0.0       0.0
+## mercado_principal.Ciudad                    -7.442   0.000       0.0       0.0
+## tamano_empresa.Micro                        -7.817   0.000       0.0       0.0
+##                                         Global Weight
+## objetivo_12_meses.Mejorar productividad   15.0     27
+## formalizacion.Camara de comercio          46.7     84
+## mercado_principal.Regional                10.6     19
+## region.Buga                               10.6     19
+## principal_obstaculo.Costos de insumos     10.0     18
+## tamano_empresa.Mediana                    28.9     52
+## sector.Agroindustria                       8.3     15
+## sector.Manufactura                         8.3     15
+## region.Tulua                               8.3     15
+## financiacion_inicial.Credito bancario     22.8     41
+## mercado_principal.Nacional                26.7     48
+## innovacion.Alta                           26.7     48
+## principal_obstaculo.Talento humano        12.2     22
+## red_apoyo.Universidad                     16.7     30
+## objetivo_12_meses.Escalar                 20.6     37
+## red_apoyo.Mentores                        16.1     29
+## experiencia_emprendedor.Mas de 5 anos     37.8     68
+## educacion_emprendedor.Profesional         32.2     58
+## antiguedad_empresa.Mas de 5 anos          35.0     63
+## educacion_emprendedor.Tecnica             40.0     72
+## sector.Alimentos                          22.8     41
+## financiacion_inicial.Capital semilla       6.1     11
+## principal_obstaculo.Formalizacion          7.8     14
+## uso_digital.Alto                          15.6     28
+## principal_obstaculo.Marketing             10.0     18
+## educacion_emprendedor.Posgrado            10.6     19
+## objetivo_12_meses.Formalizarse            10.6     19
+## principal_obstaculo.Competencia           11.1     20
+## experiencia_emprendedor.Menos de 2 anos   12.2     22
+## region.Buenaventura                       12.8     23
+## financiacion_inicial.Credito informal     13.3     24
+## region.Jamundi                            13.9     25
+## principal_obstaculo.Ventas bajas          16.1     29
+## educacion_emprendedor.Secundaria          17.2     31
+## innovacion.Baja                           25.6     46
+## formalizacion.Informal                    17.8     32
+## red_apoyo.Familia                         17.8     32
+## red_apoyo.Ninguna                         18.9     34
+## financiacion_inicial.Familia y amigos     19.4     35
+## mercado_principal.Barrio o comuna         20.6     37
+## sector.Comercio                           21.1     38
+## objetivo_12_meses.Sostener el negocio     22.2     40
+## antiguedad_empresa.Menos de 2 anos        23.3     42
+## region.Cali                               28.9     52
+## objetivo_12_meses.Aumentar ventas         31.7     57
+## sector.Servicios                          33.9     61
+## formalizacion.Rut solamente               35.6     64
+## mercado_principal.Ciudad                  42.2     76
+## tamano_empresa.Micro                      45.0     81
+## ------------------------------------------------------------ 
+## class: 3
+##                                         Test.Value p.Value Class.Cat Cat.Class
+## uso_digital.Alto                             7.721   0.000      89.3      53.2
+## educacion_emprendedor.Posgrado               7.285   0.000     100.0      40.4
+## principal_obstaculo.Marketing                7.050   0.000     100.0      38.3
+## financiacion_inicial.Capital semilla         5.255   0.000     100.0      23.4
+## sector.Tecnologia                            4.967   0.000     100.0      21.3
+## objetivo_12_meses.Aumentar ventas            4.646   0.000      49.1      59.6
+## objetivo_12_meses.Escalar                    3.739   0.000      51.4      40.4
+## mercado_principal.Nacional                   3.532   0.000      45.8      46.8
+## antiguedad_empresa.Menos de 2 anos           3.498   0.000      47.6      42.6
+## region.Jamundi                               3.437   0.001      56.0      29.8
+## red_apoyo.Mentores                           3.257   0.001      51.7      31.9
+## innovacion.Alta                              3.185   0.001      43.8      44.7
+## sector.Comercio                              2.877   0.004      44.7      36.2
+## principal_obstaculo.Financiacion             2.762   0.006      39.0      48.9
+## red_apoyo.Universidad                        2.725   0.006      46.7      29.8
+## region.Palmira                               2.706   0.007      41.3      40.4
+## formalizacion.Rut solamente                  2.627   0.009      37.5      51.1
+## antiguedad_empresa.Entre 2 y 5 anos          2.617   0.009      36.0      57.4
+## capacitacion_reciente.Si                     2.545   0.011      33.0      72.3
+## tamano_empresa.Mediana                       2.443   0.015      38.5      42.6
+## experiencia_emprendedor.Mas de 5 anos        2.275   0.023      35.3      51.1
+## financiacion_inicial.Credito bancario        2.190   0.028      39.0      34.0
+## principal_obstaculo.Formalizacion           -2.513   0.012       0.0       0.0
+## capacitacion_reciente.No                    -2.545   0.011      16.9      27.7
+## sector.Agroindustria                        -2.629   0.009       0.0       0.0
+## sector.Manufactura                          -2.629   0.009       0.0       0.0
+## region.Tulua                                -2.629   0.009       0.0       0.0
+## principal_obstaculo.Costos de insumos       -2.956   0.003       0.0       0.0
+## mercado_principal.Regional                  -3.061   0.002       0.0       0.0
+## objetivo_12_meses.Formalizarse              -3.061   0.002       0.0       0.0
+## region.Buga                                 -3.061   0.002       0.0       0.0
+## principal_obstaculo.Competencia             -3.162   0.002       0.0       0.0
+## tamano_empresa.Micro                        -3.204   0.001      14.8      25.5
+## experiencia_emprendedor.Menos de 2 anos     -3.360   0.001       0.0       0.0
+## region.Buenaventura                         -3.457   0.001       0.0       0.0
+## financiacion_inicial.Credito informal       -3.551   0.000       0.0       0.0
+## objetivo_12_meses.Mejorar productividad     -3.827   0.000       0.0       0.0
+## principal_obstaculo.Ventas bajas            -4.005   0.000       0.0       0.0
+## educacion_emprendedor.Secundaria            -4.179   0.000       0.0       0.0
+## innovacion.Baja                             -4.246   0.000       4.3       4.3
+## formalizacion.Informal                      -4.264   0.000       0.0       0.0
+## red_apoyo.Familia                           -4.264   0.000       0.0       0.0
+## red_apoyo.Ninguna                           -4.432   0.000       0.0       0.0
+## financiacion_inicial.Familia y amigos       -4.515   0.000       0.0       0.0
+## mercado_principal.Barrio o comuna           -4.679   0.000       0.0       0.0
+## objetivo_12_meses.Sostener el negocio       -4.921   0.000       0.0       0.0
+## sector.Alimentos                            -5.000   0.000       0.0       0.0
+## uso_digital.Bajo                            -6.095   0.000       4.0       6.4
+## antiguedad_empresa.Mas de 5 anos            -6.676   0.000       0.0       0.0
+##                                         Global Weight
+## uso_digital.Alto                          15.6     28
+## educacion_emprendedor.Posgrado            10.6     19
+## principal_obstaculo.Marketing             10.0     18
+## financiacion_inicial.Capital semilla       6.1     11
+## sector.Tecnologia                          5.6     10
+## objetivo_12_meses.Aumentar ventas         31.7     57
+## objetivo_12_meses.Escalar                 20.6     37
+## mercado_principal.Nacional                26.7     48
+## antiguedad_empresa.Menos de 2 anos        23.3     42
+## region.Jamundi                            13.9     25
+## red_apoyo.Mentores                        16.1     29
+## innovacion.Alta                           26.7     48
+## sector.Comercio                           21.1     38
+## principal_obstaculo.Financiacion          32.8     59
+## red_apoyo.Universidad                     16.7     30
+## region.Palmira                            25.6     46
+## formalizacion.Rut solamente               35.6     64
+## antiguedad_empresa.Entre 2 y 5 anos       41.7     75
+## capacitacion_reciente.Si                  57.2    103
+## tamano_empresa.Mediana                    28.9     52
+## experiencia_emprendedor.Mas de 5 anos     37.8     68
+## financiacion_inicial.Credito bancario     22.8     41
+## principal_obstaculo.Formalizacion          7.8     14
+## capacitacion_reciente.No                  42.8     77
+## sector.Agroindustria                       8.3     15
+## sector.Manufactura                         8.3     15
+## region.Tulua                               8.3     15
+## principal_obstaculo.Costos de insumos     10.0     18
+## mercado_principal.Regional                10.6     19
+## objetivo_12_meses.Formalizarse            10.6     19
+## region.Buga                               10.6     19
+## principal_obstaculo.Competencia           11.1     20
+## tamano_empresa.Micro                      45.0     81
+## experiencia_emprendedor.Menos de 2 anos   12.2     22
+## region.Buenaventura                       12.8     23
+## financiacion_inicial.Credito informal     13.3     24
+## objetivo_12_meses.Mejorar productividad   15.0     27
+## principal_obstaculo.Ventas bajas          16.1     29
+## educacion_emprendedor.Secundaria          17.2     31
+## innovacion.Baja                           25.6     46
+## formalizacion.Informal                    17.8     32
+## red_apoyo.Familia                         17.8     32
+## red_apoyo.Ninguna                         18.9     34
+## financiacion_inicial.Familia y amigos     19.4     35
+## mercado_principal.Barrio o comuna         20.6     37
+## objetivo_12_meses.Sostener el negocio     22.2     40
+## sector.Alimentos                          22.8     41
+## uso_digital.Bajo                          41.7     75
+## antiguedad_empresa.Mas de 5 anos          35.0     63
+## ------------------------------------------------------------ 
+## class: 4
+##                                          Test.Value p.Value Class.Cat Cat.Class
+## experiencia_emprendedor.Menos de 2 anos       9.628   0.000     100.0      73.3
+## objetivo_12_meses.Formalizarse                8.732   0.000     100.0      63.3
+## principal_obstaculo.Formalizacion             7.208   0.000     100.0      46.7
+## tamano_empresa.Micro                          7.122   0.000      37.0     100.0
+## antiguedad_empresa.Menos de 2 anos            5.186   0.000      45.2      63.3
+## red_apoyo.Ninguna                             5.161   0.000      50.0      56.7
+## formalizacion.Informal                        4.951   0.000      50.0      53.3
+## mercado_principal.Barrio o comuna             4.419   0.000      43.2      53.3
+## red_apoyo.Familia                             3.645   0.000      40.6      43.3
+## region.Jamundi                                3.522   0.000      44.0      36.7
+## region.Buenaventura                           3.292   0.001      43.5      33.3
+## innovacion.Baja                               3.200   0.001      32.6      50.0
+## financiacion_inicial.Familia y amigos         2.506   0.012      31.4      36.7
+## educacion_emprendedor.Secundaria              2.443   0.015      32.3      33.3
+## financiacion_inicial.Credito informal         2.236   0.025      33.3      26.7
+## principal_obstaculo.Ventas bajas              2.195   0.028      31.0      30.0
+## objetivo_12_meses.Sostener el negocio         2.090   0.037      27.5      36.7
+## sector.Alimentos                              2.013   0.044      26.8      36.7
+## principal_obstaculo.Costos de insumos        -2.154   0.031       0.0       0.0
+## principal_obstaculo.Marketing                -2.154   0.031       0.0       0.0
+## educacion_emprendedor.Tecnica                -2.161   0.031       9.7      23.3
+## educacion_emprendedor.Posgrado               -2.234   0.025       0.0       0.0
+## mercado_principal.Regional                   -2.234   0.025       0.0       0.0
+## region.Buga                                  -2.234   0.025       0.0       0.0
+## principal_obstaculo.Competencia              -2.313   0.021       0.0       0.0
+## principal_obstaculo.Talento humano           -2.466   0.014       0.0       0.0
+## objetivo_12_meses.Mejorar productividad      -2.827   0.005       0.0       0.0
+## experiencia_emprendedor.Entre 2 y 5 anos     -2.859   0.004       8.9      26.7
+## uso_digital.Alto                             -2.896   0.004       0.0       0.0
+## innovacion.Alta                              -2.918   0.004       4.2       6.7
+## red_apoyo.Mentores                           -2.965   0.003       0.0       0.0
+## red_apoyo.Universidad                        -3.032   0.002       0.0       0.0
+## objetivo_12_meses.Escalar                    -3.485   0.000       0.0       0.0
+## financiacion_inicial.Credito bancario        -3.733   0.000       0.0       0.0
+## region.Palmira                               -4.033   0.000       0.0       0.0
+## tamano_empresa.Pequena                       -4.092   0.000       0.0       0.0
+## mercado_principal.Nacional                   -4.151   0.000       0.0       0.0
+## tamano_empresa.Mediana                       -4.384   0.000       0.0       0.0
+## red_apoyo.Gremio                             -4.557   0.000       0.0       0.0
+## objetivo_12_meses.Aumentar ventas            -4.672   0.000       0.0       0.0
+## antiguedad_empresa.Mas de 5 anos             -5.013   0.000       0.0       0.0
+## experiencia_emprendedor.Mas de 5 anos        -5.296   0.000       0.0       0.0
+## formalizacion.Camara de comercio             -6.214   0.000       0.0       0.0
+##                                          Global Weight
+## experiencia_emprendedor.Menos de 2 anos    12.2     22
+## objetivo_12_meses.Formalizarse             10.6     19
+## principal_obstaculo.Formalizacion           7.8     14
+## tamano_empresa.Micro                       45.0     81
+## antiguedad_empresa.Menos de 2 anos         23.3     42
+## red_apoyo.Ninguna                          18.9     34
+## formalizacion.Informal                     17.8     32
+## mercado_principal.Barrio o comuna          20.6     37
+## red_apoyo.Familia                          17.8     32
+## region.Jamundi                             13.9     25
+## region.Buenaventura                        12.8     23
+## innovacion.Baja                            25.6     46
+## financiacion_inicial.Familia y amigos      19.4     35
+## educacion_emprendedor.Secundaria           17.2     31
+## financiacion_inicial.Credito informal      13.3     24
+## principal_obstaculo.Ventas bajas           16.1     29
+## objetivo_12_meses.Sostener el negocio      22.2     40
+## sector.Alimentos                           22.8     41
+## principal_obstaculo.Costos de insumos      10.0     18
+## principal_obstaculo.Marketing              10.0     18
+## educacion_emprendedor.Tecnica              40.0     72
+## educacion_emprendedor.Posgrado             10.6     19
+## mercado_principal.Regional                 10.6     19
+## region.Buga                                10.6     19
+## principal_obstaculo.Competencia            11.1     20
+## principal_obstaculo.Talento humano         12.2     22
+## objetivo_12_meses.Mejorar productividad    15.0     27
+## experiencia_emprendedor.Entre 2 y 5 anos   50.0     90
+## uso_digital.Alto                           15.6     28
+## innovacion.Alta                            26.7     48
+## red_apoyo.Mentores                         16.1     29
+## red_apoyo.Universidad                      16.7     30
+## objetivo_12_meses.Escalar                  20.6     37
+## financiacion_inicial.Credito bancario      22.8     41
+## region.Palmira                             25.6     46
+## tamano_empresa.Pequena                     26.1     47
+## mercado_principal.Nacional                 26.7     48
+## tamano_empresa.Mediana                     28.9     52
+## red_apoyo.Gremio                           30.6     55
+## objetivo_12_meses.Aumentar ventas          31.7     57
+## antiguedad_empresa.Mas de 5 anos           35.0     63
+## experiencia_emprendedor.Mas de 5 anos      37.8     68
+## formalizacion.Camara de comercio           46.7     84
+```
+
+---
+
+### Qué contiene
+
+Las modalidades que caracterizan cada clase.
+
+En lenguaje sencillo:
+
+.center[
+.font140[¿qué respuestas aparecen más de lo esperado dentro de cada perfil?]
+]
+
+---
+
+# ¿Cómo leer `carac.cate`?
+
+Para cada cluster buscamos modalidades con valores de prueba altos.
+
+--
+
+### Si en una clase aparecen:
+
+- `uso_digital.Alto`,
+- `mercado_principal.Nacional`,
+- `innovacion.Alta`,
+- `objetivo_12_meses.Escalar`.
+
+Podemos nombrarla como:
+
+.center[
+.font140[Empresarios digitales con orientación a crecimiento]
+]
+
+--
+
+.orange[El nombre del cluster debe salir de las categorías que lo caracterizan.]
+
+---
+
+# Descriptivos por cluster
+
+
+```r
+Clus %&gt;%
+  count(cluster, uso_digital) %&gt;%
+  group_by(cluster) %&gt;%
+  mutate(p = n / sum(n)) %&gt;%
+  arrange(cluster, desc(p))
+```
+
+```
+## # A tibble: 11 × 4
+## # Groups:   cluster [4]
+##    cluster uso_digital     n      p
+##    &lt;fct&gt;   &lt;fct&gt;       &lt;int&gt;  &lt;dbl&gt;
+##  1 1       Bajo           36 0.621 
+##  2 1       Medio          21 0.362 
+##  3 1       Alto            1 0.0172
+##  4 2       Bajo           22 0.489 
+##  5 2       Medio          21 0.467 
+##  6 2       Alto            2 0.0444
+##  7 3       Alto           25 0.532 
+##  8 3       Medio          19 0.404 
+##  9 3       Bajo            3 0.0638
+## 10 4       Medio          16 0.533 
+## 11 4       Bajo           14 0.467
+```
+
+---
+
+# Perfil por cluster y sector
+
+&lt;img src="Class_6_files/figure-html/perfil_sector-1.png" width="74%" style="display: block; margin: auto;" /&gt;
+
+---
+
+# Perfil por cluster y uso digital
+
+&lt;img src="Class_6_files/figure-html/perfil_digital-1.png" width="74%" style="display: block; margin: auto;" /&gt;
+
+---
+
+# Perfil por cluster y obstáculo
+
+&lt;img src="Class_6_files/figure-html/perfil_obstaculo-1.png" width="76%" style="display: block; margin: auto;" /&gt;
+
+---
+
+# De cluster a perfil
+
+No basta con escribir:
+
+.center[
+.red["salieron cuatro grupos".]
+]
+
+--
+
+Hay que ponerles una historia.
+
+### Ejemplo
+
+- Perfil 1: negocios tradicionales de alcance local.
+- Perfil 2: empresarios digitales con orientación a crecimiento.
+- Perfil 3: empresas productivas más formales.
+- Perfil 4: emprendimientos nacientes con barreras de formalización y financiación.
+
+.center[
+.orange[El cluster se vuelve útil cuando lo convertimos en segmento interpretable.]
+]
+
+---
+
+# Qué decisión puede salir del ACM
+
+### 1. Diseñar programas diferenciados
+No ofrecer la misma capacitación a todos los empresarios.
+
+### 2. Priorizar acompañamiento
+Los perfiles con barreras de financiación o formalización pueden necesitar rutas diferentes.
+
+### 3. Segmentar comunicaciones
+Un perfil digital puede requerir mensajes distintos a un perfil tradicional local.
+
+.center[
+.orange[La técnica se justifica si ayuda a decidir a quién atender, con qué oferta y por qué canal.]
+]
+
+---
+
+# Ejemplo de cierre ejecutivo
+
+Una lectura posible sería:
+
+&gt; El ACM identifica perfiles diferenciados de empresarios. Un grupo combina bajo uso digital, mercado local y barreras de formalización, mientras otro concentra uso digital alto, innovación y orientación a crecimiento. Por tanto, una sola estrategia de acompañamiento sería poco eficiente.
+
+--
+
+### Decisión
+
+Diseñar rutas diferenciadas:
+
+- formalización y finanzas básicas;
+- transformación digital y marketing;
+- productividad y acceso a mercados.
+
+---
+
+class: inverse, center, middle
+background-color: #122140
+
+.pull-left[
+
+.center[
+&lt;br&gt;&lt;br&gt;
+
+# Gracias!!!
+
+&lt;br&gt;
+
+### ¿Preguntas?
+
+&lt;br&gt;
+
+&lt;img src="img/qr-code.png" width="49%" style="display: block; margin: auto;" /&gt;
+
+]
+
+]
+
+.pull-right[
+
+&lt;br&gt; 
+&lt;br&gt; 
+&lt;img style="border-radius: 50%;" src="img/avatar.png"
+width="150px"
+/&gt;
+
+### [www.joaquibarandica.com](https://www.joaquibarandica.com)
+
+orlando.joaqui@correounivalle.edu.co
+
+&lt;img src="img/Logo.jpg" width="120%"&gt;
+
+]
+
+&lt;br&gt;&lt;br&gt;&lt;br&gt;
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script src="macros.js"></script>
+<script>var slideshow = remark.create({
+"ratio": "16:9",
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+// add `data-at-shortcutkeys` attribute to <body> to resolve conflicts with JAWS
+// screen reader (see PR #262)
+(function(d) {
+  let res = {};
+  d.querySelectorAll('.remark-help-content table tr').forEach(tr => {
+    const t = tr.querySelector('td:nth-child(2)').innerText;
+    tr.querySelectorAll('td:first-child .key').forEach(key => {
+      const k = key.innerText;
+      if (/^[a-z]$/.test(k)) res[k] = t;  // must be a single letter (key)
+    });
+  });
+  d.body.setAttribute('data-at-shortcutkeys', JSON.stringify(res));
+})(document);
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

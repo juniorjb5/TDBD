@@ -1,0 +1,1220 @@
+---
+title: "ACM"
+subtitle: "<br/> Análisis de Correspondencias Múltiples"
+author: "Orlando Joaqui-Barandica"
+institute: "Universidad del Valle"
+date: " "
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    css: 
+      - default
+      - rladies
+      - rladies-fonts
+      - fonts_mtheme.css
+      - sidney.css
+    seal: false  
+    nature: 
+      ratio: 16:9
+      beforeInit: "macros.js"
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+
+```{r setup, include = FALSE}
+library(knitr)
+library(tidyverse)
+library(ade4)
+library(FactoClass)
+library(scales)
+library(fontawesome)
+
+knitr::opts_chunk$set(echo = FALSE,
+                      dpi = 300,
+                      warning = FALSE,
+                      message = FALSE,
+                      error = FALSE,
+                      fig.align = "center")
+
+options(htmltools.dir.version = FALSE)
+```
+
+class: inverse, left, bottom
+background-image: url("img/fondo.jpg")
+background-size: cover
+
+# **`r rmarkdown::metadata$title`**
+----
+
+## **`r rmarkdown::metadata$subtitle`**
+
+### `r rmarkdown::metadata$author`
+### `r rmarkdown::metadata$date`
+
+```{r xaringanExtra-share-again, echo=FALSE}
+ xaringanExtra::use_share_again()
+```
+
+```{r xaringanExtra-clipboard, echo=FALSE}
+ xaringanExtra::use_clipboard()
+```
+
+```{r xaringanExtra, echo=FALSE}
+xaringanExtra::use_xaringan_extra("tile_view")
+```
+
+---
+
+class: center, middle, inverse
+
+# Ruta de la sesión de hoy
+
+## Categóricas → ACM → modalidades → perfiles → clusters → decisión
+
+<br>
+
+.orange[La idea no es producir otro mapa factorial. La idea es convertir muchas respuestas cualitativas en perfiles que permitan tomar una decisión.]
+
+---
+
+# ¿Dónde quedamos?
+
+En la clase anterior usamos ACP y ACP Dual para resumir variables cuantitativas.
+
+--
+
+Hoy cambiamos el tipo de dato.
+
+### Antes:
+Gasto, ingreso, ventas, precio, edad, puntaje.
+
+### Ahora:
+Sector, tamaño, formalización, acceso a crédito, uso digital, mercado, obstáculo.
+
+--
+
+.center[
+.orange[Cuando las variables son categóricas, el ACP ya no es la herramienta natural. Ahí aparece el ACM.]
+]
+
+---
+
+# Pregunta de arranque
+
+Supongamos que tenemos una encuesta a empresarios.
+
+Cada empresario responde preguntas como:
+
+- sector de actividad;
+- tamaño de empresa;
+- nivel de formalización;
+- financiación inicial;
+- uso de herramientas digitales;
+- principal obstáculo;
+- objetivo para los próximos 12 meses.
+
+--
+
+### Pregunta
+¿Podemos encontrar perfiles de empresarios a partir de sus respuestas?
+
+.center[
+.orange[El ACM sirve para leer asociaciones entre categorías, no para predecir una variable continua.]
+]
+
+---
+
+class: center, middle, inverse
+
+# Primero: la intuición del ACM
+## Leer bien los mapas
+
+---
+
+# ¿Qué es el ACM?
+
+ACM significa **Análisis de Correspondencias Múltiples**.
+
+Es una técnica exploratoria para bases donde varias variables son cualitativas o categóricas.
+
+--
+
+### En palabras sencillas
+
+El ACM convierte muchas categorías en un mapa.
+
+En ese mapa quedan cerca las categorías que tienden a aparecer juntas en los mismos individuos.
+
+--
+
+.center[
+.orange[Si muchos empresarios con uso digital alto también tienen mercado nacional e innovación alta, esas modalidades deberían aparecer cerca.]
+]
+
+---
+
+# ¿Qué analiza realmente el ACM?
+
+El ACM no analiza promedios.
+
+Analiza **patrones de co-ocurrencia** entre modalidades.
+
+--
+
+### Ejemplo
+
+No pregunta:
+
+.center[
+.red[¿cuánto vende cada empresario?]
+]
+
+Pregunta:
+
+.center[
+.font140[¿qué respuestas aparecen juntas con frecuencia?]
+]
+
+--
+
+.orange[Por eso el ACM es muy útil en encuestas, segmentación, perfiles de clientes, diagnósticos institucionales y estudios de mercado.]
+
+---
+
+# Variables y modalidades
+
+En ACM cada variable categórica tiene varias modalidades.
+
+### Variable
+`uso_digital`
+
+### Modalidades
+`Bajo`, `Medio`, `Alto`
+
+---
+
+
+# Variables y modalidades
+
+### Variable
+`principal_obstaculo`
+
+### Modalidades
+`Financiacion`, `Marketing`, `Costos de insumos`, `Formalizacion`.
+
+--
+
+.center[
+.orange[El mapa del ACM se interpreta principalmente mirando modalidades.]
+]
+
+---
+
+# ACP vs. ACM
+
+| Pregunta | ACP | ACM |
+|---|---:|---:|
+| Tipo de variables | Cuantitativas | Categóricas |
+| Unidad principal de lectura | Variables e individuos | Modalidades e individuos |
+| Distancia entre puntos | Diferencias numéricas | Diferencias de perfiles de respuesta |
+| Uso típico | Reducción de variables numéricas | Segmentación de respuestas categóricas |
+| Salida clave | Dimensiones, contribuciones, cos² | Dimensiones, modalidades, contribuciones, clusters |
+
+.center[
+.orange[La lógica factorial sigue, pero cambia lo que significa estar cerca o lejos.]
+]
+
+---
+
+# Cómo se lee la cercanía
+
+### Modalidades cercanas
+Tienden a aparecer juntas en los mismos empresarios.
+
+### Modalidades opuestas
+Ayudan a separar perfiles diferentes.
+
+### Modalidades cerca del origen
+No diferencian mucho. Son más promedio.
+
+### Modalidades alejadas del origen
+Son más características de algún perfil.
+
+.center[
+.orange[En ACM, lo lejos del centro suele ser más informativo que lo que queda pegado al centro.]
+]
+
+---
+
+# Cuidado con una mala lectura
+
+No podemos decir automáticamente:
+
+.center[
+.red["esta categoría causa esta otra".]
+]
+
+--
+
+El ACM no demuestra causalidad.
+
+El ACM muestra asociaciones y perfiles.
+
+--
+
+.center[
+.orange[La frase correcta es: estas modalidades tienden a aparecer juntas en la base.]
+]
+
+---
+
+class: center, middle, inverse
+
+# Base de trabajo
+## Empresarios y perfiles cualitativos
+
+---
+
+# Vamos a usar un solo ejemplo
+
+Trabajaremos con una base didáctica de empresarios.
+
+Cada fila es un empresario.
+
+--
+
+### Variables activas
+
+Todas las variables que entran al ACM son categóricas:
+
+`sector`, `tamano_empresa`, `formalizacion`, `uso_digital`, `mercado_principal`, `innovacion`, `principal_obstaculo`, entre otras.
+
+--
+
+.center[
+.orange[La historia de la clase es simple: usar respuestas cualitativas para construir perfiles de empresarios.]
+]
+
+---
+
+# Cargar datos
+
+```{r cargar_datos, echo=TRUE}
+library(tidyverse)
+library(ade4)
+library(FactoClass)
+
+empresarios_raw <- read_delim(
+  "Datos/empresarios_acm_demo.csv",
+  delim = ";",
+  show_col_types = FALSE
+)
+
+glimpse(empresarios_raw)
+```
+
+---
+
+# Preparar base para ACM
+
+```{r preparar_base, echo=TRUE}
+empresarios <- empresarios_raw %>%
+  select(-id) %>%
+  mutate(across(everything(), as.factor)) %>%
+  as.data.frame()
+
+str(empresarios)
+```
+
+--
+
+### Lectura
+
+El ACM necesita variables cualitativas. Por eso convertimos todas las columnas a `factor`.
+
+---
+
+# Descriptivo inicial
+
+```{r descriptivo, echo=TRUE}
+empresarios %>%
+  count(sector, sort = TRUE)
+
+empresarios %>%
+  count(uso_digital, sort = TRUE)
+
+```
+
+---
+
+# Descriptivo inicial
+
+```{r descriptivo2, echo=TRUE}
+
+empresarios %>%
+  count(principal_obstaculo, sort = TRUE)
+```
+
+--
+
+.orange[Antes de correr cualquier técnica, siempre miramos qué categorías tenemos y si hay categorías demasiado raras.]
+
+---
+
+
+---
+
+# Un gráfico antes del ACM
+
+```{r grafico_descriptivo, fig.width=9.5, fig.height=5.1, out.width="70%"}
+empresarios %>%
+  count(sector, uso_digital) %>%
+  ggplot(aes(x = sector, y = n, fill = uso_digital)) +
+  geom_col(position = "fill") +
+  scale_y_continuous(labels = percent) +
+  labs(
+    title = "Uso digital según sector",
+    x = NULL,
+    y = "Participación",
+    fill = "Uso digital"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(axis.text.x = element_text(angle = 25, hjust = 1))
+```
+
+---
+
+# ¿Por qué no basta con tablas cruzadas?
+
+Una tabla cruzada compara dos variables.
+
+Pero en la encuesta tenemos muchas variables al mismo tiempo.
+
+--
+
+### Problema
+
+Si cruzamos todo contra todo, el análisis se vuelve inmanejable.
+
+### Solución
+
+El ACM resume muchas relaciones categóricas en pocas dimensiones.
+
+.center[
+.orange[El ACM es una forma ordenada de leer muchas tablas cruzadas al mismo tiempo.]
+]
+
+---
+
+class: center, middle, inverse
+
+# ACM con FactoClass
+## Manteniendo la estructura de trabajo aplicada
+
+---
+
+# Ejecutar FactoClass
+
+```{r ejecutar_factoclass, echo=TRUE}
+clusters <- FactoClass(
+  empresarios,
+  dudi.acm,
+  nf = 3,
+  nfcl = 3,
+  k.clust = 4,
+  scanFC = FALSE
+)
+```
+
+---
+
+
+# Ejecutar FactoClass
+
+### Qué hicimos
+
+- `dudi.acm`: ejecuta el ACM.
+- `nf = 3`: conserva 3 ejes factoriales para el análisis.
+- `nfcl = 3`: usa 3 coordenadas para clasificar.
+- `k.clust = 4`: propone 4 perfiles o clases.
+- `scanFC = FALSE`: evita que R pregunte valores por consola.
+
+---
+
+# La versión interactiva
+
+En consola también podría escribirse así:
+
+```{r factoclass_interactivo, echo=TRUE, eval=FALSE}
+clusters <- FactoClass(empresarios, dudi.acm)
+```
+
+--
+
+### Pero...
+
+Esa versión suele preguntar en consola cuántos ejes y cuántas clases usar. Como lo haciamos antes.
+
+Por ahora lo dejaremos fijo, para continuar:
+
+```{r factoclass_fijo, echo=TRUE, eval=FALSE}
+clusters <- FactoClass(
+  empresarios,
+  dudi.acm,
+  nf = 3,
+  nfcl = 3,
+  k.clust = 4,
+  scanFC = FALSE
+)
+```
+
+
+---
+
+# Qué queda guardado en `clusters`
+
+```{r objetos_clusters, echo=TRUE}
+names(clusters)
+```
+
+--
+
+### Lo importante para esta clase
+
+- `clusters$dudi`: resultados del ACM.
+- `clusters$cluster`: grupo asignado a cada empresario.
+- `clusters$carac.cate`: modalidades que caracterizan cada grupo.
+
+.center[
+.orange[La salida clave de negocio no es solo el mapa. Es la caracterización de perfiles.]
+]
+
+---
+
+# Agregar el cluster a la base
+
+```{r agregar_cluster, echo=TRUE}
+Clus <- cbind(
+  cluster = as.factor(clusters$cluster),
+  empresarios
+)
+
+table(Clus$cluster)
+```
+
+--
+
+### Lectura
+
+Cada empresario queda asignado a un perfil.
+
+Luego podemos describir qué caracteriza a cada perfil.
+
+---
+
+# Primer mapa factorial
+
+```{r mapa_general, echo=TRUE, fig.width=9.5, fig.height=5.1, out.width="65%"}
+plot(clusters$dudi)
+```
+
+
+
+---
+
+# Primer mapa factorial
+
+### Qué mirar
+
+- porcentaje de inercia de los ejes;
+- nube de individuos;
+- modalidades alejadas del centro;
+- separación entre perfiles.
+
+---
+
+# Mapa de individuos
+
+```{r mapa_individuos, echo=TRUE, fig.width=9.5, fig.height=5.1, out.width="65%"}
+s.label(
+  clusters$dudi$li,
+  label = row.names(empresarios),
+  sub = "Empresarios en el plano factorial",
+  possub = "bottomright"
+)
+```
+
+---
+
+# Mapa de individuos
+
+### Lectura
+
+Individuos cercanos respondieron parecido.
+
+Individuos alejados tienen perfiles de respuesta distintos.
+
+---
+
+# Mapa de modalidades
+
+```{r mapa_modalidades, echo=TRUE, fig.width=10, fig.height=5.4, out.width="78%"}
+s.label(
+  clusters$dudi$co,
+  xax = 1,
+  yax = 2,
+  sub = "Modalidades: ejes 1 y 2",
+  possub = "bottomright"
+)
+```
+
+---
+
+# Mapa de modalidades
+
+### Lectura
+
+Aquí aparecen las categorías de todas las variables.
+
+.center[
+.orange[Este es el gráfico central del ACM.]
+]
+
+---
+
+# ACM como lectura de oposiciones
+
+Una dimensión se interpreta mirando qué modalidades quedan en un extremo y qué modalidades quedan en el extremo contrario.
+
+--
+
+### Ejemplo de lectura posible
+
+A la derecha podrían aparecer:
+
+`uso_digital.Alto`, `mercado_principal.Nacional`, `innovacion.Alta`, `objetivo_12_meses.Escalar`.
+
+A la izquierda podrían aparecer:
+
+`uso_digital.Bajo`, `mercado_principal.Barrio o comuna`, `formalizacion.Informal`.
+
+--
+
+.center[
+.orange[Entonces Dim.1 podría leerse como un eje de sofisticación y alcance del negocio.]
+]
+
+---
+
+# Inercia: valores propios
+
+```{r inercia, echo=TRUE}
+# Valores propios / inercia
+Inercia <- inertia.dudi(
+  clusters$dudi,
+  row.inertia = TRUE,
+  col.inertia = TRUE
+)
+
+Inercia$tot.inertia
+```
+
+---
+
+# Inercia: valores propios
+
+### Cuidado
+
+En ACM los porcentajes de inercia suelen verse más bajos que en ACP.
+
+Eso no significa automáticamente que el análisis no sirva.
+
+.center[
+.orange[Con muchas modalidades, la inercia se reparte. Por eso interpretamos ejes, modalidades y perfiles juntos.]
+]
+
+---
+
+
+# ¿Cómo interpretamos esta inercia?
+
+.pull-left[
+
+### Primeros ejes
+
+- **Eje 1:** 14.7%
+- **Eje 2:** 7.9%
+- **Eje 3:** 5.7%
+
+Los dos primeros ejes acumulan aproximadamente:
+
+.center[
+## 22.6%
+]
+
+Con tres ejes llegamos a **28.2%**.
+]
+
+.pull-right[
+
+### ¿Eso es poco?
+
+En un **ACM** es normal encontrar porcentajes de inercia relativamente bajos.
+
+¿Por qué?
+
+Porque trabajamos con muchas variables categóricas y muchas modalidades...
+
+La información queda distribuida entre numerosos ejes.
+
+<br>
+
+
+]
+
+.orange[
+**No evaluamos el ACM solamente por el porcentaje explicado.**
+]
+
+Nos interesa principalmente identificar: - qué modalidades caracterizan cada eje. - cuáles aparecen próximas entre sí. - qué perfiles de individuos se forman
+
+
+
+---
+
+# Entonces... ¿con qué ejes trabajamos?
+
+Aunque los dos primeros ejes explican solo **22.6%** de la inercia total...
+
+.center[
+### utilizaremos principalmente el plano 1–2
+]
+
+porque permite construir una representación sencilla de las principales asociaciones entre modalidades.
+
+--
+
+Pero el porcentaje de inercia **no basta** para interpretar los ejes.
+
+Ahora debemos preguntar:
+
+.center[
+### ¿Qué modalidades son las que construyen cada eje?
+]
+
+Para responderlo revisamos:
+
+1. **Contribución** de las modalidades  
+2. **Calidad de representación**  
+3. **Posición en el plano factorial**
+
+.orange[
+Un eje adquiere significado cuando identificamos las modalidades que más lo caracterizan.
+]
+
+---
+
+# Contribución y calidad
+
+```{r contrib_calidad, echo=TRUE}
+Contrib <- inertia.dudi(
+  clusters$dudi,
+  row.inertia = TRUE,
+  col.inertia = TRUE
+)$col.abs / 100
+
+Calidad <- inertia.dudi(
+  clusters$dudi,
+  row.inertia = TRUE,
+  col.inertia = TRUE
+)$col.rel / 100
+```
+
+--
+
+### Traducción
+
+- Contribución: qué modalidades construyen cada eje.
+- Calidad: qué tan bien se representa cada modalidad en el eje o plano.
+
+---
+
+# Modalidades que más construyen Dim.1
+
+```{r contrib_dim1, echo=TRUE}
+Contrib_df <- as.data.frame(Contrib)
+
+head(
+  Contrib_df[order(Contrib_df[[1]], decreasing = TRUE), , drop = FALSE],
+  12
+)
+```
+
+---
+
+# Modalidades que más construyen Dim.2
+
+```{r contrib_dim2, echo=TRUE}
+head(
+  Contrib_df[order(Contrib_df[[2]], decreasing = TRUE), , drop = FALSE],
+  12
+)
+```
+
+---
+
+
+# Calidad de representación
+
+```{r calidad_dim, echo=TRUE}
+Calidad_df <- as.data.frame(Calidad)
+
+head(
+  Calidad_df[order(Calidad_df[[1]], decreasing = TRUE), , drop = FALSE],
+  12
+)
+
+```
+
+
+
+
+---
+
+
+# Calidad de representación
+
+```{r calidad_dim2, echo=TRUE}
+Calidad_df <- as.data.frame(Calidad)
+
+head(
+  Calidad_df[order(Calidad_df[[2]], decreasing = TRUE), , drop = FALSE],
+  12
+)
+```
+
+
+---
+
+# ¿Qué parece representar la Dim. 1?
+
+.pull-left[
+
+### Modalidades que más la construyen
+
+Entre las contribuciones más altas aparecen:
+
+- Empresa **mediana**
+- Empresa **micro**
+- Crédito bancario
+- Cámara de Comercio
+- Mercado nacional
+- Alta innovación
+- Mejorar productividad
+- Escalar
+
+]
+
+.pull-right[
+
+### ¿Cuáles están bien representadas?
+
+En calidad de representación destacan:
+
+- Cámara de Comercio
+- Empresa mediana
+- Crédito bancario
+- Mercado nacional
+- Alta innovación
+
+.orange[
+Estas modalidades no solo contribuyen al eje... también están relativamente bien representadas en él.
+]
+
+]
+
+--
+
+.center[
+### Dim. 1 parece recoger diferencias en estructura, formalización y proyección del negocio.
+]
+
+---
+
+# ¿Qué parece representar la Dim. 2?
+
+.pull-left[
+
+### Modalidades que más contribuyen
+
+Las mayores contribuciones aparecen en:
+
+- Educación de posgrado
+- Uso digital alto
+- Marketing como obstáculo
+- Capital semilla
+- Mejorar productividad
+- Sector tecnología
+- Costos de insumos
+- Mercado regional
+
+]
+
+.pull-right[
+
+### ¿Cuáles están mejor representadas?
+
+Sobresalen especialmente:
+
+- Educación de posgrado
+- Uso digital alto
+- Marketing como obstáculo
+- Capital semilla
+- Aumentar ventas
+- Sector tecnología
+
+.orange[
+Aquí aparece un perfil más relacionado con capacidades, digitalización y orientación al crecimiento.
+]
+
+]
+
+--
+
+.center[
+### Dim. 2 parece diferenciar perfiles empresariales según capacidades y estrategia de desarrollo.
+]
+
+
+---
+
+# Contribución ≠ calidad de representación
+
+.pull-left[
+
+### Contribución
+
+Responde:
+
+.center[
+**¿Qué modalidades ayudan a construir el eje?**
+]
+
+Una modalidad con alta contribución tiene un papel importante en la definición de esa dimensión.
+
+]
+
+.pull-right[
+
+### Calidad
+
+Responde:
+
+.center[
+**¿Qué tan bien queda representada esa modalidad en el eje?**
+]
+
+Una modalidad puede contribuir bastante...
+
+pero no necesariamente quedar bien explicada por ese eje.
+
+]
+
+--
+
+.orange[
+### Para interpretar un eje buscamos modalidades que combinen:
+
+**alta contribución + buena calidad de representación**
+]
+
+.center[
+Después observamos **en qué lado del eje se ubican** para entender qué perfiles se contraponen.
+]
+
+
+
+---
+
+# Receta para nombrar dimensiones
+
+```text
+1. Mirar las modalidades que más contribuyen al eje.
+2. Separar extremo positivo y extremo negativo.
+3. Buscar la idea común en cada extremo.
+4. Poner un nombre corto al eje.
+5. Evitar nombres demasiado bonitos pero sin soporte.
+```
+
+--
+
+.center[
+.orange[El nombre del eje se gana leyendo contribuciones, no mirando el gráfico por encima.]
+]
+
+---
+
+class: center, middle, inverse
+
+# Perfiles de empresarios
+## La parte más útil para decisión
+
+---
+
+# Graficar clases sobre el plano
+
+```{r mapa_clases, echo=TRUE, fig.width=9.5, fig.height=5.1, out.width="70%"}
+Grupo <- as.factor(as.vector(Clus[, 1]))
+
+s.class(
+  clusters$dudi$li,
+  Grupo,
+  sub = "Empresarios: clases en ejes 1 y 2",
+  possub = "bottomright",
+  xax = 1,
+  yax = 2,
+  col = c(1, 2, 3, 4)
+)
+```
+
+---
+
+# Otro plano factorial
+
+```{r mapa_clases_13, echo=TRUE, fig.width=9.5, fig.height=5.1, out.width="70%"}
+s.class(
+  clusters$dudi$li,
+  Grupo,
+  sub = "Empresarios: clases en ejes 1 y 3",
+  possub = "bottomright",
+  xax = 1,
+  yax = 3,
+  col = c(1, 2, 3, 4)
+)
+```
+
+
+---
+
+# La salida clave: `carac.cate`
+
+```{r carac_cate, echo=TRUE}
+clusters$carac.cate
+```
+
+---
+
+### Qué contiene
+
+Las modalidades que caracterizan cada clase.
+
+En lenguaje sencillo:
+
+.center[
+.font140[¿qué respuestas aparecen más de lo esperado dentro de cada perfil?]
+]
+
+---
+
+# ¿Cómo leer `carac.cate`?
+
+Para cada cluster buscamos modalidades con valores de prueba altos.
+
+--
+
+### Si en una clase aparecen:
+
+- `uso_digital.Alto`,
+- `mercado_principal.Nacional`,
+- `innovacion.Alta`,
+- `objetivo_12_meses.Escalar`.
+
+Podemos nombrarla como:
+
+.center[
+.font140[Empresarios digitales con orientación a crecimiento]
+]
+
+--
+
+.orange[El nombre del cluster debe salir de las categorías que lo caracterizan.]
+
+---
+
+# Descriptivos por cluster
+
+```{r descriptivos_cluster, echo=TRUE}
+Clus %>%
+  count(cluster, uso_digital) %>%
+  group_by(cluster) %>%
+  mutate(p = n / sum(n)) %>%
+  arrange(cluster, desc(p))
+```
+
+---
+
+# Perfil por cluster y sector
+
+```{r perfil_sector, fig.width=9.5, fig.height=5.1, out.width="74%"}
+Clus %>%
+  count(cluster, sector) %>%
+  group_by(cluster) %>%
+  mutate(p = n / sum(n)) %>%
+  ggplot(aes(x = cluster, y = p, fill = sector)) +
+  geom_col() +
+  scale_y_continuous(labels = percent) +
+  labs(
+    title = "Composición sectorial por cluster",
+    x = "Cluster",
+    y = "Participación",
+    fill = "Sector"
+  ) +
+  theme_minimal(base_size = 13)
+```
+
+---
+
+# Perfil por cluster y uso digital
+
+```{r perfil_digital, fig.width=9.5, fig.height=5.1, out.width="74%"}
+Clus %>%
+  count(cluster, uso_digital) %>%
+  group_by(cluster) %>%
+  mutate(p = n / sum(n)) %>%
+  ggplot(aes(x = cluster, y = p, fill = uso_digital)) +
+  geom_col() +
+  scale_y_continuous(labels = percent) +
+  labs(
+    title = "Uso digital por cluster",
+    x = "Cluster",
+    y = "Participación",
+    fill = "Uso digital"
+  ) +
+  theme_minimal(base_size = 13)
+```
+
+---
+
+# Perfil por cluster y obstáculo
+
+```{r perfil_obstaculo, fig.width=9.8, fig.height=5.2, out.width="76%"}
+Clus %>%
+  count(cluster, principal_obstaculo) %>%
+  group_by(cluster) %>%
+  mutate(p = n / sum(n)) %>%
+  ggplot(aes(x = cluster, y = p, fill = principal_obstaculo)) +
+  geom_col() +
+  scale_y_continuous(labels = percent) +
+  labs(
+    title = "Principal obstáculo por cluster",
+    x = "Cluster",
+    y = "Participación",
+    fill = "Obstáculo"
+  ) +
+  theme_minimal(base_size = 13)
+```
+
+---
+
+# De cluster a perfil
+
+No basta con escribir:
+
+.center[
+.red["salieron cuatro grupos".]
+]
+
+--
+
+Hay que ponerles una historia.
+
+### Ejemplo
+
+- Perfil 1: negocios tradicionales de alcance local.
+- Perfil 2: empresarios digitales con orientación a crecimiento.
+- Perfil 3: empresas productivas más formales.
+- Perfil 4: emprendimientos nacientes con barreras de formalización y financiación.
+
+.center[
+.orange[El cluster se vuelve útil cuando lo convertimos en segmento interpretable.]
+]
+
+---
+
+# Qué decisión puede salir del ACM
+
+### 1. Diseñar programas diferenciados
+No ofrecer la misma capacitación a todos los empresarios.
+
+### 2. Priorizar acompañamiento
+Los perfiles con barreras de financiación o formalización pueden necesitar rutas diferentes.
+
+### 3. Segmentar comunicaciones
+Un perfil digital puede requerir mensajes distintos a un perfil tradicional local.
+
+.center[
+.orange[La técnica se justifica si ayuda a decidir a quién atender, con qué oferta y por qué canal.]
+]
+
+---
+
+# Ejemplo de cierre ejecutivo
+
+Una lectura posible sería:
+
+> El ACM identifica perfiles diferenciados de empresarios. Un grupo combina bajo uso digital, mercado local y barreras de formalización, mientras otro concentra uso digital alto, innovación y orientación a crecimiento. Por tanto, una sola estrategia de acompañamiento sería poco eficiente.
+
+--
+
+### Decisión
+
+Diseñar rutas diferenciadas:
+
+- formalización y finanzas básicas;
+- transformación digital y marketing;
+- productividad y acceso a mercados.
+
+---
+
+class: inverse, center, middle
+background-color: #122140
+
+.pull-left[
+
+.center[
+<br><br>
+
+# Gracias!!!
+
+<br>
+
+### ¿Preguntas?
+
+<br>
+
+```{r, echo=FALSE, fig.align="center", out.width="49%"}
+knitr::include_graphics("img/qr-code.png")
+```
+
+]
+
+]
+
+.pull-right[
+
+<br> 
+<br> 
+<img style="border-radius: 50%;" src="img/avatar.png"
+width="150px"
+/>
+
+### [www.joaquibarandica.com](https://www.joaquibarandica.com)
+
+orlando.joaqui@correounivalle.edu.co
+
+<img src="img/Logo.jpg" width="120%">
+
+]
+
+<br><br><br>

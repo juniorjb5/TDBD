@@ -1,0 +1,181 @@
+id;sector;tamano_empresa;antiguedad_empresa;formalizacion;educacion_emprendedor;experiencia_emprendedor;financiacion_inicial;uso_digital;mercado_principal;innovacion;principal_obstaculo;objetivo_12_meses;capacitacion_reciente;red_apoyo;region
+E001;Comercio;Micro;Mas de 5 anos;Camara de comercio;Tecnica;Entre 2 y 5 anos;Credito informal;Medio;Ciudad;Baja;Financiacion;Sostener el negocio;Si;Gremio;Palmira
+E002;Manufactura;Pequena;Entre 2 y 5 anos;Camara de comercio;Tecnica;Mas de 5 anos;Credito bancario;Bajo;Nacional;Media;Costos de insumos;Mejorar productividad;Si;Gremio;Buga
+E003;Servicios;Pequena;Mas de 5 anos;Rut solamente;Secundaria;Mas de 5 anos;Familia y amigos;Medio;Ciudad;Baja;Competencia;Aumentar ventas;No;Ninguna;Buenaventura
+E004;Comercio;Mediana;Menos de 2 anos;Rut solamente;Posgrado;Entre 2 y 5 anos;Capital semilla;Alto;Ciudad;Media;Financiacion;Aumentar ventas;Si;Gremio;Jamundi
+E005;Servicios;Mediana;Menos de 2 anos;Rut solamente;Tecnica;Mas de 5 anos;Ahorros propios;Alto;Ciudad;Media;Marketing;Aumentar ventas;Si;Gremio;Palmira
+E006;Servicios;Mediana;Menos de 2 anos;Rut solamente;Tecnica;Entre 2 y 5 anos;Capital semilla;Medio;Ciudad;Alta;Financiacion;Aumentar ventas;Si;Gremio;Cali
+E007;Servicios;Micro;Mas de 5 anos;Rut solamente;Secundaria;Entre 2 y 5 anos;Familia y amigos;Medio;Barrio o comuna;Baja;Competencia;Sostener el negocio;Si;Gremio;Cali
+E008;Comercio;Pequena;Mas de 5 anos;Camara de comercio;Profesional;Entre 2 y 5 anos;Ahorros propios;Medio;Ciudad;Media;Financiacion;Aumentar ventas;Si;Ninguna;Cali
+E009;Manufactura;Mediana;Mas de 5 anos;Camara de comercio;Tecnica;Mas de 5 anos;Credito bancario;Medio;Nacional;Alta;Costos de insumos;Escalar;No;Universidad;Buga
+E010;Tecnologia;Mediana;Entre 2 y 5 anos;Camara de comercio;Tecnica;Mas de 5 anos;Credito bancario;Alto;Ciudad;Media;Financiacion;Escalar;Si;Gremio;Palmira
+E011;Alimentos;Mediana;Entre 2 y 5 anos;Camara de comercio;Tecnica;Mas de 5 anos;Credito bancario;Bajo;Regional;Alta;Financiacion;Mejorar productividad;No;Gremio;Palmira
+E012;Tecnologia;Mediana;Entre 2 y 5 anos;Camara de comercio;Posgrado;Mas de 5 anos;Credito bancario;Alto;Ciudad;Alta;Financiacion;Escalar;Si;Mentores;Jamundi
+E013;Servicios;Mediana;Menos de 2 anos;Camara de comercio;Posgrado;Entre 2 y 5 anos;Capital semilla;Alto;Nacional;Media;Financiacion;Aumentar ventas;Si;Gremio;Palmira
+E014;Alimentos;Micro;Menos de 2 anos;Rut solamente;Secundaria;Menos de 2 anos;Credito informal;Bajo;Ciudad;Media;Ventas bajas;Formalizarse;No;Ninguna;Buenaventura
+E015;Comercio;Micro;Menos de 2 anos;Rut solamente;Profesional;Mas de 5 anos;Credito bancario;Alto;Ciudad;Media;Marketing;Aumentar ventas;Si;Universidad;Jamundi
+E016;Manufactura;Mediana;Entre 2 y 5 anos;Camara de comercio;Profesional;Entre 2 y 5 anos;Credito bancario;Bajo;Nacional;Media;Talento humano;Mejorar productividad;No;Universidad;Buga
+E017;Comercio;Micro;Entre 2 y 5 anos;Rut solamente;Posgrado;Mas de 5 anos;Capital semilla;Medio;Ciudad;Media;Financiacion;Aumentar ventas;Si;Mentores;Cali
+E018;Servicios;Pequena;Mas de 5 anos;Informal;Tecnica;Entre 2 y 5 anos;Credito informal;Bajo;Ciudad;Baja;Ventas bajas;Aumentar ventas;No;Gremio;Cali
+E019;Comercio;Micro;Entre 2 y 5 anos;Rut solamente;Tecnica;Mas de 5 anos;Ahorros propios;Alto;Nacional;Media;Marketing;Aumentar ventas;Si;Gremio;Cali
+E020;Agroindustria;Mediana;Mas de 5 anos;Camara de comercio;Profesional;Entre 2 y 5 anos;Credito bancario;Medio;Nacional;Alta;Talento humano;Mejorar productividad;No;Mentores;Buga
+E021;Alimentos;Pequena;Entre 2 y 5 anos;Rut solamente;Tecnica;Mas de 5 anos;Credito informal;Medio;Ciudad;Media;Financiacion;Sostener el negocio;Si;Gremio;Palmira
+E022;Servicios;Micro;Entre 2 y 5 anos;Camara de comercio;Profesional;Entre 2 y 5 anos;Ahorros propios;Alto;Ciudad;Alta;Talento humano;Escalar;Si;Gremio;Palmira
+E023;Servicios;Pequena;Entre 2 y 5 anos;Rut solamente;Tecnica;Mas de 5 anos;Ahorros propios;Medio;Ciudad;Media;Financiacion;Aumentar ventas;Si;Universidad;Cali
+E024;Manufactura;Mediana;Mas de 5 anos;Camara de comercio;Profesional;Entre 2 y 5 anos;Ahorros propios;Medio;Nacional;Media;Talento humano;Mejorar productividad;No;Gremio;Tulua
+E025;Manufactura;Pequena;Mas de 5 anos;Camara de comercio;Tecnica;Mas de 5 anos;Ahorros propios;Bajo;Nacional;Alta;Costos de insumos;Escalar;Si;Gremio;Palmira
+E026;Manufactura;Mediana;Entre 2 y 5 anos;Camara de comercio;Profesional;Entre 2 y 5 anos;Credito bancario;Bajo;Regional;Baja;Costos de insumos;Mejorar productividad;Si;Gremio;Tulua
+E027;Comercio;Micro;Mas de 5 anos;Rut solamente;Tecnica;Entre 2 y 5 anos;Ahorros propios;Bajo;Barrio o comuna;Baja;Ventas bajas;Sostener el negocio;No;Gremio;Cali
+E028;Servicios;Pequena;Entre 2 y 5 anos;Rut solamente;Posgrado;Entre 2 y 5 anos;Ahorros propios;Alto;Nacional;Media;Financiacion;Aumentar ventas;Si;Mentores;Cali
+E029;Comercio;Micro;Mas de 5 anos;Rut solamente;Tecnica;Mas de 5 anos;Credito informal;Bajo;Ciudad;Media;Competencia;Aumentar ventas;Si;Gremio;Cali
+E030;Servicios;Micro;Menos de 2 anos;Rut solamente;Profesional;Menos de 2 anos;Ahorros propios;Bajo;Ciudad;Baja;Formalizacion;Formalizarse;Si;Ninguna;Cali
+E031;Alimentos;Mediana;Mas de 5 anos;Camara de comercio;Profesional;Mas de 5 anos;Credito bancario;Bajo;Nacional;Alta;Talento humano;Mejorar productividad;No;Gremio;Tulua
+E032;Alimentos;Mediana;Mas de 5 anos;Camara de comercio;Tecnica;Mas de 5 anos;Credito bancario;Medio;Regional;Alta;Costos de insumos;Mejorar productividad;No;Gremio;Tulua
+E033;Tecnologia;Micro;Entre 2 y 5 anos;Rut solamente;Tecnica;Entre 2 y 5 anos;Capital semilla;Medio;Nacional;Media;Financiacion;Aumentar ventas;Si;Mentores;Cali
+E034;Comercio;Pequena;Mas de 5 anos;Rut solamente;Secundaria;Entre 2 y 5 anos;Credito informal;Bajo;Barrio o comuna;Media;Financiacion;Aumentar ventas;No;Familia;Cali
+E035;Manufactura;Pequena;Mas de 5 anos;Camara de comercio;Tecnica;Mas de 5 anos;Ahorros propios;Bajo;Regional;Media;Costos de insumos;Escalar;No;Mentores;Buga
+E036;Alimentos;Mediana;Mas de 5 anos;Camara de comercio;Tecnica;Entre 2 y 5 anos;Credito bancario;Medio;Nacional;Alta;Costos de insumos;Escalar;Si;Universidad;Buga
+E037;Servicios;Pequena;Entre 2 y 5 anos;Camara de comercio;Profesional;Mas de 5 anos;Capital semilla;Alto;Nacional;Media;Financiacion;Aumentar ventas;Si;Mentores;Cali
+E038;Comercio;Micro;Entre 2 y 5 anos;Camara de comercio;Tecnica;Entre 2 y 5 anos;Ahorros propios;Alto;Ciudad;Media;Financiacion;Aumentar ventas;No;Gremio;Jamundi
+E039;Alimentos;Mediana;Entre 2 y 5 anos;Camara de comercio;Profesional;Mas de 5 anos;Credito bancario;Medio;Regional;Media;Financiacion;Escalar;No;Mentores;Tulua
+E040;Agroindustria;Mediana;Mas de 5 anos;Camara de comercio;Profesional;Mas de 5 anos;Credito bancario;Bajo;Regional;Alta;Costos de insumos;Escalar;No;Universidad;Tulua
+E041;Agroindustria;Mediana;Entre 2 y 5 anos;Camara de comercio;Profesional;Mas de 5 anos;Ahorros propios;Medio;Regional;Alta;Talento humano;Escalar;Si;Gremio;Palmira
+E042;Manufactura;Mediana;Entre 2 y 5 anos;Camara de comercio;Profesional;Entre 2 y 5 anos;Credito bancario;Bajo;Nacional;Alta;Financiacion;Escalar;No;Universidad;Palmira
+E043;Servicios;Pequena;Entre 2 y 5 anos;Camara de comercio;Posgrado;Entre 2 y 5 anos;Ahorros propios;Alto;Ciudad;Media;Financiacion;Escalar;No;Mentores;Palmira
+E044;Servicios;Micro;Entre 2 y 5 anos;Informal;Tecnica;Menos de 2 anos;Ahorros propios;Medio;Ciudad;Baja;Financiacion;Sostener el negocio;Si;Ninguna;Buenaventura
+E045;Servicios;Micro;Entre 2 y 5 anos;Camara de comercio;Secundaria;Entre 2 y 5 anos;Familia y amigos;Bajo;Barrio o comuna;Baja;Competencia;Aumentar ventas;Si;Ninguna;Cali
+E046;Alimentos;Micro;Entre 2 y 5 anos;Rut solamente;Profesional;Menos de 2 anos;Familia y amigos;Bajo;Barrio o comuna;Media;Financiacion;Sostener el negocio;Si;Familia;Buenaventura
+E047;Servicios;Micro;Menos de 2 anos;Rut solamente;Profesional;Menos de 2 anos;Ahorros propios;Bajo;Barrio o comuna;Baja;Ventas bajas;Formalizarse;No;Ninguna;Jamundi
+E048;Comercio;Micro;Entre 2 y 5 anos;Camara de comercio;Profesional;Mas de 5 anos;Ahorros propios;Medio;Nacional;Media;Marketing;Aumentar ventas;Si;Gremio;Palmira
+E049;Servicios;Micro;Menos de 2 anos;Informal;Profesional;Menos de 2 anos;Ahorros propios;Bajo;Barrio o comuna;Baja;Financiacion;Sostener el negocio;Si;Ninguna;Buenaventura
+E050;Agroindustria;Pequena;Mas de 5 anos;Camara de comercio;Tecnica;Entre 2 y 5 anos;Ahorros propios;Medio;Nacional;Media;Talento humano;Mejorar productividad;Si;Gremio;Tulua
+E051;Tecnologia;Pequena;Entre 2 y 5 anos;Rut solamente;Posgrado;Mas de 5 anos;Ahorros propios;Medio;Nacional;Media;Marketing;Escalar;No;Gremio;Cali
+E052;Comercio;Pequena;Mas de 5 anos;Informal;Tecnica;Entre 2 y 5 anos;Ahorros propios;Bajo;Ciudad;Media;Ventas bajas;Aumentar ventas;Si;Ninguna;Palmira
+E053;Tecnologia;Pequena;Menos de 2 anos;Rut solamente;Profesional;Mas de 5 anos;Credito bancario;Alto;Ciudad;Alta;Marketing;Aumentar ventas;No;Gremio;Palmira
+E054;Alimentos;Pequena;Entre 2 y 5 anos;Camara de comercio;Profesional;Entre 2 y 5 anos;Credito bancario;Bajo;Regional;Alta;Talento humano;Mejorar productividad;Si;Universidad;Palmira
+E055;Servicios;Micro;Menos de 2 anos;Camara de comercio;Profesional;Mas de 5 anos;Credito bancario;Alto;Ciudad;Media;Marketing;Escalar;Si;Mentores;Palmira
+E056;Servicios;Pequena;Menos de 2 anos;Camara de comercio;Posgrado;Entre 2 y 5 anos;Ahorros propios;Alto;Ciudad;Media;Marketing;Escalar;Si;Gremio;Jamundi
+E057;Alimentos;Pequena;Mas de 5 anos;Informal;Profesional;Mas de 5 anos;Credito informal;Bajo;Ciudad;Baja;Financiacion;Aumentar ventas;No;Ninguna;Cali
+E058;Comercio;Micro;Entre 2 y 5 anos;Rut solamente;Posgrado;Mas de 5 anos;Credito bancario;Alto;Ciudad;Alta;Marketing;Aumentar ventas;No;Universidad;Jamundi
+E059;Comercio;Mediana;Entre 2 y 5 anos;Camara de comercio;Tecnica;Entre 2 y 5 anos;Ahorros propios;Medio;Ciudad;Alta;Talento humano;Escalar;No;Mentores;Jamundi
+E060;Alimentos;Mediana;Entre 2 y 5 anos;Camara de comercio;Profesional;Entre 2 y 5 anos;Credito bancario;Bajo;Nacional;Alta;Talento humano;Mejorar productividad;Si;Mentores;Buga
+E061;Servicios;Micro;Menos de 2 anos;Rut solamente;Tecnica;Menos de 2 anos;Familia y amigos;Medio;Ciudad;Baja;Formalizacion;Sostener el negocio;No;Ninguna;Jamundi
+E062;Servicios;Micro;Mas de 5 anos;Rut solamente;Profesional;Entre 2 y 5 anos;Familia y amigos;Bajo;Ciudad;Media;Ventas bajas;Aumentar ventas;No;Familia;Palmira
+E063;Alimentos;Micro;Menos de 2 anos;Informal;Secundaria;Menos de 2 anos;Credito informal;Medio;Ciudad;Media;Formalizacion;Sostener el negocio;No;Familia;Cali
+E064;Alimentos;Micro;Mas de 5 anos;Informal;Secundaria;Mas de 5 anos;Credito informal;Bajo;Ciudad;Media;Ventas bajas;Sostener el negocio;Si;Gremio;Palmira
+E065;Comercio;Micro;Entre 2 y 5 anos;Informal;Profesional;Menos de 2 anos;Ahorros propios;Bajo;Barrio o comuna;Baja;Ventas bajas;Sostener el negocio;Si;Ninguna;Jamundi
+E066;Servicios;Micro;Mas de 5 anos;Informal;Tecnica;Mas de 5 anos;Ahorros propios;Medio;Barrio o comuna;Media;Financiacion;Aumentar ventas;No;Gremio;Buenaventura
+E067;Servicios;Micro;Menos de 2 anos;Rut solamente;Tecnica;Entre 2 y 5 anos;Familia y amigos;Medio;Ciudad;Media;Ventas bajas;Sostener el negocio;No;Familia;Cali
+E068;Agroindustria;Mediana;Entre 2 y 5 anos;Camara de comercio;Tecnica;Mas de 5 anos;Ahorros propios;Bajo;Nacional;Alta;Financiacion;Mejorar productividad;Si;Gremio;Buga
+E069;Tecnologia;Pequena;Entre 2 y 5 anos;Rut solamente;Profesional;Mas de 5 anos;Ahorros propios;Medio;Ciudad;Alta;Financiacion;Escalar;Si;Universidad;Palmira
+E070;Comercio;Mediana;Menos de 2 anos;Rut solamente;Tecnica;Entre 2 y 5 anos;Credito bancario;Medio;Ciudad;Alta;Marketing;Escalar;No;Universidad;Palmira
+E071;Alimentos;Micro;Menos de 2 anos;Rut solamente;Tecnica;Menos de 2 anos;Credito informal;Medio;Ciudad;Baja;Financiacion;Formalizarse;No;Ninguna;Jamundi
+E072;Servicios;Micro;Entre 2 y 5 anos;Rut solamente;Tecnica;Mas de 5 anos;Familia y amigos;Bajo;Ciudad;Media;Competencia;Sostener el negocio;No;Gremio;Cali
+E073;Agroindustria;Mediana;Entre 2 y 5 anos;Camara de comercio;Tecnica;Entre 2 y 5 anos;Credito bancario;Bajo;Nacional;Alta;Financiacion;Escalar;No;Universidad;Palmira
+E074;Servicios;Micro;Menos de 2 anos;Camara de comercio;Tecnica;Entre 2 y 5 anos;Ahorros propios;Bajo;Ciudad;Media;Talento humano;Aumentar ventas;No;Mentores;Cali
+E075;Servicios;Mediana;Entre 2 y 5 anos;Camara de comercio;Tecnica;Entre 2 y 5 anos;Credito bancario;Alto;Nacional;Alta;Financiacion;Aumentar ventas;Si;Universidad;Cali
+E076;Servicios;Micro;Entre 2 y 5 anos;Informal;Secundaria;Menos de 2 anos;Ahorros propios;Medio;Ciudad;Alta;Ventas bajas;Sostener el negocio;Si;Familia;Jamundi
+E077;Alimentos;Micro;Entre 2 y 5 anos;Informal;Profesional;Entre 2 y 5 anos;Familia y amigos;Medio;Barrio o comuna;Media;Ventas bajas;Formalizarse;No;Ninguna;Jamundi
+E078;Tecnologia;Mediana;Entre 2 y 5 anos;Camara de comercio;Posgrado;Entre 2 y 5 anos;Capital semilla;Alto;Nacional;Baja;Marketing;Escalar;Si;Gremio;Palmira
+E079;Servicios;Micro;Mas de 5 anos;Camara de comercio;Secundaria;Mas de 5 anos;Ahorros propios;Bajo;Barrio o comuna;Baja;Ventas bajas;Sostener el negocio;No;Gremio;Palmira
+E080;Alimentos;Mediana;Mas de 5 anos;Camara de comercio;Tecnica;Mas de 5 anos;Ahorros propios;Medio;Nacional;Media;Costos de insumos;Escalar;Si;Mentores;Buga
+E081;Comercio;Micro;Mas de 5 anos;Rut solamente;Profesional;Entre 2 y 5 anos;Ahorros propios;Bajo;Barrio o comuna;Baja;Competencia;Aumentar ventas;Si;Ninguna;Cali
+E082;Servicios;Micro;Mas de 5 anos;Informal;Profesional;Entre 2 y 5 anos;Ahorros propios;Alto;Barrio o comuna;Media;Ventas bajas;Aumentar ventas;No;Gremio;Palmira
+E083;Servicios;Pequena;Entre 2 y 5 anos;Camara de comercio;Posgrado;Mas de 5 anos;Ahorros propios;Alto;Ciudad;Baja;Financiacion;Escalar;Si;Universidad;Palmira
+E084;Alimentos;Pequena;Entre 2 y 5 anos;Rut solamente;Secundaria;Mas de 5 anos;Familia y amigos;Bajo;Barrio o comuna;Media;Competencia;Sostener el negocio;Si;Ninguna;Buenaventura
+E085;Alimentos;Mediana;Entre 2 y 5 anos;Camara de comercio;Profesional;Entre 2 y 5 anos;Credito bancario;Bajo;Nacional;Alta;Financiacion;Escalar;Si;Gremio;Buga
+E086;Agroindustria;Mediana;Mas de 5 anos;Camara de comercio;Tecnica;Mas de 5 anos;Ahorros propios;Bajo;Regional;Baja;Talento humano;Escalar;No;Mentores;Palmira
+E087;Comercio;Pequena;Entre 2 y 5 anos;Rut solamente;Tecnica;Entre 2 y 5 anos;Ahorros propios;Medio;Nacional;Alta;Financiacion;Aumentar ventas;No;Mentores;Jamundi
+E088;Comercio;Micro;Mas de 5 anos;Informal;Profesional;Entre 2 y 5 anos;Familia y amigos;Bajo;Ciudad;Media;Ventas bajas;Sostener el negocio;No;Gremio;Buenaventura
+E089;Alimentos;Micro;Mas de 5 anos;Rut solamente;Profesional;Mas de 5 anos;Familia y amigos;Bajo;Ciudad;Media;Competencia;Sostener el negocio;Si;Familia;Cali
+E090;Alimentos;Micro;Entre 2 y 5 anos;Informal;Secundaria;Mas de 5 anos;Familia y amigos;Bajo;Ciudad;Baja;Ventas bajas;Aumentar ventas;No;Ninguna;Buenaventura
+E091;Manufactura;Pequena;Entre 2 y 5 anos;Camara de comercio;Profesional;Entre 2 y 5 anos;Ahorros propios;Medio;Nacional;Alta;Talento humano;Mejorar productividad;Si;Universidad;Buga
+E092;Comercio;Micro;Mas de 5 anos;Camara de comercio;Secundaria;Mas de 5 anos;Ahorros propios;Medio;Barrio o comuna;Baja;Competencia;Sostener el negocio;No;Familia;Cali
+E093;Alimentos;Micro;Menos de 2 anos;Informal;Secundaria;Entre 2 y 5 anos;Ahorros propios;Medio;Barrio o comuna;Alta;Formalizacion;Formalizarse;No;Ninguna;Cali
+E094;Comercio;Micro;Entre 2 y 5 anos;Informal;Profesional;Menos de 2 anos;Familia y amigos;Bajo;Ciudad;Baja;Formalizacion;Formalizarse;Si;Familia;Buenaventura
+E095;Alimentos;Mediana;Entre 2 y 5 anos;Camara de comercio;Profesional;Mas de 5 anos;Ahorros propios;Bajo;Regional;Media;Talento humano;Mejorar productividad;Si;Universidad;Tulua
+E096;Alimentos;Micro;Menos de 2 anos;Rut solamente;Tecnica;Menos de 2 anos;Familia y amigos;Medio;Barrio o comuna;Media;Formalizacion;Formalizarse;No;Familia;Cali
+E097;Alimentos;Pequena;Entre 2 y 5 anos;Camara de comercio;Tecnica;Entre 2 y 5 anos;Familia y amigos;Medio;Barrio o comuna;Baja;Financiacion;Aumentar ventas;Si;Ninguna;Buenaventura
+E098;Servicios;Pequena;Mas de 5 anos;Rut solamente;Profesional;Entre 2 y 5 anos;Credito informal;Medio;Ciudad;Media;Ventas bajas;Sostener el negocio;No;Familia;Palmira
+E099;Agroindustria;Pequena;Mas de 5 anos;Camara de comercio;Tecnica;Mas de 5 anos;Credito bancario;Medio;Nacional;Alta;Financiacion;Escalar;Si;Universidad;Palmira
+E100;Servicios;Pequena;Mas de 5 anos;Rut solamente;Secundaria;Entre 2 y 5 anos;Familia y amigos;Bajo;Barrio o comuna;Baja;Ventas bajas;Sostener el negocio;Si;Familia;Buenaventura
+E101;Alimentos;Pequena;Entre 2 y 5 anos;Informal;Secundaria;Mas de 5 anos;Ahorros propios;Medio;Ciudad;Media;Competencia;Aumentar ventas;Si;Gremio;Cali
+E102;Servicios;Mediana;Menos de 2 anos;Rut solamente;Profesional;Entre 2 y 5 anos;Ahorros propios;Medio;Nacional;Media;Marketing;Aumentar ventas;Si;Universidad;Palmira
+E103;Servicios;Micro;Entre 2 y 5 anos;Rut solamente;Profesional;Entre 2 y 5 anos;Familia y amigos;Medio;Ciudad;Baja;Financiacion;Sostener el negocio;Si;Ninguna;Cali
+E104;Tecnologia;Mediana;Entre 2 y 5 anos;Rut solamente;Posgrado;Entre 2 y 5 anos;Credito bancario;Medio;Nacional;Media;Financiacion;Aumentar ventas;Si;Gremio;Cali
+E105;Comercio;Pequena;Menos de 2 anos;Camara de comercio;Tecnica;Mas de 5 anos;Credito bancario;Alto;Nacional;Media;Marketing;Escalar;Si;Gremio;Jamundi
+E106;Alimentos;Pequena;Mas de 5 anos;Informal;Tecnica;Mas de 5 anos;Familia y amigos;Bajo;Ciudad;Baja;Competencia;Aumentar ventas;No;Gremio;Palmira
+E107;Servicios;Micro;Menos de 2 anos;Informal;Profesional;Menos de 2 anos;Familia y amigos;Bajo;Barrio o comuna;Baja;Financiacion;Formalizarse;Si;Familia;Jamundi
+E108;Manufactura;Mediana;Entre 2 y 5 anos;Camara de comercio;Profesional;Entre 2 y 5 anos;Credito bancario;Medio;Nacional;Media;Financiacion;Mejorar productividad;No;Mentores;Buga
+E109;Alimentos;Pequena;Mas de 5 anos;Camara de comercio;Tecnica;Mas de 5 anos;Ahorros propios;Bajo;Nacional;Media;Costos de insumos;Mejorar productividad;Si;Mentores;Buga
+E110;Servicios;Micro;Mas de 5 anos;Informal;Tecnica;Entre 2 y 5 anos;Credito informal;Bajo;Ciudad;Media;Competencia;Aumentar ventas;Si;Ninguna;Cali
+E111;Servicios;Pequena;Mas de 5 anos;Camara de comercio;Profesional;Entre 2 y 5 anos;Familia y amigos;Bajo;Ciudad;Media;Ventas bajas;Sostener el negocio;Si;Familia;Buenaventura
+E112;Servicios;Pequena;Mas de 5 anos;Rut solamente;Profesional;Entre 2 y 5 anos;Credito informal;Medio;Ciudad;Media;Competencia;Sostener el negocio;Si;Familia;Cali
+E113;Comercio;Mediana;Menos de 2 anos;Rut solamente;Tecnica;Mas de 5 anos;Credito bancario;Medio;Nacional;Alta;Financiacion;Aumentar ventas;Si;Universidad;Jamundi
+E114;Servicios;Micro;Mas de 5 anos;Camara de comercio;Tecnica;Entre 2 y 5 anos;Credito informal;Medio;Barrio o comuna;Media;Financiacion;Aumentar ventas;Si;Familia;Cali
+E115;Tecnologia;Pequena;Menos de 2 anos;Camara de comercio;Posgrado;Entre 2 y 5 anos;Credito bancario;Alto;Ciudad;Alta;Financiacion;Escalar;Si;Gremio;Palmira
+E116;Alimentos;Micro;Menos de 2 anos;Rut solamente;Secundaria;Menos de 2 anos;Ahorros propios;Medio;Barrio o comuna;Media;Formalizacion;Formalizarse;No;Familia;Cali
+E117;Manufactura;Pequena;Mas de 5 anos;Camara de comercio;Profesional;Entre 2 y 5 anos;Ahorros propios;Medio;Nacional;Media;Costos de insumos;Mejorar productividad;Si;Universidad;Palmira
+E118;Comercio;Micro;Menos de 2 anos;Rut solamente;Tecnica;Entre 2 y 5 anos;Ahorros propios;Bajo;Barrio o comuna;Media;Formalizacion;Formalizarse;No;Ninguna;Buenaventura
+E119;Servicios;Micro;Mas de 5 anos;Camara de comercio;Tecnica;Entre 2 y 5 anos;Familia y amigos;Bajo;Ciudad;Media;Competencia;Aumentar ventas;Si;Ninguna;Palmira
+E120;Alimentos;Mediana;Mas de 5 anos;Camara de comercio;Tecnica;Mas de 5 anos;Credito bancario;Alto;Regional;Media;Financiacion;Mejorar productividad;Si;Gremio;Buga
+E121;Servicios;Micro;Mas de 5 anos;Informal;Tecnica;Mas de 5 anos;Ahorros propios;Bajo;Barrio o comuna;Baja;Ventas bajas;Sostener el negocio;No;Ninguna;Cali
+E122;Servicios;Micro;Entre 2 y 5 anos;Rut solamente;Secundaria;Menos de 2 anos;Credito informal;Medio;Ciudad;Media;Formalizacion;Formalizarse;No;Familia;Jamundi
+E123;Comercio;Micro;Menos de 2 anos;Informal;Tecnica;Entre 2 y 5 anos;Credito informal;Medio;Barrio o comuna;Media;Formalizacion;Formalizarse;Si;Ninguna;Jamundi
+E124;Servicios;Pequena;Menos de 2 anos;Camara de comercio;Profesional;Mas de 5 anos;Ahorros propios;Medio;Nacional;Alta;Talento humano;Aumentar ventas;No;Universidad;Jamundi
+E125;Agroindustria;Mediana;Entre 2 y 5 anos;Camara de comercio;Tecnica;Entre 2 y 5 anos;Ahorros propios;Bajo;Nacional;Alta;Costos de insumos;Mejorar productividad;Si;Mentores;Buga
+E126;Comercio;Micro;Entre 2 y 5 anos;Rut solamente;Profesional;Entre 2 y 5 anos;Familia y amigos;Medio;Ciudad;Baja;Formalizacion;Formalizarse;Si;Ninguna;Cali
+E127;Servicios;Mediana;Menos de 2 anos;Camara de comercio;Posgrado;Entre 2 y 5 anos;Ahorros propios;Bajo;Ciudad;Media;Marketing;Escalar;No;Mentores;Jamundi
+E128;Comercio;Micro;Entre 2 y 5 anos;Camara de comercio;Posgrado;Mas de 5 anos;Credito bancario;Bajo;Nacional;Media;Financiacion;Aumentar ventas;Si;Gremio;Cali
+E129;Agroindustria;Mediana;Entre 2 y 5 anos;Camara de comercio;Profesional;Entre 2 y 5 anos;Credito bancario;Medio;Nacional;Alta;Talento humano;Escalar;Si;Universidad;Buga
+E130;Alimentos;Micro;Mas de 5 anos;Camara de comercio;Tecnica;Entre 2 y 5 anos;Ahorros propios;Medio;Barrio o comuna;Baja;Ventas bajas;Aumentar ventas;No;Familia;Cali
+E131;Comercio;Micro;Menos de 2 anos;Informal;Profesional;Menos de 2 anos;Ahorros propios;Medio;Ciudad;Media;Financiacion;Sostener el negocio;Si;Ninguna;Buenaventura
+E132;Servicios;Micro;Mas de 5 anos;Camara de comercio;Tecnica;Entre 2 y 5 anos;Credito informal;Medio;Ciudad;Media;Financiacion;Aumentar ventas;Si;Ninguna;Buenaventura
+E133;Servicios;Micro;Entre 2 y 5 anos;Rut solamente;Tecnica;Mas de 5 anos;Ahorros propios;Bajo;Ciudad;Baja;Financiacion;Sostener el negocio;No;Gremio;Buenaventura
+E134;Comercio;Pequena;Mas de 5 anos;Informal;Tecnica;Entre 2 y 5 anos;Familia y amigos;Bajo;Barrio o comuna;Media;Ventas bajas;Sostener el negocio;No;Familia;Cali
+E135;Servicios;Micro;Entre 2 y 5 anos;Informal;Profesional;Menos de 2 anos;Ahorros propios;Bajo;Barrio o comuna;Media;Financiacion;Sostener el negocio;Si;Familia;Cali
+E136;Alimentos;Micro;Entre 2 y 5 anos;Rut solamente;Secundaria;Entre 2 y 5 anos;Ahorros propios;Bajo;Ciudad;Baja;Financiacion;Sostener el negocio;Si;Familia;Cali
+E137;Manufactura;Mediana;Entre 2 y 5 anos;Camara de comercio;Profesional;Entre 2 y 5 anos;Ahorros propios;Alto;Nacional;Alta;Financiacion;Mejorar productividad;No;Gremio;Tulua
+E138;Agroindustria;Mediana;Entre 2 y 5 anos;Camara de comercio;Tecnica;Entre 2 y 5 anos;Ahorros propios;Bajo;Nacional;Media;Costos de insumos;Mejorar productividad;No;Gremio;Buga
+E139;Servicios;Micro;Menos de 2 anos;Camara de comercio;Posgrado;Mas de 5 anos;Credito bancario;Medio;Nacional;Alta;Talento humano;Aumentar ventas;Si;Universidad;Palmira
+E140;Agroindustria;Mediana;Mas de 5 anos;Camara de comercio;Profesional;Mas de 5 anos;Credito bancario;Medio;Regional;Alta;Costos de insumos;Escalar;Si;Mentores;Palmira
+E141;Comercio;Mediana;Menos de 2 anos;Camara de comercio;Tecnica;Mas de 5 anos;Capital semilla;Medio;Nacional;Media;Marketing;Aumentar ventas;No;Mentores;Jamundi
+E142;Servicios;Micro;Mas de 5 anos;Rut solamente;Tecnica;Entre 2 y 5 anos;Credito informal;Bajo;Barrio o comuna;Media;Financiacion;Sostener el negocio;Si;Ninguna;Buenaventura
+E143;Alimentos;Micro;Menos de 2 anos;Informal;Profesional;Menos de 2 anos;Credito informal;Medio;Barrio o comuna;Baja;Ventas bajas;Formalizarse;Si;Ninguna;Buenaventura
+E144;Servicios;Micro;Entre 2 y 5 anos;Rut solamente;Tecnica;Entre 2 y 5 anos;Familia y amigos;Bajo;Ciudad;Baja;Financiacion;Aumentar ventas;No;Familia;Palmira
+E145;Servicios;Pequena;Menos de 2 anos;Rut solamente;Tecnica;Entre 2 y 5 anos;Capital semilla;Alto;Ciudad;Alta;Financiacion;Aumentar ventas;No;Mentores;Jamundi
+E146;Comercio;Pequena;Mas de 5 anos;Camara de comercio;Secundaria;Entre 2 y 5 anos;Ahorros propios;Bajo;Ciudad;Baja;Ventas bajas;Sostener el negocio;Si;Familia;Cali
+E147;Comercio;Micro;Entre 2 y 5 anos;Informal;Secundaria;Entre 2 y 5 anos;Credito informal;Bajo;Ciudad;Baja;Formalizacion;Formalizarse;Si;Familia;Cali
+E148;Agroindustria;Mediana;Mas de 5 anos;Camara de comercio;Tecnica;Entre 2 y 5 anos;Ahorros propios;Medio;Nacional;Alta;Financiacion;Escalar;Si;Mentores;Tulua
+E149;Comercio;Pequena;Mas de 5 anos;Camara de comercio;Profesional;Mas de 5 anos;Familia y amigos;Bajo;Barrio o comuna;Media;Competencia;Aumentar ventas;Si;Familia;Cali
+E150;Comercio;Pequena;Entre 2 y 5 anos;Rut solamente;Tecnica;Entre 2 y 5 anos;Ahorros propios;Alto;Ciudad;Alta;Marketing;Aumentar ventas;Si;Mentores;Palmira
+E151;Servicios;Micro;Menos de 2 anos;Informal;Secundaria;Entre 2 y 5 anos;Credito informal;Bajo;Ciudad;Baja;Financiacion;Sostener el negocio;No;Familia;Buenaventura
+E152;Servicios;Mediana;Entre 2 y 5 anos;Camara de comercio;Posgrado;Mas de 5 anos;Capital semilla;Medio;Ciudad;Alta;Talento humano;Escalar;Si;Mentores;Cali
+E153;Comercio;Micro;Entre 2 y 5 anos;Camara de comercio;Secundaria;Entre 2 y 5 anos;Familia y amigos;Bajo;Barrio o comuna;Media;Ventas bajas;Sostener el negocio;No;Ninguna;Palmira
+E154;Manufactura;Pequena;Mas de 5 anos;Camara de comercio;Tecnica;Mas de 5 anos;Ahorros propios;Medio;Regional;Alta;Costos de insumos;Mejorar productividad;No;Universidad;Buga
+E155;Servicios;Micro;Menos de 2 anos;Informal;Secundaria;Entre 2 y 5 anos;Familia y amigos;Medio;Barrio o comuna;Baja;Ventas bajas;Formalizarse;No;Ninguna;Cali
+E156;Comercio;Mediana;Menos de 2 anos;Camara de comercio;Profesional;Entre 2 y 5 anos;Credito bancario;Alto;Nacional;Media;Financiacion;Escalar;Si;Mentores;Cali
+E157;Comercio;Micro;Mas de 5 anos;Camara de comercio;Secundaria;Mas de 5 anos;Credito informal;Bajo;Ciudad;Baja;Competencia;Aumentar ventas;No;Gremio;Palmira
+E158;Alimentos;Pequena;Mas de 5 anos;Camara de comercio;Profesional;Entre 2 y 5 anos;Ahorros propios;Bajo;Regional;Media;Financiacion;Mejorar productividad;No;Gremio;Palmira
+E159;Alimentos;Micro;Mas de 5 anos;Rut solamente;Secundaria;Entre 2 y 5 anos;Credito informal;Bajo;Barrio o comuna;Baja;Ventas bajas;Aumentar ventas;Si;Familia;Palmira
+E160;Servicios;Mediana;Entre 2 y 5 anos;Rut solamente;Tecnica;Mas de 5 anos;Credito bancario;Medio;Nacional;Alta;Financiacion;Escalar;Si;Universidad;Cali
+E161;Servicios;Micro;Entre 2 y 5 anos;Rut solamente;Secundaria;Menos de 2 anos;Credito informal;Bajo;Barrio o comuna;Media;Formalizacion;Formalizarse;Si;Familia;Buenaventura
+E162;Alimentos;Mediana;Entre 2 y 5 anos;Camara de comercio;Tecnica;Entre 2 y 5 anos;Ahorros propios;Medio;Regional;Media;Talento humano;Mejorar productividad;Si;Mentores;Tulua
+E163;Comercio;Mediana;Menos de 2 anos;Rut solamente;Posgrado;Entre 2 y 5 anos;Capital semilla;Bajo;Nacional;Alta;Marketing;Aumentar ventas;Si;Universidad;Palmira
+E164;Servicios;Micro;Mas de 5 anos;Rut solamente;Secundaria;Entre 2 y 5 anos;Familia y amigos;Medio;Ciudad;Baja;Competencia;Sostener el negocio;No;Familia;Cali
+E165;Servicios;Micro;Mas de 5 anos;Rut solamente;Secundaria;Entre 2 y 5 anos;Familia y amigos;Medio;Ciudad;Media;Competencia;Aumentar ventas;No;Gremio;Cali
+E166;Alimentos;Micro;Menos de 2 anos;Rut solamente;Profesional;Menos de 2 anos;Familia y amigos;Bajo;Ciudad;Media;Ventas bajas;Sostener el negocio;No;Familia;Jamundi
+E167;Alimentos;Pequena;Entre 2 y 5 anos;Informal;Secundaria;Entre 2 y 5 anos;Ahorros propios;Medio;Ciudad;Media;Competencia;Sostener el negocio;No;Gremio;Palmira
+E168;Agroindustria;Pequena;Entre 2 y 5 anos;Camara de comercio;Tecnica;Mas de 5 anos;Ahorros propios;Medio;Regional;Alta;Talento humano;Mejorar productividad;Si;Universidad;Tulua
+E169;Manufactura;Mediana;Entre 2 y 5 anos;Camara de comercio;Tecnica;Mas de 5 anos;Credito bancario;Medio;Regional;Media;Costos de insumos;Escalar;Si;Universidad;Tulua
+E170;Servicios;Micro;Mas de 5 anos;Rut solamente;Secundaria;Mas de 5 anos;Familia y amigos;Bajo;Ciudad;Baja;Financiacion;Sostener el negocio;No;Gremio;Cali
+E171;Servicios;Micro;Menos de 2 anos;Rut solamente;Secundaria;Menos de 2 anos;Familia y amigos;Medio;Barrio o comuna;Baja;Formalizacion;Sostener el negocio;Si;Familia;Jamundi
+E172;Alimentos;Micro;Menos de 2 anos;Informal;Tecnica;Entre 2 y 5 anos;Familia y amigos;Bajo;Ciudad;Baja;Ventas bajas;Formalizarse;Si;Ninguna;Buenaventura
+E173;Manufactura;Pequena;Mas de 5 anos;Camara de comercio;Tecnica;Mas de 5 anos;Credito bancario;Bajo;Regional;Media;Costos de insumos;Mejorar productividad;No;Gremio;Tulua
+E174;Servicios;Micro;Mas de 5 anos;Rut solamente;Profesional;Entre 2 y 5 anos;Familia y amigos;Bajo;Ciudad;Baja;Competencia;Sostener el negocio;Si;Ninguna;Cali
+E175;Tecnologia;Mediana;Entre 2 y 5 anos;Rut solamente;Posgrado;Mas de 5 anos;Ahorros propios;Medio;Nacional;Alta;Marketing;Escalar;Si;Gremio;Palmira
+E176;Alimentos;Micro;Entre 2 y 5 anos;Informal;Tecnica;Entre 2 y 5 anos;Ahorros propios;Medio;Barrio o comuna;Media;Financiacion;Aumentar ventas;No;Gremio;Buenaventura
+E177;Alimentos;Micro;Mas de 5 anos;Rut solamente;Tecnica;Mas de 5 anos;Ahorros propios;Medio;Ciudad;Media;Ventas bajas;Aumentar ventas;No;Gremio;Palmira
+E178;Agroindustria;Mediana;Entre 2 y 5 anos;Camara de comercio;Tecnica;Mas de 5 anos;Credito bancario;Bajo;Regional;Media;Talento humano;Escalar;Si;Mentores;Tulua
+E179;Alimentos;Mediana;Mas de 5 anos;Camara de comercio;Profesional;Mas de 5 anos;Credito bancario;Medio;Nacional;Alta;Costos de insumos;Mejorar productividad;No;Universidad;Buga
+E180;Servicios;Micro;Entre 2 y 5 anos;Rut solamente;Profesional;Entre 2 y 5 anos;Ahorros propios;Alto;Ciudad;Alta;Talento humano;Aumentar ventas;No;Universidad;Palmira
