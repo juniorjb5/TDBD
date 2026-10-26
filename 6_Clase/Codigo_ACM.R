@@ -4,11 +4,6 @@
 # Universidad del Valle
 # =========================================================
 
-# Objetivo general:
-# 1. Entender la logica del Analisis de Correspondencias Multiples.
-# 2. Leer modalidades, ejes, contribuciones y calidad de representacion.
-# 3. Construir perfiles de empresarios usando FactoClass.
-# 4. Pasar del mapa factorial a una decision concreta.
 
 # ---------------------------------------------------------
 # 0. Paquetes
@@ -72,6 +67,11 @@ empresarios %>%
 # ---------------------------------------------------------
 # Version reproducible, sin preguntas por consola.
 
+FactoClass(
+  empresarios,
+  dudi.acm)
+
+
 clusters <- FactoClass(
   empresarios,
   dudi.acm,
@@ -81,6 +81,9 @@ clusters <- FactoClass(
   scanFC = FALSE   # evita pedir parametros en consola
 )
 
+
+
+  
 # Version interactiva, similar al script original de consultoria:
 # clusters <- FactoClass(empresarios, dudi.acm)
 

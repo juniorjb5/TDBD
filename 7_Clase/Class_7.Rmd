@@ -1,0 +1,1421 @@
+---
+title: "Series de tiempo y pronóstico"
+subtitle: "<br/> De ARIMA a Modeltime: modelar, validar y decidir"
+author: "Orlando Joaqui-Barandica"
+institute: "Universidad del Valle"
+date: " "
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    css: 
+      - default
+      - rladies
+      - rladies-fonts
+      - fonts_mtheme.css
+      - sidney.css
+    seal: false  
+    nature: 
+      ratio: 16:9
+      beforeInit: "macros.js"
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+
+```{r setup, include = FALSE}
+library(knitr)
+library(tidyverse)
+library(lubridate)
+library(forecast)
+library(tseries)
+library(tidymodels)
+library(timetk)
+library(modeltime)
+library(fontawesome)
+
+knitr::opts_chunk$set(
+  echo = FALSE,
+  dpi = 300,
+  warning = FALSE,
+  message = FALSE,
+  error = FALSE,
+  fig.align = "center"
+)
+
+options(htmltools.dir.version = FALSE)
+
+# Una sola historia para toda la clase: pasajeros mensuales de una aerolínea
+serie_tbl <- tibble(
+  date = seq.Date(
+    from = as.Date("1949-01-01"),
+    by = "month",
+    length.out = length(AirPassengers)
+  ),
+  pasajeros = as.numeric(AirPassengers)
+)
+
+serie_ts <- AirPassengers
+```
+
+class: inverse, left, bottom
+background-image: url("img/fondo.jpg")
+background-size: cover
+
+# **`r rmarkdown::metadata$title`**
+----
+
+## **`r rmarkdown::metadata$subtitle`**
+
+### `r rmarkdown::metadata$author`
+### `r rmarkdown::metadata$date`
+
+```{r xaringanExtra-share-again, echo=FALSE}
+xaringanExtra::use_share_again()
+```
+
+```{r xaringanExtra-clipboard, echo=FALSE}
+xaringanExtra::use_clipboard()
+```
+
+```{r xaringanExtra, echo=FALSE}
+xaringanExtra::use_xaringan_extra("tile_view")
+```
+
+---
+
+class: center, middle, inverse
+
+# Ruta de la sesión de hoy
+
+## Serie → estructura temporal → estacionariedad → ARIMA → validación → Modeltime → decisión
+
+<br>
+
+.orange[Pronosticar no es extender una línea: es usar correctamente la información que dejó el pasado.]
+
+---
+
+# ¿Qué cambia cuando el dato tiene tiempo?
+
+En regresión tradicional solemos tratar las observaciones como si pudieran intercambiarse.
+
+--
+
+En series de tiempo eso ya no funciona.
+
+### El orden importa
+
+El dato de hoy puede depender de:
+
+- lo que ocurrió ayer;
+- lo que ocurrió hace un mes;
+- lo que ocurrió en la misma época del año anterior.
+
+--
+
+.center[
+.orange[En una serie temporal, romper el orden puede destruir precisamente la información que queremos modelar.]
+]
+
+---
+
+# Pregunta de arranque
+
+Supongamos que una aerolínea registra mensualmente el número de pasajeros.
+
+### La gerencia quiere responder
+
+¿Cuántos pasajeros debería esperar durante los próximos meses para planear capacidad, personal y operación?
+
+--
+
+Para responder no basta con mirar el último dato.
+
+.center[
+.orange[Tenemos que identificar tendencia, estacionalidad, dependencia temporal y error de pronóstico.]
+]
+
+---
+
+class: center, middle, inverse
+
+# Base de trabajo
+## Pasajeros mensuales de una aerolínea
+
+---
+
+# Construir la base
+
+```{r crear_base, echo=TRUE}
+serie_tbl <- tibble(
+  date = seq.Date(
+    as.Date("1949-01-01"),
+    by = "month",
+    length.out = length(AirPassengers)
+  ),
+  pasajeros = as.numeric(AirPassengers)
+)
+
+head(serie_tbl)
+```
+
+
+---
+
+# Primero: mirar la serie
+
+```{r serie_original, fig.width=10.5, fig.height=5.2, out.width="70%"}
+serie_tbl %>%
+  plot_time_series(
+    date,
+    pasajeros,
+    .smooth = FALSE,
+    .interactive = FALSE
+  )
+```
+
+### ¿Qué vemos?
+
+Tendencia creciente, patrón anual y una amplitud que aumenta con el nivel de la serie.
+
+---
+
+# Tres palabras que debemos separar
+
+.pull-left[
+
+### Tendencia
+
+Movimiento persistente de largo plazo.
+
+### Estacionalidad
+
+Patrón que se repite con una frecuencia conocida.
+
+]
+
+.pull-right[
+
+### Ciclo
+
+Movimientos de duración variable que no tienen una frecuencia fija.
+
+### Ruido
+
+Variación que queda después de explicar la estructura sistemática.
+
+]
+
+--
+
+.center[
+.orange[Una buena lectura de la serie empieza antes de escoger cualquier modelo.]
+]
+
+---
+
+# Descomponer ayuda a entender
+
+```{r descomposicion, fig.width=10.2, fig.height=5.4, out.width="65%"}
+serie_ts %>%
+  stl(s.window = "periodic") %>%
+  autoplot()
+```
+
+### Lectura
+
+La serie observada puede pensarse como combinación de tendencia, componente estacional y residuo.
+
+---
+
+# ¿Aditiva o multiplicativa?
+
+### Aditiva
+
+La variación estacional mantiene aproximadamente el mismo tamaño.
+
+$$y_t = T_t + S_t + R_t$$
+
+### Multiplicativa
+
+La variación estacional crece cuando aumenta el nivel de la serie.
+
+$$y_t = T_t \times S_t \times R_t$$
+
+--
+
+.center[
+.orange[En pasajeros, los picos se vuelven más grandes a medida que crece la serie: la transformación logarítmica puede ayudar.]
+]
+
+---
+
+# Transformar la serie
+
+```{r log_series, fig.width=10.3, fig.height=5.2, out.width="74%"}
+tibble(
+  date = serie_tbl$date,
+  original = serie_tbl$pasajeros,
+  logaritmo = log(serie_tbl$pasajeros)
+) %>%
+  pivot_longer(-date, names_to = "serie", values_to = "valor") %>%
+  ggplot(aes(date, valor)) +
+  geom_line() +
+  facet_wrap(~ serie, scales = "free_y", ncol = 1) +
+  labs(x = NULL, y = NULL) +
+  theme_minimal(base_size = 13)
+```
+
+### Idea
+
+El logaritmo no elimina la tendencia ni la estacionalidad, pero puede estabilizar la varianza.
+
+---
+
+class: center, middle, inverse
+
+# Estacionariedad
+## ¿La serie mantiene una estructura estable en el tiempo?
+
+---
+
+# ¿Qué significa estacionaria?
+
+Una serie estacionaria mantiene propiedades relativamente estables a través del tiempo.
+
+### En términos prácticos
+
+- no presenta una tendencia persistente;
+- su variabilidad es razonablemente constante;
+- su dependencia temporal no cambia radicalmente.
+
+--
+
+.center[
+.orange[ARIMA trabaja mejor cuando primero llevamos la serie a una representación estacionaria.]
+]
+
+---
+
+# ¿Nuestra serie es estacionaria?
+
+```{r acf_original, fig.width=9.4, fig.height=5.2, out.width="67%"}
+forecast::ggAcf(log(serie_ts))
+```
+
+### Señal de alerta
+
+Cuando la ACF cae muy lentamente, suele existir persistencia compatible con no estacionariedad.
+
+---
+
+# Diferenciación ordinaria
+
+La primera diferencia mide el cambio entre dos periodos consecutivos:
+
+$$\Delta y_t = y_t - y_{t-1}$$
+
+--
+
+### Interpretación
+
+En vez de preguntar por el nivel de pasajeros, preguntamos cuánto cambió frente al mes anterior.
+
+```{r diff_ordinaria, fig.width=10, fig.height=4.7, out.width="55%"}
+autoplot(diff(log(serie_ts))) +
+  labs(
+    title = "Primera diferencia del logaritmo",
+    x = NULL,
+    y = "Cambio mensual"
+  )
+```
+
+---
+
+# Diferenciación estacional
+
+Para datos mensuales podemos comparar cada observación con el mismo mes del año anterior:
+
+$$\Delta_{12} y_t = y_t - y_{t-12}$$
+
+```{r diff_estacional, fig.width=10, fig.height=4.7, out.width="70%"}
+autoplot(diff(log(serie_ts), lag = 12)) +
+  labs(
+    title = "Diferencia estacional a 12 meses",
+    x = NULL,
+    y = "Cambio anual"
+  )
+```
+
+---
+
+# ¿Y si necesitamos las dos?
+
+```{r doble_diff, fig.width=10, fig.height=5.1, out.width="72%"}
+serie_estacionaria <- diff(
+  diff(log(serie_ts), lag = 12),
+  differences = 1
+)
+
+forecast::ggtsdisplay(
+  serie_estacionaria,
+  main = "Log + diferencia estacional + primera diferencia"
+)
+```
+
+.center[
+.orange[La meta no es diferenciar por costumbre: es remover la estructura que impide modelar una dinámica estable.]
+]
+
+---
+
+# Dos pruebas, dos hipótesis distintas
+
+.pull-left[
+
+### ADF
+
+Hipótesis nula:
+
+**la serie tiene raíz unitaria / no es estacionaria.**
+
+Si el p-value es pequeño, rechazamos la no estacionariedad.
+
+]
+
+.pull-right[
+
+### KPSS
+
+Hipótesis nula:
+
+**la serie es estacionaria.**
+
+Si el p-value es pequeño, rechazamos la estacionariedad.
+
+]
+
+--
+
+.center[
+.orange[No se contradicen: parten de hipótesis nulas diferentes.]
+]
+
+---
+
+# Aplicar ADF y KPSS
+
+```{r tests_original, echo=TRUE}
+tseries::adf.test(log(serie_ts))
+tseries::kpss.test(log(serie_ts), null = "Trend")
+```
+
+### Lectura
+
+No conviene interpretar un test aislado. Lo combinamos con gráfico, ACF y conocimiento del proceso.
+
+---
+
+# Volver a probar después de diferenciar
+
+```{r tests_diff, echo=TRUE}
+tseries::adf.test(serie_estacionaria)
+tseries::kpss.test(serie_estacionaria, null = "Level")
+```
+
+### Objetivo
+
+Después de transformar y diferenciar, queremos una serie sin tendencia o estacionalidad sistemática pendiente.
+
+---
+
+# R también puede orientarnos
+
+```{r ndiffs, echo=TRUE}
+forecast::ndiffs(log(serie_ts))
+forecast::nsdiffs(log(serie_ts))
+```
+
+### Traducción
+
+- `ndiffs()` sugiere cuántas primeras diferencias usar.
+- `nsdiffs()` sugiere cuántas diferencias estacionales usar.
+
+.center[
+.orange[Son ayudas para decidir `d` y `D`; no reemplazan la lectura de la serie.]
+]
+
+---
+
+class: center, middle, inverse
+
+# Dependencia temporal
+## ACF y PACF
+
+---
+
+# Autocorrelación: la serie contra su pasado
+
+La ACF mide la relación entre \(y_t\) y sus rezagos.
+
+### Ejemplo
+
+- lag 1: relación con el mes anterior;
+- lag 2: relación con dos meses atrás;
+- lag 12: relación con el mismo mes del año anterior.
+
+--
+
+.center[
+.orange[Si el pasado contiene señal, podemos usarlo para pronosticar.]
+]
+
+---
+
+# ¿Qué agrega la PACF?
+
+La PACF mide la relación entre \(y_t\) y \(y_{t-k}\) después de controlar los rezagos intermedios.
+
+--
+
+### Regla intuitiva
+
+- PACF ayuda a pensar en órdenes **AR**;
+- ACF ayuda a pensar en órdenes **MA**.
+
+--
+
+.center[
+.orange[No es una receta mecánica; es una guía para proponer modelos candidatos.]
+]
+
+---
+
+# ACF y PACF de la serie transformada
+
+```{r acf_pacf_est, fig.width=10, fig.height=5.2, out.width="72%"}
+forecast::ggtsdisplay(
+  serie_estacionaria,
+  main = "Serie estacionaria: tiempo, ACF y PACF"
+)
+```
+
+### Pregunta
+
+¿Qué rezagos parecen contener todavía información relevante?
+
+---
+
+class: center, middle, inverse
+
+# De AR y MA a ARIMA
+## Construir el modelo
+
+---
+
+# Modelo autorregresivo AR(p)
+
+Un modelo AR usa valores pasados de la propia serie:
+
+$$
+y_t = c + \phi_1 y_{t-1} + \phi_2 y_{t-2} + \cdots + \phi_p y_{t-p} + \varepsilon_t
+$$
+
+### Intuición
+
+El presente se explica parcialmente por sus propios rezagos.
+
+.center[
+.orange[AR = memoria de los niveles pasados.]
+]
+
+---
+
+# Modelo de media móvil MA(q)
+
+Un modelo MA usa errores de pronóstico pasados:
+
+$$
+y_t = c + \varepsilon_t + \theta_1\varepsilon_{t-1} + \cdots + \theta_q\varepsilon_{t-q}
+$$
+
+### Intuición
+
+El presente incorpora información de shocks que todavía tienen efecto.
+
+.center[
+.orange[MA = memoria de los errores pasados.]
+]
+
+---
+
+# ARIMA(p,d,q)
+
+ARIMA combina tres piezas:
+
+| Componente | Parámetro | Pregunta |
+|---|---:|---|
+| Autorregresiva | `p` | ¿Cuántos rezagos de la serie? |
+| Integración | `d` | ¿Cuántas diferencias ordinarias? |
+| Media móvil | `q` | ¿Cuántos rezagos del error? |
+
+--
+
+.center[
+.font150[
+ARIMA = AR + I + MA
+]
+]
+
+---
+
+# Y cuando existe estacionalidad
+
+Para una serie mensual podemos extender la notación:
+
+$$
+ARIMA(p,d,q)(P,D,Q)_{12}
+$$
+
+### Dos capas
+
+- `(p,d,q)` captura dinámica no estacional;
+- `(P,D,Q)` captura dinámica estacional;
+- `12` indica frecuencia anual en datos mensuales.
+
+.center[
+.orange[En una serie como pasajeros, ignorar la estacionalidad puede producir pronósticos pobres.]
+]
+
+
+
+---
+## ¿Cómo seleccionar los órdenes `p` y `q`?
+
+La **ACF** y la **PACF** ayudan a identificar los órdenes de un modelo ARIMA, una vez que la serie es estacionaria.
+
+| Modelo | ACF | PACF |
+|:--|:--|:--|
+| **AR(p)** | Decae gradualmente | Se corta después de `p` |
+| **MA(q)** | Se corta después de `q` | Decae gradualmente |
+| **ARMA(p,q)** | Decae gradualmente | Decae gradualmente |
+
+**En R:**
+
+```{r, eval=FALSE}
+forecast::ggtsdisplay(diff(serie), lag.max = 24)
+```
+
+**Interpretación:**
+
+- Si la PACF se corta en el rezago 2, considerar un **AR(2)**.
+- Si la ACF se corta en el rezago 1, considerar un **MA(1)**.
+- Si ambas decaen, evaluar combinaciones de `p` y `q`.
+
+**Importante:** La ACF y PACF orientan la selección, pero el modelo final debe contrastarse con AICc, diagnóstico de residuos y desempeño predictivo.
+
+
+---
+
+# ¿Cómo escoger p, d y q?
+
+```text
+1. Graficar la serie.
+2. Estabilizar la varianza si es necesario.
+3. Definir d y D con estacionariedad y diferenciación.
+4. Revisar ACF y PACF.
+5. Proponer modelos candidatos.
+6. Comparar criterios de información.
+7. Revisar residuos.
+8. Validar fuera de muestra.
+```
+
+--
+
+.center[
+.orange[El modelo no termina cuando R imprime ARIMA(...). Termina cuando el error residual y el error de pronóstico son razonables.]
+]
+
+---
+
+# AIC, AICc y BIC
+
+Son criterios que equilibran ajuste y complejidad.
+
+### Regla
+
+Entre modelos estimados sobre la misma serie y transformación:
+
+.center[
+.font150[
+menor criterio = mejor equilibrio ajuste–complejidad
+]
+]
+
+--
+
+### Pero cuidado
+
+No deberíamos usar AIC para escoger alegremente entre modelos con órdenes de diferenciación incompatibles.
+
+---
+
+# `auto.arima()`
+
+```{r auto_arima_full, echo=TRUE}
+modelo_auto <- forecast::auto.arima(
+  serie_ts,
+  seasonal = TRUE,
+  lambda = 0,
+  biasadj = TRUE
+)
+
+modelo_auto
+```
+
+
+---
+
+# `auto.arima()` → Ojo
+
+
+### Qué hace
+
+Busca automáticamente una especificación ARIMA razonable usando criterios de información y pruebas internas.
+
+
+.center[
+.font140[
+Automático no significa infalible.
+]
+]
+
+<br>
+
+Puede ayudarnos a buscar, pero todavía debemos preguntar:
+
+- ¿la frecuencia temporal está bien definida?;
+- ¿la diferenciación tiene sentido?;
+- ¿los residuos parecen ruido blanco?;
+- ¿pronostica bien fuera de muestra?;
+- ¿supera un benchmark sencillo?
+
+.center[
+.orange[La automatización selecciona modelos; el analista sigue siendo responsable de la decisión.]
+]
+
+---
+
+class: center, middle, inverse
+
+# Diagnóstico y validación
+## Un buen ajuste histórico no garantiza un buen pronóstico
+
+---
+
+# Revisar los residuos
+
+```{r residuos_auto, fig.width=10, fig.height=5.3, out.width="74%"}
+forecast::checkresiduals(modelo_auto)
+```
+
+
+---
+
+# Revisar los residuos
+
+### Queremos residuos parecidos a ruido blanco
+
+- media cercana a cero;
+- sin autocorrelación sistemática;
+- sin patrón temporal evidente.
+
+--
+
+## Ljung–Box
+
+La prueba de Ljung–Box pregunta si queda autocorrelación conjunta en varios rezagos.
+
+### Hipótesis nula
+
+Los residuos no presentan autocorrelación significativa hasta los rezagos evaluados.
+
+--
+
+.center[
+.orange[Un p-value grande es deseable aquí: no encontramos evidencia fuerte de estructura temporal pendiente.]
+]
+
+---
+
+# El error más común en pronóstico
+
+.center[
+.red[
+Dividir train/test al azar.
+]
+]
+
+--
+
+Eso permitiría que observaciones futuras entren al conjunto de entrenamiento.
+
+### En series de tiempo
+
+Entrenamos con el pasado y evaluamos con un bloque posterior.
+
+.center[
+.orange[La validación debe respetar el reloj.]
+]
+
+---
+
+# Train y test temporal
+
+```{r split_manual, echo=TRUE}
+train_ts <- window(serie_ts, end = c(1958, 12))
+test_ts  <- window(serie_ts, start = c(1959, 1))
+
+c(
+  entrenamiento = length(train_ts),
+  prueba = length(test_ts)
+)
+```
+
+### Diseño
+
+Usamos los primeros 10 años para aprender y los últimos 2 años para evaluar.
+
+---
+
+# Ajustar ARIMA solo con entrenamiento
+
+```{r arima_train, echo=TRUE}
+fit_arima <- forecast::auto.arima(
+  train_ts,
+  seasonal = TRUE,  # Considera modelos SARIMA, incorporando patrones estacionales cuando corresponda.
+  lambda = 0, # Estima el modelo sobre log(y) para ayudar a estabilizar la variabilidad.
+  biasadj = TRUE  # Ajusta los pronósticos al regresar de la escala logarítmica a la escala original.
+)
+
+fit_arima
+```
+
+.center[
+.orange[El periodo de prueba permanece completamente fuera del ajuste.]
+]
+
+---
+
+# Pronosticar el periodo de prueba
+
+```{r forecast_test, fig.width=10.2, fig.height=5.1, out.width="74%"}
+fc_arima <- forecast::forecast(
+  fit_arima,
+  h = length(test_ts)
+)
+
+autoplot(fc_arima) +
+  autolayer(test_ts, series = "Real") +
+  labs(title = "ARIMA: pronóstico vs. datos reales")
+```
+
+### La pregunta cambia
+
+Ya no preguntamos qué tan bien explica el pasado, sino qué tan bien anticipa datos que no vio.
+
+---
+
+# Métricas de pronóstico
+
+```{r accuracy_arima, echo=TRUE}
+forecast::accuracy(fc_arima, test_ts)
+```
+
+### Nos interesan especialmente
+
+- **MAE**: error absoluto promedio;
+- **RMSE**: castiga más los errores grandes;
+- **MAPE**: error porcentual promedio.
+
+.center[
+.orange[Las métricas deben leerse junto con el gráfico: un solo número no cuenta toda la historia.]
+]
+
+---
+
+# Necesitamos un benchmark
+
+Un modelo sofisticado debe superar una alternativa sencilla.
+
+### Para datos estacionales
+
+Una referencia natural es:
+
+.center[
+.font140[
+"el próximo mes se parecerá al mismo mes del año anterior"
+]
+]
+
+Eso es un pronóstico **Seasonal Naive (SNAIVE)**.
+
+---
+
+# ARIMA vs. SNAIVE
+
+```{r benchmark_forecast, echo=TRUE}
+fc_snaive <- forecast::snaive(
+  train_ts,
+  h = length(test_ts)
+)
+
+bind_rows(
+  as_tibble(forecast::accuracy(fc_arima, test_ts)[2, , drop = FALSE]) %>%
+    mutate(modelo = "ARIMA"),
+  as_tibble(forecast::accuracy(fc_snaive, test_ts)[2, , drop = FALSE]) %>%
+    mutate(modelo = "SNAIVE")
+) %>%
+  select(modelo, RMSE, MAE, MAPE)
+```
+
+.center[
+.orange[Si ARIMA no mejora un benchmark simple, debemos preguntarnos qué valor está agregando.]
+]
+
+---
+
+class: center, middle, inverse
+
+# Modeltime
+## Un flujo tidy para comparar modelos de pronóstico
+
+---
+
+# ¿Por qué `modeltime`?
+
+Hasta ahora usamos funciones específicas de `forecast`.
+
+`modeltime` agrega una capa común para:
+
+- ajustar distintos algoritmos con una interfaz parecida;
+- guardar modelos en una sola tabla;
+- calibrarlos sobre datos de prueba;
+- comparar métricas;
+- refit y pronosticar con un flujo reproducible.
+
+--
+
+.center[
+.orange[La ganancia principal no es “otro ARIMA”; es poder comparar modelos dentro de un mismo workflow.]
+]
+
+---
+
+# Paquetes para esta parte
+
+```{r paquetes_modeltime, echo=TRUE, eval=FALSE}
+install.packages(c(
+  "tidymodels",
+  "timetk",
+  "modeltime",
+  "forecast"
+))
+```
+
+```{r cargar_modeltime, echo=TRUE}
+library(tidymodels)
+library(timetk)
+library(modeltime)
+```
+
+---
+
+# La serie en formato tidy
+
+```{r tidy_data, echo=TRUE}
+serie_tbl
+```
+
+
+---
+
+### Diferencia conceptual
+
+`forecast` suele trabajar cómodamente con objetos `ts`.
+
+`modeltime` trabaja naturalmente con data frames/tibbles y una columna explícita de fecha.
+
+.center[
+.orange[Esto facilita integrarlo con el ecosistema `tidymodels`.]
+]
+
+---
+
+# Split temporal con `timetk`
+
+```{r modeltime_split, echo=TRUE}
+splits <- serie_tbl %>%
+  time_series_split(
+    assess = "2 years", # reserva los últimos dos años para evaluar los pronósticos
+    cumulative = TRUE  # aprovechamos todo el historial disponible anterior al período de prueba para entrenar el modelo
+  )
+
+train_tbl <- training(splits)
+test_tbl  <- testing(splits)
+
+splits
+```
+
+---
+
+# Visualizar el split
+
+```{r plot_split, fig.width=10.2, fig.height=5.2, out.width="76%"}
+splits %>%
+  tk_time_series_cv_plan() %>%
+  plot_time_series_cv_plan(
+    date,
+    pasajeros,
+    .interactive = FALSE
+  )
+```
+
+.center[
+.orange[La frontera temporal queda visible: pasado para entrenar, futuro cercano para evaluar.]
+]
+
+---
+
+# Modelo 1: benchmark SNAIVE
+
+```{r mt_snaive, echo=TRUE, cache=TRUE}
+fit_snaive_mt <- naive_reg(
+  seasonal_period = "1 year"
+) %>%
+  set_engine("snaive") %>%
+  fit(
+    pasajeros ~ date,
+    data = train_tbl
+  )
+```
+
+### Papel del benchmark
+
+Nos obliga a demostrar que un modelo más complejo realmente mejora la predicción.
+
+---
+
+# Modelo 2: Auto ARIMA
+
+```{r mt_arima, echo=TRUE, cache=TRUE}
+fit_arima_mt <- arima_reg(
+  seasonal_period = "1 year"
+) %>%
+  set_engine(
+    "auto_arima",
+    lambda = 0,
+    biasadj = TRUE
+  ) %>%
+  fit(
+    pasajeros ~ date,
+    data = train_tbl
+  )
+
+fit_arima_mt
+```
+
+### Mismo concepto, otra interfaz
+
+ARIMA sigue siendo ARIMA; `modeltime` lo conecta con el flujo de `parsnip` y `tidymodels`.
+
+---
+
+# Modelo 3: ETS
+
+```{r mt_ets, echo=TRUE, cache=TRUE}
+fit_ets_mt <- exp_smoothing(
+  seasonal_period = "1 year"
+) %>%
+  set_engine("ets") %>%
+  fit(
+    pasajeros ~ date,
+    data = train_tbl
+  )
+
+fit_ets_mt
+```
+
+### ¿Por qué incluirlo?
+
+ARIMA modela autocorrelación. ETS modela nivel, tendencia y estacionalidad mediante suavizamiento exponencial.
+
+.center[
+.orange[Son enfoques distintos compitiendo por el mismo objetivo de decisión.]
+]
+
+---
+
+# Poner todos los modelos en una tabla
+
+```{r modeltime_table, echo=TRUE}
+models_tbl <- modeltime_table(
+  fit_snaive_mt,
+  fit_arima_mt,
+  fit_ets_mt
+)
+
+models_tbl
+```
+
+### Ventaja
+
+A partir de aquí ya no tenemos tres workflows separados: tenemos una tabla de modelos.
+
+---
+
+# Calibrar sobre el test
+
+```{r calibrate, echo=TRUE, cache=TRUE}
+calibration_tbl <- models_tbl %>%
+  modeltime_calibrate(
+    new_data = test_tbl
+  )
+
+calibration_tbl
+```
+
+### ¿Qué significa calibrar?
+
+Generar predicciones fuera de muestra y guardar los errores sobre el bloque de prueba.
+
+---
+
+# Comparar precisión
+
+```{r mt_accuracy, echo=TRUE}
+ranking_modelos <- calibration_tbl %>%
+  modeltime_accuracy() %>%
+  arrange(rmse)
+
+ranking_modelos %>%
+  select(.model_id, .model_desc, rmse, mae, mape, mase, rsq)
+```
+
+.center[
+.orange[Ahora la selección se apoya en desempeño fuera de muestra, no solamente en AIC/AICc dentro de un modelo ARIMA.]
+]
+
+---
+
+# Visualizar los pronósticos del test
+
+```{r mt_test_plot, fig.width=10.7, fig.height=5.4, out.width="79%"}
+calibration_tbl %>%
+  modeltime_forecast(
+    new_data = test_tbl,
+    actual_data = serie_tbl
+  ) %>%
+  plot_modeltime_forecast(
+    .interactive = FALSE,
+    .legend_max_width = 28,
+    .title = "Comparación fuera de muestra"
+  )
+```
+
+
+
+---
+
+# El ganador no se decide solo por RMSE
+
+Supongamos que dos modelos tienen resultados muy cercanos.
+
+También podemos considerar:
+
+- simplicidad;
+- estabilidad;
+- facilidad de explicar;
+- costo computacional;
+- coherencia de los intervalos;
+- consecuencias del error para la decisión.
+
+--
+
+.center[
+.orange[La métrica ordena alternativas; la decisión final incorpora contexto.]
+]
+
+---
+
+# Elegir el mejor y reentrenar
+
+```{r mt_best_refit, echo=TRUE, cache=TRUE}
+id_ganador <- ranking_modelos %>%
+  slice_min(rmse, n = 1, with_ties = FALSE) %>%
+  pull(.model_id)
+
+modelo_final_tbl <- calibration_tbl %>%
+  filter(.model_id == id_ganador) %>%
+  modeltime_refit(
+    data = serie_tbl
+  )
+
+modelo_final_tbl
+```
+
+### Idea
+
+Después de seleccionar con el test, volvemos a entrenar el modelo ganador usando toda la información disponible.
+
+---
+
+# Pronosticar 12 meses hacia adelante
+
+```{r mt_future, fig.width=10.7, fig.height=5.4, out.width="80%", cache=TRUE}
+modelo_final_tbl %>%
+  modeltime_forecast(
+    h = "1 year",
+    actual_data = serie_tbl
+  ) %>%
+  plot_modeltime_forecast(
+    .interactive = FALSE,
+    .title = "Pronóstico final: próximos 12 meses"
+  )
+```
+
+
+---
+
+# ¿Qué hace `modeltime` con la incertidumbre?
+
+Después de calibrar, `modeltime` puede utilizar los errores fuera de muestra para construir intervalos de predicción.
+
+--
+
+### Traducción para negocio
+
+No decimos:
+
+.center[
+.red["habrá exactamente 520 pasajeros"]
+]
+
+Decimos:
+
+.center[
+.orange["nuestro mejor estimado es 520, pero existe un rango razonable de resultados posibles"]
+]
+
+---
+
+# El flujo completo de `modeltime`
+
+```text
+1. Datos ordenados por tiempo
+2. Split temporal
+3. Especificar varios modelos
+4. Ajustar sobre train
+5. modeltime_table()
+6. modeltime_calibrate(test)
+7. modeltime_accuracy()
+8. Elegir modelo
+9. modeltime_refit(datos completos)
+10. modeltime_forecast()
+```
+
+.center[
+.orange[Este flujo separa claramente ajuste, validación y pronóstico final.]
+]
+
+---
+
+class: center, middle, inverse
+
+# De pronóstico a decisión
+## ¿Qué hacemos con el número?
+
+---
+
+# Un pronóstico no es una decisión
+
+Si esperamos un aumento fuerte de pasajeros, la decisión puede afectar:
+
+- capacidad disponible;
+- programación de personal;
+- inventarios y catering;
+- precios/promociones;
+- mantenimiento;
+- caja y presupuesto.
+
+--
+
+.center[
+.orange[El modelo entrega información sobre el futuro; la organización decide cómo actuar frente a ella.]
+]
+
+---
+
+# El costo del error no siempre es simétrico
+
+### Sobrepronosticar
+
+Podría generar exceso de capacidad, personal o inventario.
+
+### Subpronosticar
+
+Podría generar pérdida de ventas, congestión o deterioro del servicio.
+
+--
+
+.center[
+.orange[El “mejor modelo” estadístico puede no ser el mejor si la empresa castiga de forma distinta cada tipo de error.]
+]
+
+---
+
+
+# ARIMA vs. Modeltime
+
+| Tema | ARIMA clásico | `modeltime` |
+|---|---|---|
+| Modelo | Una familia específica | Framework de comparación |
+| Datos | Frecuente uso de `ts` | Tibbles + fecha |
+| Selección interna | AIC/AICc, ACF/PACF | Métricas out-of-sample entre modelos |
+| Diagnóstico | Residuos del ARIMA | Calibración y error por modelo |
+| Escalabilidad | Modelo individual | Tabla de múltiples modelos |
+
+.center[
+.orange[No compiten entre sí: ARIMA puede vivir dentro de Modeltime.]
+]
+
+---
+
+# Qué no debemos olvidar
+
+### 1. El orden temporal no se rompe.
+
+### 2. Estacionariedad importa para ARIMA.
+
+### 3. ACF/PACF ayudan, pero no deciden solas.
+
+### 4. `auto.arima()` no reemplaza el diagnóstico.
+
+### 5. Siempre necesitamos un benchmark.
+
+### 6. El test debe estar en el futuro del train.
+
+### 7. Un modelo sirve cuando mejora una decisión.
+
+---
+
+# Receta para un problema real
+
+```text
+1. Defina qué necesita pronosticar y para qué decisión.
+2. Determine frecuencia y horizonte.
+3. Grafique y entienda tendencia/estacionalidad.
+4. Separe train/test respetando el tiempo.
+5. Ajuste un benchmark.
+6. Ajuste ARIMA y al menos una alternativa.
+7. Compare desempeño fuera de muestra.
+8. Revise residuos y estabilidad.
+9. Reentrene con toda la información.
+10. Pronostique y comunique incertidumbre.
+```
+
+---
+
+# Código mínimo: ARIMA clásico
+
+```{r receta_arima, echo=TRUE, eval=FALSE}
+fit <- forecast::auto.arima(
+  train_ts,
+  seasonal = TRUE
+)
+
+forecast::checkresiduals(fit)
+
+fc <- forecast::forecast(
+  fit,
+  h = length(test_ts)
+)
+
+forecast::accuracy(fc, test_ts)
+```
+
+---
+
+# Código mínimo: Modeltime
+
+```{r receta_modeltime, echo=TRUE, eval=FALSE}
+models_tbl <- modeltime_table(
+  fit_snaive_mt,
+  fit_arima_mt,
+  fit_ets_mt
+)
+
+calibration_tbl <- models_tbl %>%
+  modeltime_calibrate(test_tbl)
+
+calibration_tbl %>%
+  modeltime_accuracy()
+```
+
+---
+
+# Para profundizar
+
+- Hyndman & Athanasopoulos: *Forecasting: Principles and Practice*.
+- Paquete `forecast`: ARIMA, ETS, diagnósticos y pronóstico clásico.
+- `timetk`: manipulación, visualización y particiones temporales.
+- `modeltime`: infraestructura tidy para comparar y desplegar modelos.
+
+### Documentación
+
+[Modeltime](https://business-science.github.io/modeltime/)  
+[Timetk](https://business-science.github.io/timetk/)
+
+---
+
+class: inverse, center, middle
+background-color: #122140
+
+.pull-left[
+
+.center[
+<br><br>
+
+# Gracias!!!
+
+<br>
+
+### ¿Preguntas?
+
+<br>
+
+```{r final_qr, echo=FALSE, fig.align="center", out.width="49%"}
+knitr::include_graphics("img/qr-code.png")
+```
+
+]
+
+]
+
+.pull-right[
+
+<br> 
+<br> 
+<img style="border-radius: 50%;" src="img/avatar.png"
+width="150px"
+/>
+
+### [www.joaquibarandica.com](https://www.joaquibarandica.com)
+
+orlando.joaqui@correounivalle.edu.co
+
+<img src="img/Logo.jpg" width="120%">
+
+]
+
+<br><br><br>
